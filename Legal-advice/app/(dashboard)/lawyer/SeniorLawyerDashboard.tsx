@@ -254,7 +254,8 @@ export default function SeniorLawyerDashboard({
           )}
 
           {/* Saved Requests Widget */}
-          {marketplaceMetrics?.bookmarkedCount ? (
+          {
+  marketplaceMetrics?.bookmarkedCount ? (
             <div className="bg-blue-900 rounded-xl p-5 shadow-lg text-white">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -305,12 +306,14 @@ function StatCard({ label, value, icon: Icon, trend, priority, subtext, color }:
             {trend}
           </span>
         )}
-        {priority && (
+        {
+  priority && (
           <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-1 rounded border border-amber-100 uppercase tracking-wide">
             Priority
           </span>
         )}
-        {subtext && (
+        {
+  subtext && (
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
             {subtext}
           </span>

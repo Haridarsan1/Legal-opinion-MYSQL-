@@ -6,9 +6,9 @@ import Card from '@/components/shared/Card';
 import { Check, X, FileText, Loader2, Link as LinkIcon, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function FirmsAdminPage() {
-  const supabase = createClient();
-  const [firms, setFirms] = useState<any[]>([]);
+const supabase = createClient();
+
+export default function FirmsAdminPage() {const [firms, setFirms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFirms = async () => {

@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import { MessageSquare, Loader } from 'lucide-react';
@@ -22,16 +23,13 @@ export default function ClientMessagesContent() {
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string>('');
-  const supabase = createClient();
-
-  useEffect(() => {
+    useEffect(() => {
     const loadData = async () => {
       setLoading(true);
 
       // Get current user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const session = await auth();
+  const user = session?.user;
       if (user) {
         setCurrentUserId(user.id);
       }
@@ -101,7 +99,8 @@ export default function ClientMessagesContent() {
             >
               <div className="flex items-start gap-3">
                 {/* Lawyer Avatar */}
-                {request.lawyer.avatar_url ? (
+                {
+  request.lawyer.avatar_url ? (
                   <img
                     src={request.lawyer.avatar_url}
                     alt={request.lawyer.full_name}

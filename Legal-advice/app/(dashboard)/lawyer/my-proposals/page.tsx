@@ -181,7 +181,8 @@ export default function MyProposalsPage() {
         </div>
 
         {/* Results */}
-        {loading ? (
+        {
+  loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader className="size-8 text-primary animate-spin" />
           </div>
@@ -304,7 +305,8 @@ export default function MyProposalsPage() {
                         </>
                       )}
 
-                      {proposal.status === 'shortlisted' && (
+                      {
+  proposal.status === 'shortlisted' && (
                         <div className="mt-2 p-2 rounded-lg bg-yellow-50 border border-yellow-300 text-center">
                           <p className="text-xs font-semibold text-yellow-700">⭐ Shortlisted</p>
                         </div>

@@ -120,11 +120,8 @@ export default function ClientCaseWorkspace({
   userId,
   auditLogs,
   proposals,
-}: Props) {
-  const router = useRouter();
-  const supabase = createClient();
-
-  // Debug: Log received props
+}: Props) {  const router = useRouter();
+    // Debug: Log received props
   console.log('[CLIENT WORKSPACE DEBUG] Received legalOpinion:', {
     exists: !!legalOpinion,
     opinionId: legalOpinion?.id,
@@ -213,8 +210,7 @@ export default function ClientCaseWorkspace({
             stage: request.status as any,
             progress: 0,
             health: 'active',
-            next_action: {
-              title: 'Reconnecting',
+            next_action: {              title: 'Reconnecting',
               description: 'Attempting to reconnect...',
               type: 'none',
               priority: 'low',
@@ -246,13 +242,9 @@ export default function ClientCaseWorkspace({
   }, [request.id]);
 
   // Auto-trigger review modal based on lifecycle state
-  useEffect(() => {
-    if (lifecycleSummary?.lifecycleState === 'completed' && !rating) {
-      const key = `review_prompt_${request.id}`;
+  useEffect(() => {    if (lifecycleSummary?.lifecycleState === 'completed' && !rating) {      const key = `review_prompt_${request.id}`;
       const hasSeenModal = sessionStorage.getItem(key);
-      if (!hasSeenModal) {
-        const timer = setTimeout(() => {
-          setIsReviewModalOpen(true);
+      if (!hasSeenModal) {        const timer = setTimeout(() => {          setIsReviewModalOpen(true);
           sessionStorage.setItem(key, 'true');
         }, 2000);
         return () => clearTimeout(timer);
@@ -425,7 +417,8 @@ export default function ClientCaseWorkspace({
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8 w-full">
         {/* Unified Progress Tracker */}
-        {lifecycleSummary?.progress && (
+        {
+  lifecycleSummary?.progress && (
           <CaseProgressTracker
             currentStep={lifecycleSummary.progress.currentStep}
             totalSteps={lifecycleSummary.progress.totalSteps}
@@ -458,8 +451,10 @@ export default function ClientCaseWorkspace({
                     >
                       <tab.icon className="w-4 h-4" />
                       {tab.label}
-                      {tab.locked && <Lock className="w-3 h-3" />}
-                      {tab.badge !== undefined && tab.badge > 0 && !tab.locked && (
+                      {
+  tab.locked && <Lock className="w-3 h-3" />}
+                      {
+  tab.badge !== undefined && tab.badge > 0 && !tab.locked && (
                         <span
                           className={`px-1.5 py-0.5 rounded text-xs font-bold ${activeTab === tab.key
                             ? 'bg-white text-slate-900'
@@ -476,7 +471,8 @@ export default function ClientCaseWorkspace({
 
               <div className="p-6">
                 {/* Overview Tab */}
-                {activeTab === 'overview' && (
+                {
+  activeTab === 'overview' && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-lg font-bold text-slate-900 mb-2">Case Description</h2>
@@ -529,7 +525,8 @@ export default function ClientCaseWorkspace({
                       </div>
                     )}
 
-                    {request.firm && (
+                    {
+  request.firm && (
                       <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                         <p className="text-xs font-semibold text-slate-600 mb-1">Assigned Firm</p>
                         <p className="font-semibold text-slate-900">{request.firm.organization}</p>
@@ -539,7 +536,8 @@ export default function ClientCaseWorkspace({
                 )}
 
                 {/* Timeline Tab */}
-                {activeTab === 'timeline' && (
+                {
+  activeTab === 'timeline' && (
                   <div className="space-y-6">
                     <h3 className="font-bold text-slate-900">Activity Timeline</h3>
                     <div className="relative pl-6 border-l-2 border-slate-200 space-y-8">
@@ -570,7 +568,8 @@ export default function ClientCaseWorkspace({
                 )}
 
                 {/* Documents Tab */}
-                {activeTab === 'documents' && (
+                {
+  activeTab === 'documents' && (
                   <div className="space-y-6">
                     {[
                       'submitted',
@@ -683,7 +682,8 @@ export default function ClientCaseWorkspace({
                 )}
 
                 {/* Clarifications Tab */}
-                {activeTab === 'clarifications' && (
+                {
+  activeTab === 'clarifications' && (
                   <div className="space-y-4">
                     {clarifications.length > 0 ? (
                       <>
@@ -782,7 +782,8 @@ export default function ClientCaseWorkspace({
                 )}
 
                 {/* Messages Tab */}
-                {activeTab === 'messages' && (
+                {
+  activeTab === 'messages' && (
                   <div className="text-center py-8">
                     <MessageCircle className="w-12 h-12 text-slate-300 mx-auto mb-2" />
                     <p className="text-slate-500 text-sm mb-4">Case-linked messaging coming soon</p>
@@ -797,7 +798,8 @@ export default function ClientCaseWorkspace({
                 )}
 
                 {/* Opinion Tab */}
-                {activeTab === 'opinion' && (
+                {
+  activeTab === 'opinion' && (
                   <div className="space-y-4">
                     {legalOpinion && legalOpinion.versions && legalOpinion.versions.length > 0 ? (
                       <>
@@ -827,7 +829,8 @@ export default function ClientCaseWorkspace({
                                 {latestVersion.submitted_at && (
                                   <p className="text-sm text-green-700">
                                     Submitted{' '}
-                                    {formatDistanceToNow(new Date(latestVersion.submitted_at), {
+                                    {
+  formatDistanceToNow(new Date(latestVersion.submitted_at), {
                                       addSuffix: true,
                                     })}
                                   </p>
@@ -839,7 +842,8 @@ export default function ClientCaseWorkspace({
                                   <h3 className="font-semibold text-slate-900">Legal Opinion</h3>
                                   <span className="text-xs text-slate-500">
                                     Version {latestVersion.version_number}
-                                    {latestVersion.is_draft && (
+                                    {
+  latestVersion.is_draft && (
                                       <span className="ml-2 px-2 py-0.5 bg-amber-100 text-amber-700 rounded font-medium">
                                         DRAFT
                                       </span>

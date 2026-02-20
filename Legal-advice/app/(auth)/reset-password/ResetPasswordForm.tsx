@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -46,12 +47,8 @@ export default function ResetPasswordForm() {
 
     setLoading(true);
 
-    try {
-      const supabase = createClient();
-
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      });
+    try {const session = await auth();
+  const user = session?.user;
 
       if (error) {
         toast.error(error.message);
@@ -120,7 +117,8 @@ export default function ResetPasswordForm() {
       </div>
 
       {/* Password Strength Indicator */}
-      {password && (
+      {
+  password && (
         <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
           <p className="text-xs font-semibold text-slate-700 mb-3">Password Strength:</p>
           <div className="flex gap-1 mb-3">

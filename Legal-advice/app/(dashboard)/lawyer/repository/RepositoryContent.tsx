@@ -116,7 +116,8 @@ export default function RepositoryContent({ documents, stats, userId }: Props) {
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
-                {tab.count > 0 && (
+                {
+  tab.count > 0 && (
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                       activeTab === tab.id
@@ -142,7 +143,8 @@ export default function RepositoryContent({ documents, stats, userId }: Props) {
             searchQuery={searchQuery}
           />
         )}
-        {activeTab === 'drafts' && (
+        {
+  activeTab === 'drafts' && (
           <DraftsTab
             documents={documents.drafts}
             viewMode={viewMode}
@@ -150,21 +152,24 @@ export default function RepositoryContent({ documents, stats, userId }: Props) {
             userId={userId}
           />
         )}
-        {activeTab === 'templates' && (
+        {
+  activeTab === 'templates' && (
           <TemplatesTab
             documents={documents.templates}
             viewMode={viewMode}
             searchQuery={searchQuery}
           />
         )}
-        {activeTab === 'cases' && (
+        {
+  activeTab === 'cases' && (
           <CaseDocsTab
             documents={documents.caseDocuments}
             viewMode={viewMode}
             searchQuery={searchQuery}
           />
         )}
-        {activeTab === 'research' && (
+        {
+  activeTab === 'research' && (
           <ResearchTab
             documents={documents.research}
             viewMode={viewMode}
@@ -172,7 +177,8 @@ export default function RepositoryContent({ documents, stats, userId }: Props) {
             userId={userId}
           />
         )}
-        {activeTab === 'compliance' && (
+        {
+  activeTab === 'compliance' && (
           <ComplianceTab
             documents={documents.compliance}
             viewMode={viewMode}

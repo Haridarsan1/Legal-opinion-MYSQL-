@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import LawyerAnalyticsContent from './LawyerAnalyticsV2';
 import { subMonths, startOfMonth, endOfMonth } from 'date-fns';
@@ -10,14 +12,10 @@ export const metadata: Metadata = {
 };
 
 export default async function LawyerAnalyticsPage() {
-  const supabase = await createClient();
+  const session = await auth();
+  const user = session?.user;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
+  if (!user) {redirect('/login');
   }
 
   // Fetch lawyer profile

@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -15,9 +16,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
-
-  useEffect(() => {
+    useEffect(() => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     if (rememberedEmail) {
       setEmail(rememberedEmail);
@@ -31,10 +30,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const session = await auth();
+  const user = session?.user;
 
       if (signInError) {
         throw signInError;
@@ -89,12 +86,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const session = await auth();
+  const user = session?.user;
 
       if (error) {
         throw error;
@@ -146,7 +139,8 @@ export default function LoginPage() {
             </div>
 
             {/* Error Message */}
-            {error && (
+            {
+  error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>

@@ -108,7 +108,8 @@ export default function CaseHeader({
               <h1 className="text-2xl font-bold text-slate-900 truncate">{title}</h1>
 
               {/* Case Health Badge */}
-              {isTerminal ||
+              {
+  isTerminal ||
               [
                 'case_closed',
                 'completed',
@@ -125,14 +126,18 @@ export default function CaseHeader({
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold ${health.bgColor} ${health.color}`}
                 >
                   {health.status === 'healthy' && <TrendingUp className="w-4 h-4" />}
-                  {health.status === 'at_risk' && <AlertCircle className="w-4 h-4" />}
-                  {health.status === 'blocked' && <AlertCircle className="w-4 h-4" />}
-                  {health.label}
+                  {
+  health.status === 'at_risk' && <AlertCircle className="w-4 h-4" />}
+                  {
+  health.status === 'blocked' && <AlertCircle className="w-4 h-4" />}
+                  {
+  health.label}
                 </div>
               )}
 
               {/* Priority Badge */}
-              {priority === 'urgent' && (
+              {
+  priority === 'urgent' && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   URGENT
@@ -190,7 +195,8 @@ export default function CaseHeader({
           </div>
 
           {/* Right: Next Action Card */}
-          {nextAction && (
+          {
+  nextAction && (
             <div className="lg:w-80 flex-shrink-0">
               <div
                 className={`p-4 rounded-xl border-2 ${

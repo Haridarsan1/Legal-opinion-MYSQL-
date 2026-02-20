@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import TrackStatusContent from './TrackStatusContent';
 import { aggregateCaseData } from '@/app/domain/lifecycle/LifecycleResolver';
 
@@ -9,12 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function TrackStatusPage() {
-  const supabase = await createClient();
+  
 
   // Get authenticated user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     return <div>Unauthorized</div>;

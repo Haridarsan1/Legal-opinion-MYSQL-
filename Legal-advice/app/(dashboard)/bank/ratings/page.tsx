@@ -155,7 +155,8 @@ export default function BankRatingsPage() {
               'Turnaround Time',
               `${firmTurnaround}/5`
             )}
-            {renderSlider(firmAccuracy, setFirmAccuracy, 'Document Accuracy', `${firmAccuracy}/5`)}
+            {
+  renderSlider(firmAccuracy, setFirmAccuracy, 'Document Accuracy', `${firmAccuracy}/5`)}
           </div>
 
           {/* Written Review */}

@@ -35,7 +35,8 @@ export default function EmptyState({
           className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all hover:-translate-y-0.5"
         >
           {action.icon && <action.icon className="size-4" />}
-          {action.label}
+          {
+  action.label}
         </button>
       )}
     </div>

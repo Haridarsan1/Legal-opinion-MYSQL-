@@ -91,7 +91,8 @@ export default function RatingSubmissionSection({
           )}
           <p className="text-xs text-slate-500 mt-3">
             Submitted on{' '}
-            {new Date(existingRating.created_at).toLocaleDateString('en-IN', {
+            {
+  new Date(existingRating.created_at).toLocaleDateString('en-IN', {
               day: 'numeric',
               month: 'short',
               year: 'numeric',
@@ -159,15 +160,21 @@ export default function RatingSubmissionSection({
                   />
                 </button>
               ))}
-              {rating > 0 && <span className="ml-2 font-semibold text-slate-900">{rating}/5</span>}
+              {
+  rating > 0 && <span className="ml-2 font-semibold text-slate-900">{rating}/5</span>}
             </div>
             <p className="text-xs text-slate-500 mt-2">
               {rating === 0 && 'Click to select a rating'}
-              {rating === 1 && 'Poor'}
-              {rating === 2 && 'Fair'}
-              {rating === 3 && 'Good'}
-              {rating === 4 && 'Very Good'}
-              {rating === 5 && 'Excellent'}
+              {
+  rating === 1 && 'Poor'}
+              {
+  rating === 2 && 'Fair'}
+              {
+  rating === 3 && 'Good'}
+              {
+  rating === 4 && 'Very Good'}
+              {
+  rating === 5 && 'Excellent'}
             </p>
           </div>
 

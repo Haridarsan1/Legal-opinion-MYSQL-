@@ -77,7 +77,8 @@ export default function ContentManagementPage() {
       </div>
 
       {/* Departments Tab */}
-      {activeTab === 'departments' && (
+      {
+  activeTab === 'departments' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {departments.map((dept) => (
             <div
@@ -130,7 +131,8 @@ export default function ContentManagementPage() {
       )}
 
       {/* Document Checklists Tab */}
-      {activeTab === 'checklists' && (
+      {
+  activeTab === 'checklists' && (
         <div className="space-y-6">
           {checklists.map((checklist) => (
             <div
@@ -170,7 +172,8 @@ export default function ContentManagementPage() {
       )}
 
       {/* Templates Tab */}
-      {activeTab === 'templates' && (
+      {
+  activeTab === 'templates' && (
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-12 text-center">
           <div className="size-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-slate-400 text-3xl">description</span>
@@ -186,7 +189,8 @@ export default function ContentManagementPage() {
       )}
 
       {/* Announcements Tab */}
-      {activeTab === 'announcements' && (
+      {
+  activeTab === 'announcements' && (
         <div className="space-y-6">
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-slate-200 bg-slate-50">

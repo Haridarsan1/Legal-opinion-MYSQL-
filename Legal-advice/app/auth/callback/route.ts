@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -8,8 +10,9 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/';
 
   if (code) {
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    
+    const session = await auth();
+  const user = session?.user;
 
     if (!error && data.user) {
       // Fetch user profile to get role

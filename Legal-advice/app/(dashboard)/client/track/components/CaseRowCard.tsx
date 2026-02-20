@@ -53,7 +53,8 @@ export default function CaseRowCard({ request }: Props) {
                 }`}
             >
               {isPublic ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
-              {isPublic ? 'Public' : 'Private'}
+              {
+  isPublic ? 'Public' : 'Private'}
             </span>
             <span className="text-xs font-mono text-slate-400">
               #{request.request_number || request.id.slice(0, 8)}
@@ -97,8 +98,10 @@ export default function CaseRowCard({ request }: Props) {
                 className={`inline-flex items-center gap-1.5 text-xs font-medium ${sla.text === 'Overdue' ? 'text-red-600' : 'text-slate-700'}`}
               >
                 {sla.status === 'overdue' && <AlertTriangle className="w-3.5 h-3.5" />}
-                {sla.status === 'at-risk' && <Clock className="w-3.5 h-3.5" />}
-                {sla.text}
+                {
+  sla.status === 'at-risk' && <Clock className="w-3.5 h-3.5" />}
+                {
+  sla.text}
               </div>
             ) : (
               <span className="text-xs text-slate-400">—</span>
@@ -127,7 +130,8 @@ export default function CaseRowCard({ request }: Props) {
       </div>
 
       {/* Expanded Details */}
-      {isExpanded && (
+      {
+  isExpanded && (
         <div className="border-t border-slate-200">
           <ExpandedRowDetails request={request} />
         </div>

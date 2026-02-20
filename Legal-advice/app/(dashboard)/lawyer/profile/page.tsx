@@ -1,13 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import LawyerProfileContent from './LawyerProfileContent';
 
 export default async function LawyerProfilePage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect('/auth/login');

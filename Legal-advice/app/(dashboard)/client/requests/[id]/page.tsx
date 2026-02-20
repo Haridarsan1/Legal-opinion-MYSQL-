@@ -1,6 +1,8 @@
+import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import CaseWorkspace from '@/app/(dashboard)/case/[id]/CaseWorkspace';
 
@@ -14,12 +16,11 @@ export default async function ClientRequestDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const supabase = await createClient();
+  
   const { id } = await params;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect('/login');

@@ -15,6 +15,8 @@ import { createClient } from '@/lib/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
 
+const supabase = createClient();
+
 interface Conversation {
   id: string;
   created_at: string;
@@ -62,8 +64,7 @@ interface Props {
   userId: string;
 }
 
-export default function MessagesContent({ userId }: Props) {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+export default function MessagesContent({ userId }: Props) {const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -72,30 +73,13 @@ export default function MessagesContent({ userId }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const supabase = createClient();
-
-  // Fetch conversations on mount
-  useEffect(() => {
-    fetchConversations();
+    // Fetch conversations on mount
+  useEffect(() => {fetchConversations();
 
     // Set up real-time subscription for new messages
-    const channel = supabase
-      .channel('messages_channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
-        if (
-          selectedConversation &&
-          payload.new &&
-          (payload.new as any).conversation_id === selectedConversation
-        ) {
-          fetchMessages(selectedConversation);
-        }
-        fetchConversations(); // Refresh conversation list to update last message
-      })
-      .subscribe();
+    const 
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => {};
   }, [selectedConversation]);
 
   // Fetch messages when conversation selected
@@ -302,7 +286,8 @@ export default function MessagesContent({ userId }: Props) {
                   >
                     <div className="flex items-start gap-3">
                       {/* Avatar */}
-                      {participant.avatar_url ? (
+                      {
+  participant.avatar_url ? (
                         <Image
                           src={participant.avatar_url}
                           alt={participant.full_name}
@@ -340,7 +325,8 @@ export default function MessagesContent({ userId }: Props) {
                             {conv.legal_request.request_number}
                           </div>
                         )}
-                        {lastMsg && (
+                        {
+  lastMsg && (
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-sm text-slate-600 truncate flex-1">
                               {lastMsg.content}

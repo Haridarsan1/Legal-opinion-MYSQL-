@@ -38,8 +38,7 @@ export default function CaseMessages({
   userRole,
   userProfile,
 }: Props) {
-  const supabase = createClient();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -131,7 +130,8 @@ export default function CaseMessages({
                   className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {/* Avatar */}
-                  {message.sender?.avatar_url ? (
+                  {
+  message.sender?.avatar_url ? (
                     <Image
                       src={message.sender.avatar_url}
                       alt={message.sender.full_name}
@@ -177,7 +177,8 @@ export default function CaseMessages({
                           <span className="text-xs text-green-600 font-medium">Read</span>
                         </>
                       )}
-                      {isOwn && (!message.read_by || message.read_by.length === 0) && (
+                      {
+  isOwn && (!message.read_by || message.read_by.length === 0) && (
                         <>
                           <span className="text-slate-300">•</span>
                           <span className="text-xs text-slate-400">Sent</span>

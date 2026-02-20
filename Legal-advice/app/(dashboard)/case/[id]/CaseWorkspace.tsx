@@ -423,7 +423,8 @@ export default function CaseWorkspace({
                   <CheckCircle className="w-4 h-4 text-green-700" />
                   <span className="text-sm font-medium text-green-700">
                     Completed{' '}
-                    {workflowSummary.completedAt
+                    {
+  workflowSummary.completedAt
                       ? formatDistanceToNow(new Date(workflowSummary.completedAt), {
                           addSuffix: true,
                         })
@@ -436,7 +437,8 @@ export default function CaseWorkspace({
                   <Clock className={`w-4 h-4 ${slaStatus.color}`} />
                   <span className={`text-sm font-medium ${slaStatus.color}`}>
                     Expected by {format(new Date(request.sla_deadline), 'MMM d, yyyy')} •{' '}
-                    {slaStatus.label}
+                    {
+  slaStatus.label}
                   </span>
                 </>
               ) : null}
@@ -474,8 +476,10 @@ export default function CaseWorkspace({
                     >
                       <tab.icon className="w-4 h-4" />
                       {tab.label}
-                      {tab.locked && <Lock className="w-3 h-3" />}
-                      {tab.badge !== undefined && tab.badge > 0 && !tab.locked && (
+                      {
+  tab.locked && <Lock className="w-3 h-3" />}
+                      {
+  tab.badge !== undefined && tab.badge > 0 && !tab.locked && (
                         <span
                           className={`px-1.5 py-0.5 rounded text-xs font-bold ${
                             activeTab === tab.key
@@ -503,7 +507,8 @@ export default function CaseWorkspace({
                     </div>
 
                     {/* Lawyer Acceptance Card */}
-                    {userRole === 'lawyer' &&
+                    {
+  userRole === 'lawyer' &&
                       request.lawyer_acceptance_status === 'pending' &&
                       request.assigned_lawyer_id === userId && (
                         <LawyerAcceptanceCard
@@ -544,8 +549,10 @@ export default function CaseWorkspace({
                               }`}
                             >
                               {workflowSummary.nextStep.actor === 'client' && 'Client Action'}
-                              {workflowSummary.nextStep.actor === 'lawyer' && 'Lawyer Action'}
-                              {workflowSummary.nextStep.actor === 'system' && 'System Process'}
+                              {
+  workflowSummary.nextStep.actor === 'lawyer' && 'Lawyer Action'}
+                              {
+  workflowSummary.nextStep.actor === 'system' && 'System Process'}
                             </span>
                             <span
                               className={`text-xs font-semibold px-3 py-1 rounded-full ${
@@ -628,7 +635,8 @@ export default function CaseWorkspace({
                       </div>
                     )}
 
-                    {request.lawyer &&
+                    {
+  request.lawyer &&
                       request.lawyer_acceptance_status === 'pending' &&
                       userRole === 'client' && (
                         <div className="p-4 bg-amber-50 rounded-xl border-2 border-amber-200">
@@ -647,7 +655,8 @@ export default function CaseWorkspace({
                         </div>
                       )}
 
-                    {request.lawyer &&
+                    {
+  request.lawyer &&
                       request.lawyer_acceptance_status === 'rejected' &&
                       userRole === 'client' && (
                         <div className="p-4 bg-red-50 rounded-xl border-2 border-red-200">
@@ -666,7 +675,8 @@ export default function CaseWorkspace({
                         </div>
                       )}
 
-                    {request.firm && (
+                    {
+  request.firm && (
                       <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                         <p className="text-xs font-semibold text-slate-600 mb-1">Assigned Firm</p>
                         <p className="font-semibold text-slate-900">{request.firm.organization}</p>
@@ -683,7 +693,8 @@ export default function CaseWorkspace({
                   </div>
                 )}
 
-                {activeTab === 'documents' && (
+                {
+  activeTab === 'documents' && (
                   <CaseDocuments
                     requestId={request.id}
                     documents={request.documents}
@@ -694,7 +705,8 @@ export default function CaseWorkspace({
                   />
                 )}
 
-                {activeTab === 'clarifications' && (
+                {
+  activeTab === 'clarifications' && (
                   <CaseClarifications
                     requestId={request.id}
                     clarifications={clarifications}
@@ -712,7 +724,8 @@ export default function CaseWorkspace({
                   />
                 )}
 
-                {activeTab === 'opinion' && (
+                {
+  activeTab === 'opinion' && (
                   <CaseOpinion
                     requestId={request.id}
                     opinionText={request.opinion_text}
@@ -726,7 +739,8 @@ export default function CaseWorkspace({
                   />
                 )}
 
-                {activeTab === 'internal_review' && (
+                {
+  activeTab === 'internal_review' && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-bold text-slate-900">Internal Review Requests</h2>

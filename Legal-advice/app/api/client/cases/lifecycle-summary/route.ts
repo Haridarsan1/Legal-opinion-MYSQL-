@@ -1,14 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { aggregateCaseData } from '@/app/domain/lifecycle/LifecycleResolver';
 
 export async function GET() {
-  const supabase = await createClient();
+  
 
   // 1. Authenticate User
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

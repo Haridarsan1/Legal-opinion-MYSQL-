@@ -110,7 +110,8 @@ export default function AuditTimeline({ auditLogs, requestId }: Props) {
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2 flex-1">
                     {/* Actor Avatar */}
-                    {log.user &&
+                    {
+  log.user &&
                       (log.user.avatar_url ? (
                         <Image
                           src={log.user.avatar_url}
@@ -154,7 +155,8 @@ export default function AuditTimeline({ auditLogs, requestId }: Props) {
                 </div>
 
                 {/* Expandable Details */}
-                {hasDetails && (
+                {
+  hasDetails && (
                   <>
                     <button
                       onClick={() => toggleExpanded(log.id)}
@@ -188,7 +190,8 @@ export default function AuditTimeline({ auditLogs, requestId }: Props) {
       })}
 
       {/* Collapse/Expand Button */}
-      {auditLogs.length > 5 && (
+      {
+  auditLogs.length > 5 && (
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"

@@ -50,10 +50,7 @@ export default function CaseClarifications({
   userId,
   clientId,
   documents = [],
-}: Props) {
-  const supabase = createClient();
-
-  const [clarifications, setClarifications] = useState<Clarification[]>(initialClarifications);
+}: Props) {    const [clarifications, setClarifications] = useState<Clarification[]>(initialClarifications);
   const [newClarification, setNewClarification] = useState('');
   const [clarificationPriority, setClarificationPriority] = useState<
     'low' | 'medium' | 'high' | 'urgent'
@@ -70,13 +67,11 @@ export default function CaseClarifications({
   // Filter documents to show only those uploaded by the client
   const clientDocuments = documents.filter((doc) => doc.uploader_id === clientId);
 
-  const handleCreateClarification = async () => {
-    if (!newClarification.trim() || userRole !== 'lawyer') return;
+  const handleCreateClarification = async () => {    if (!newClarification.trim() || userRole !== 'lawyer') return;
 
     setIsSubmitting(true);
 
-    try {
-      // Updated to use Server Action
+    try {      // Updated to use Server Action
       const result = await createClarificationRequest(
         requestId,
         newClarification,
@@ -114,8 +109,7 @@ export default function CaseClarifications({
     try {
       const { error } = await supabase
         .from('clarifications')
-        .update({
-          response: clarificationResponse,
+        .update({          response: clarificationResponse,
           responded_at: new Date().toISOString(),
           resolution_status: 'responded',
         })
@@ -211,7 +205,8 @@ export default function CaseClarifications({
   return (
     <div className="space-y-6">
       {/* Request Clarification (Lawyer Only) */}
-      {userRole === 'lawyer' && (
+      {
+  userRole === 'lawyer' && (
         <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
           <h3 className="font-semibold text-slate-900 mb-3">Request Clarification</h3>
           <textarea
@@ -297,29 +292,34 @@ export default function CaseClarifications({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       {/* Resolution Status Badge */}
-                      {clarification.resolution_status === 'resolved' && (
+                      {
+  clarification.resolution_status === 'resolved' && (
                         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                           ✓ Resolved
                         </span>
                       )}
-                      {clarification.resolution_status === 'responded' && (
+                      {
+  clarification.resolution_status === 'responded' && (
                         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
                           → Responded
                         </span>
                       )}
-                      {clarification.resolution_status === 'open' && (
+                      {
+  clarification.resolution_status === 'open' && (
                         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
                           ○ Open
                         </span>
                       )}
-                      {clarification.priority && clarification.priority !== 'normal' && (
+                      {
+  clarification.priority && clarification.priority !== 'normal' && (
                         <span
                           className={`px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(clarification.priority)}`}
                         >
                           {clarification.priority.toUpperCase()}
                         </span>
                       )}
-                      {clarification.due_date && (
+                      {
+  clarification.due_date && (
                         <span className="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
                           Due: {new Date(clarification.due_date).toLocaleDateString()}
                         </span>
@@ -399,7 +399,8 @@ export default function CaseClarifications({
 
                     <p className="text-xs text-slate-500 mt-2">
                       Requested{' '}
-                      {formatDistanceToNow(new Date(clarification.created_at), { addSuffix: true })}
+                      {
+  formatDistanceToNow(new Date(clarification.created_at), { addSuffix: true })}
                     </p>
                   </div>
                 </div>

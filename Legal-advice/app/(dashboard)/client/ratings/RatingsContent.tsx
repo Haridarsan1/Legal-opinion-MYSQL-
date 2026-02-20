@@ -62,9 +62,7 @@ export default function RatingsContent({ userId, requests }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
-  const supabase = createClient();
-
-  // Fetch interaction data for all requests
+    // Fetch interaction data for all requests
   useEffect(() => {
     fetchInteractions();
   }, [requests]);
@@ -272,7 +270,8 @@ export default function RatingsContent({ userId, requests }: Props) {
               >
                 <div className="flex items-start gap-4">
                   {/* Lawyer Avatar */}
-                  {request.lawyer.avatar_url ? (
+                  {
+  request.lawyer.avatar_url ? (
                     <Image
                       src={request.lawyer.avatar_url}
                       alt={request.lawyer.full_name}
@@ -301,11 +300,13 @@ export default function RatingsContent({ userId, requests }: Props) {
                     </p>
                     <p className="text-sm text-slate-600 mb-3">
                       Case {request.request_number} •{' '}
-                      {format(new Date(request.created_at), 'MMM dd, yyyy')}
+                      {
+  format(new Date(request.created_at), 'MMM dd, yyyy')}
                     </p>
 
                     {/* Interaction Summary */}
-                    {interaction && (
+                    {
+  interaction && (
                       <div className="flex flex-wrap gap-2">
                         {interaction.messagesCount > 0 && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg border border-amber-200">
@@ -314,14 +315,16 @@ export default function RatingsContent({ userId, requests }: Props) {
                             {interaction.messagesCount !== 1 ? 's' : ''}
                           </span>
                         )}
-                        {interaction.clarificationsCount > 0 && (
+                        {
+  interaction.clarificationsCount > 0 && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-200">
                             <FileQuestion className="w-3.5 h-3.5" />
                             {interaction.clarificationsCount} clarification
                             {interaction.clarificationsCount !== 1 ? 's' : ''}
                           </span>
                         )}
-                        {interaction.opinionSubmitted && (
+                        {
+  interaction.opinionSubmitted && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg border border-purple-200">
                             <Scale className="w-3.5 h-3.5" />
                             Opinion submitted
@@ -370,7 +373,8 @@ export default function RatingsContent({ userId, requests }: Props) {
         <div className="p-6 sm:p-8 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
           <div className="flex items-start gap-4 sm:gap-6">
             {/* Lawyer Avatar */}
-            {selectedRequest!.lawyer.avatar_url ? (
+            {
+  selectedRequest!.lawyer.avatar_url ? (
               <Image
                 src={selectedRequest!.lawyer.avatar_url}
                 alt={selectedRequest!.lawyer.full_name}
@@ -399,7 +403,8 @@ export default function RatingsContent({ userId, requests }: Props) {
               </p>
 
               {/* Interaction Indicators */}
-              {interaction && (
+              {
+  interaction && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {interaction.messagesCount > 0 && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg border border-amber-200">
@@ -407,13 +412,15 @@ export default function RatingsContent({ userId, requests }: Props) {
                       {interaction.messagesCount} exchanged
                     </span>
                   )}
-                  {interaction.clarificationsCount > 0 && (
+                  {
+  interaction.clarificationsCount > 0 && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-200">
                       <FileQuestion className="w-4 h-4" />
                       {interaction.clarificationsCount} resolved
                     </span>
                   )}
-                  {interaction.opinionSubmitted && (
+                  {
+  interaction.opinionSubmitted && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg border border-purple-200">
                       <Scale className="w-4 h-4" />
                       Opinion delivered

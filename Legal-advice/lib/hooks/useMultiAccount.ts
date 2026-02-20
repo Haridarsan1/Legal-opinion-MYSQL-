@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Session } from '@supabase/supabase-js';
 import {
   getStoredAccounts,
   addAccount,
@@ -17,7 +16,6 @@ export function useMultiAccount() {
   const [accounts, setAccounts] = useState<StoredAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load accounts on mount
   useEffect(() => {
     loadAccounts();
   }, []);
@@ -29,7 +27,7 @@ export function useMultiAccount() {
     setIsLoading(false);
   };
 
-  const addNewAccount = (session: Session, profile: Profile) => {
+  const addNewAccount = (session: any, profile: Profile) => {
     addAccount(session, profile);
     loadAccounts();
   };

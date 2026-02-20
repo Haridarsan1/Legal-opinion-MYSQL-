@@ -72,7 +72,8 @@ function TemplateCard({ document }: { document: any }) {
                 {document.practice_area}
               </span>
             )}
-            {document.template_category && (
+            {
+  document.template_category && (
               <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
                 {document.template_category}
               </span>

@@ -14,6 +14,8 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
+const supabase = createClient();
+
 interface Department {
   id: string;
   name: string;
@@ -76,15 +78,12 @@ export default function RequestConsultationModal({
   lawyer,
   departments,
   clientId,
-}: Props) {
-  const [step, setStep] = useState(1);
+}: Props) {const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  // Form data
+    // Form data
   const [departmentId, setDepartmentId] = useState('');
   const [consultationType, setConsultationType] = useState<ConsultationType>('preliminary');
   const [urgency, setUrgency] = useState<Urgency>('normal');
@@ -276,7 +275,8 @@ export default function RequestConsultationModal({
           )}
 
           {/* Step 1: Legal Context */}
-          {step === 1 && (
+          {
+  step === 1 && (
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
@@ -349,7 +349,8 @@ export default function RequestConsultationModal({
           )}
 
           {/* Step 2: Case Summary */}
-          {step === 2 && (
+          {
+  step === 2 && (
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
@@ -391,7 +392,8 @@ export default function RequestConsultationModal({
           )}
 
           {/* Step 3: Attachments */}
-          {step === 3 && (
+          {
+  step === 3 && (
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
@@ -457,7 +459,8 @@ export default function RequestConsultationModal({
           )}
 
           {/* Step 4: Confirmation */}
-          {step === 4 && (
+          {
+  step === 4 && (
             <div className="space-y-6">
               <div className="p-6 bg-slate-50 rounded-lg border border-slate-200">
                 <h3 className="font-semibold text-slate-900 mb-4">Lawyer Summary</h3>

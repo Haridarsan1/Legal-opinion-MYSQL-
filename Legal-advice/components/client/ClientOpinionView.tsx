@@ -54,9 +54,7 @@ export default function ClientOpinionView({
   requestId,
   canClose = true,
 }: ClientOpinionViewProps) {
-  const supabase = createClient();
-
-  const [opinion, setOpinion] = useState<OpinionVersion | null>(null);
+    const [opinion, setOpinion] = useState<OpinionVersion | null>(null);
   const [signature, setSignature] = useState<DigitalSignature | null>(null);
   const [clarifications, setClarifications] = useState<OpinionClarification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -240,7 +238,8 @@ export default function ClientOpinionView({
           <h2 className="text-2xl font-bold">Legal Opinion</h2>
           <p className="text-sm text-gray-600 mt-1">
             Version {opinion.version_number} • Signed on{' '}
-            {format(new Date(signature.signature_timestamp), 'MMM d, yyyy')}
+            {
+  format(new Date(signature.signature_timestamp), 'MMM d, yyyy')}
           </p>
         </div>
 
@@ -263,7 +262,8 @@ export default function ClientOpinionView({
               )}
             </>
           )}
-          {isClosed && (
+          {
+  isClosed && (
             <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded font-medium">
               ✓ Request Closed
             </span>
@@ -292,7 +292,8 @@ export default function ClientOpinionView({
               <h3 className="font-bold text-green-800">Digitally Signed & Verified</h3>
               <p className="text-sm text-green-700">
                 Signed by {signature.signer_name} ({signature.signer_designation}) • Bar ID:{' '}
-                {signature.signer_bar_council_id}
+                {
+  signature.signer_bar_council_id}
               </p>
             </div>
           </div>
@@ -338,7 +339,8 @@ export default function ClientOpinionView({
       </Card>
 
       {/* Clarifications Section */}
-      {clarifications.length > 0 && (
+      {
+  clarifications.length > 0 && (
         <Card>
           <div className="p-6">
             <h3 className="text-lg font-bold mb-4">Clarifications</h3>
@@ -386,7 +388,8 @@ export default function ClientOpinionView({
                         </p>
                         <p className="text-xs text-gray-500 mt-2">
                           Responded:{' '}
-                          {clarification.responded_at &&
+                          {
+  clarification.responded_at &&
                             format(new Date(clarification.responded_at), 'MMM d, yyyy h:mm a')}
                         </p>
                       </div>
@@ -400,7 +403,8 @@ export default function ClientOpinionView({
       )}
 
       {/* Clarification Request Modal */}
-      {showClarificationModal && (
+      {
+  showClarificationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-lg w-full">
             <h3 className="text-xl font-bold mb-4">Request Clarification</h3>
@@ -454,7 +458,8 @@ export default function ClientOpinionView({
       )}
 
       {/* Closure Modal */}
-      {showClosureModal && (
+      {
+  showClosureModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-lg w-full">
             <h3 className="text-xl font-bold mb-4">Close Request</h3>

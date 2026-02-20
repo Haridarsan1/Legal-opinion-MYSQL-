@@ -132,7 +132,8 @@ export default function OpinionCard({ opinion, onSelect }: Props) {
             </span>
           </div>
         )}
-        {clarificationCount > 0 && (
+        {
+  clarificationCount > 0 && (
           <div className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
             {clarificationCount} clarif.
           </div>
@@ -172,7 +173,8 @@ export default function OpinionCard({ opinion, onSelect }: Props) {
         </button>
 
         {/* Actions Menu */}
-        {showActions && (
+        {
+  showActions && (
           <div className="absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-10">
             <Link
               href={`/case/${opinion.id}?tab=opinion`}

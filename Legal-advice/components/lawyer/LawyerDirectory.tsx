@@ -445,7 +445,8 @@ export default function LawyerDirectory({
                 </div>
               );
             })}
-            {filteredLawyers.length === 0 && (
+            {
+  filteredLawyers.length === 0 && (
               <div className="col-span-full py-12 text-center text-slate-500">
                 No lawyers found matching your filters.
               </div>
@@ -455,7 +456,8 @@ export default function LawyerDirectory({
       </div>
 
       {/* View Profile Drawer */}
-      {viewingLawyer && (
+      {
+  viewingLawyer && (
         <div
           className="absolute inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm transition-all"
           onClick={() => setViewingProfileId(null)}
@@ -554,7 +556,8 @@ export default function LawyerDirectory({
                 </div>
               )}
 
-              {mode === 'select' && onSelect && (
+              {
+  mode === 'select' && onSelect && (
                 <button
                   type="button"
                   onClick={() => {

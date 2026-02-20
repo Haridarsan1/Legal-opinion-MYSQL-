@@ -125,7 +125,8 @@ export default function FileUploader({
       </div>
 
       {/* Uploaded Files List */}
-      {uploadedFiles.length > 0 && (
+      {
+  uploadedFiles.length > 0 && (
         <div className="flex flex-col gap-2">
           {uploadedFiles.map((file) => (
             <div
@@ -163,7 +164,8 @@ export default function FileUploader({
       )}
 
       {/* Checklist (if provided) */}
-      {checklist.length > 0 && (
+      {
+  checklist.length > 0 && (
         <div className="mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200">
           <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">task_alt</span>

@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -54,14 +56,14 @@ interface ActionResult<T = any> {
 // =====================================================
 
 export async function saveRequest(requestId: string, notes?: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized. Please log in.' };
@@ -125,14 +127,14 @@ export async function saveRequest(requestId: string, notes?: string): Promise<Ac
 // =====================================================
 
 export async function unsaveRequest(requestId: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -166,14 +168,14 @@ export async function unsaveRequest(requestId: string): Promise<ActionResult> {
 // =====================================================
 
 export async function getSavedRequests(): Promise<ActionResult<SavedRequest[]>> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -231,15 +233,17 @@ export async function getSavedRequests(): Promise<ActionResult<SavedRequest[]>> 
 
 export async function isRequestSaved(
   requestId: string
-): Promise<ActionResult<{ isSaved: boolean }>> {
+): Promise<ActionResult<{
+  const supabase = await createClient();
+isSaved: boolean }>> {
   try {
-    const supabase = await createClient();
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -271,14 +275,14 @@ export async function isRequestSaved(
 // =====================================================
 
 export async function updateBookmarkNotes(requestId: string, notes: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -309,15 +313,17 @@ export async function updateBookmarkNotes(requestId: string, notes: string): Pro
 // 6. GET SAVED REQUESTS COUNT
 // =====================================================
 
-export async function getSavedRequestsCount(): Promise<ActionResult<{ count: number }>> {
+export async function getSavedRequestsCount(): Promise<ActionResult<{
+  const supabase = await createClient();
+count: number }>> {
   try {
-    const supabase = await createClient();
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };

@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/server';
 /**
  * Case Workflow Aggregator
  *
@@ -7,7 +8,8 @@
  * This replaces scattered workflow logic across components with a single source of truth.
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import {
   resolveLifecycleStatus,
   calculateLifecycleSLA,
@@ -307,7 +309,7 @@ export async function resolveCaseWorkflow(
     includeMetrics?: boolean;
   }
 ): Promise<WorkflowSummary> {
-  const supabase = await createClient();
+  
 
   // Fetch request with all related data
   const { data: request, error } = await supabase

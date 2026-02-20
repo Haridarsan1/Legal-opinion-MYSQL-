@@ -98,7 +98,8 @@ export default function DisputeResolutionPage() {
       </div>
 
       {/* Pending Disputes */}
-      {activeTab === 'pending' && (
+      {
+  activeTab === 'pending' && (
         <div className="space-y-6">
           {pendingDisputes.map((dispute) => (
             <div
@@ -177,7 +178,8 @@ export default function DisputeResolutionPage() {
       )}
 
       {/* Resolved Disputes */}
-      {activeTab === 'resolved' && (
+      {
+  activeTab === 'resolved' && (
         <div className="space-y-6">
           {resolvedDisputes.map((dispute) => (
             <div

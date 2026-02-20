@@ -8,11 +8,11 @@ import FileUpload from '@/components/shared/FileUpload';
 import { Loader2, CheckCircle, Upload, Users, Shield, ArrowRight, X, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function FirmOnboardingPage() {
-  const params = useParams();
+const supabase = createClient();
+
+export default function FirmOnboardingPage() {const params = useParams();
   const router = useRouter();
-  const supabase = createClient();
-  const firmId = params.firmId as string;
+    const firmId = params.firmId as string;
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -25,9 +25,7 @@ export default function FirmOnboardingPage() {
   const [inviteRole, setInviteRole] = useState('lawyer');
   const [sendingInvite, setSendingInvite] = useState(false);
 
-  useEffect(() => {
-    const fetchFirm = async () => {
-      if (!firmId) return;
+  useEffect(() => {const fetchFirm = async () => {if (!firmId) return;
       const { data, error } = await supabase.from('firms').select('*').eq('id', firmId).single();
 
       if (error) {
@@ -196,7 +194,8 @@ export default function FirmOnboardingPage() {
               </Card>
             )}
 
-            {step === 2 && (
+            {
+  step === 2 && (
               <Card className="p-6 md:p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-600">

@@ -44,7 +44,8 @@ export default function ComplianceSection({ auditLogs, requestId }: ComplianceSe
       </button>
 
       {/* Expandable Content */}
-      {isExpanded && (
+      {
+  isExpanded && (
         <div className="p-6 space-y-6">
           {/* Audit Log Preview */}
           <div>

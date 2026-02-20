@@ -330,7 +330,8 @@ export default function DocumentPreview({ document, onClose, onMarkReviewed }: P
                           </p>
                           <p className="text-xs text-slate-500">
                             by {activity.actor} ·{' '}
-                            {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                            {
+  formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                           </p>
                         </div>
                       </div>

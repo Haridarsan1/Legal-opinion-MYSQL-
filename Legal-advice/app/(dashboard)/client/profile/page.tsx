@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import ProfileContent from './ProfileContent';
 
 export const metadata: Metadata = {
@@ -8,14 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
+  const session = await auth();
+  const user = session?.user;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return <div>Unauthorized</div>;
+  if (!user) {return <div>Unauthorized</div>;
   }
 
   // Fetch user profile

@@ -70,7 +70,8 @@ export default function DocumentVersioningPage() {
       </div>
 
       {/* Document Version History */}
-      {documents.map((doc) => (
+      {
+  documents.map((doc) => (
         <div
           key={doc.id}
           className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
@@ -158,7 +159,8 @@ export default function DocumentVersioningPage() {
                       </div>
 
                       {/* Change Summary (if available) */}
-                      {idx === 1 && (
+                      {
+  idx === 1 && (
                         <div className="mt-4 pt-4 border-t border-slate-200">
                           <h4 className="text-xs font-bold text-slate-700 mb-2">
                             Changes from v1.0:

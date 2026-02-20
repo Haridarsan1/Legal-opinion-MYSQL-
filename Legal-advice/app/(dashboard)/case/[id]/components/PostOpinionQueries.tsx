@@ -36,8 +36,7 @@ export default function PostOpinionQueries({
   isCaseClosed,
   isClientConfirmed,
 }: PostOpinionQueriesProps) {
-  const supabase = createClient();
-  const [queries, setQueries] = useState<Query[]>([]);
+    const [queries, setQueries] = useState<Query[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newQuery, setNewQuery] = useState('');
   const [responseMap, setResponseMap] = useState<Record<string, string>>({}); // queryId -> responseText
@@ -47,24 +46,10 @@ export default function PostOpinionQueries({
     fetchQueries();
 
     // Subscribe to changes
-    const channel = supabase
-      .channel('post_opinion_queries')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'post_opinion_queries',
-          filter: `request_id=eq.${requestId}`,
-        },
-        () => {
-          fetchQueries();
-        }
-      )
-      .subscribe();
+    const 
 
     return () => {
-      supabase.removeChannel(channel);
+      
     };
   }, [requestId]);
 
@@ -170,7 +155,8 @@ export default function PostOpinionQueries({
               </div>
 
               {/* Response */}
-              {query.status === 'resolved' ? (
+              {
+  query.status === 'resolved' ? (
                 <div className="flex gap-3 pl-8 relative">
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200 -z-10" />
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
@@ -223,7 +209,8 @@ export default function PostOpinionQueries({
       )}
 
       {/* Client New Query Input */}
-      {userRole === 'client' && !isCaseClosed && !isClientConfirmed && (
+      {
+  userRole === 'client' && !isCaseClosed && !isClientConfirmed && (
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-6">
           <h4 className="font-semibold text-slate-900 mb-2">Ask a follow-up question</h4>
           <p className="text-xs text-slate-500 mb-3">
@@ -251,7 +238,8 @@ export default function PostOpinionQueries({
         </div>
       )}
 
-      {isCaseClosed && (
+      {
+  isCaseClosed && (
         <div className="flex items-center gap-2 p-3 bg-slate-100 text-slate-500 rounded-lg text-sm justify-center">
           <AlertCircle className="w-4 h-4" />
           Case is closed. No further queries allowed.

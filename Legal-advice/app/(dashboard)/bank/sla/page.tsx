@@ -100,7 +100,8 @@ export default function SelectSLAPage() {
                 }`}
               >
                 {/* Recommended Badge */}
-                {sla.recommended && (
+                {
+  sla.recommended && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">
                       RECOMMENDED

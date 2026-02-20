@@ -10,8 +10,10 @@
  */
 
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { hasPermission } from '@/lib/permissions';
 import { Profile } from '@/lib/types';
@@ -26,18 +28,17 @@ import { Profile } from '@/lib/types';
 export async function saveOpinionAutosave(
   opinionSubmissionId: string,
   sections: {
+  const supabase = await createClient();
     facts: string;
     issues: string;
     analysis: string;
     conclusion: string;
     references: string;
   }
-) {
-  const supabase = await createClient();
-  const {
+) {const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -70,6 +71,7 @@ export async function publishOpinionVersion(
   opinionSubmissionId: string,
   requestId: string,
   sections: {
+  const supabase = await createClient();
     facts: string;
     issues: string;
     analysis: string;
@@ -77,12 +79,10 @@ export async function publishOpinionVersion(
     references: string;
   },
   status: 'draft' | 'peer_review' | 'approved' = 'draft'
-) {
-  const supabase = await createClient();
-  const {
+) {const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -166,11 +166,10 @@ export async function publishOpinionVersion(
  * Lock opinion version (after digital signature)
  */
 export async function lockOpinionVersion(versionId: string) {
-  const supabase = await createClient();
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -203,11 +202,10 @@ export async function lockOpinionVersion(versionId: string) {
  * Validate opinion readiness for signature
  */
 export async function validateOpinionForSignature(opinionVersionId: string, requestId: string) {
-  const supabase = await createClient();
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -291,11 +289,10 @@ export async function requestOpinionClarification(
   sectionReference: string,
   question: string
 ) {
-  const supabase = await createClient();
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -357,11 +354,10 @@ export async function requestOpinionClarification(
  * Lawyer responds to opinion clarification
  */
 export async function respondToOpinionClarification(clarificationId: string, response: string) {
-  const supabase = await createClient();
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -422,11 +418,10 @@ export async function closeRequest(
   closureReason: string,
   satisfactionRating?: number
 ) {
-  const supabase = await createClient();
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -531,11 +526,10 @@ export async function logVersionAccess(
   accessSource?: string,
   durationSeconds?: number
 ) {
-  const supabase = await createClient();
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -560,11 +554,10 @@ export async function logVersionAccess(
  * Get opinion access history (admin/lawyer only)
  */
 export async function getOpinionAccessHistory(opinionSubmissionId: string) {
-  const supabase = await createClient();
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };

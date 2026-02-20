@@ -23,10 +23,8 @@ interface BankProfileContentProps {
   profile: Profile;
 }
 
-export default function BankProfileContent({ profile }: BankProfileContentProps) {
-  const router = useRouter();
-  const supabase = createClient();
-  const [activeTab, setActiveTab] = useState(1);
+export default function BankProfileContent({ profile }: BankProfileContentProps) {const router = useRouter();
+    const [activeTab, setActiveTab] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
@@ -34,8 +32,7 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
   const [bankLogoUrl, setBankLogoUrl] = useState(profile.bank_logo_url || '');
   const [authLetterUrl, setAuthLetterUrl] = useState(profile.authorization_letter_url || '');
 
-  const [formData, setFormData] = useState({
-    bank_name: profile.bank_name || '',
+  const [formData, setFormData] = useState({    bank_name: profile.bank_name || '',
     bank_type: profile.bank_type || '',
     head_office_location: profile.head_office_location || '',
     registration_number: profile.registration_number || '',
@@ -74,8 +71,7 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!['image/png', 'image/jpeg'].includes(file.type)) {
-      setMessage({ type: 'error', text: 'Please upload PNG or JPEG only' });
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {      setMessage({ type: 'error', text: 'Please upload PNG or JPEG only' });
       return;
     }
 
@@ -98,8 +94,7 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
 
       if (uploadError) throw uploadError;
 
-      const {
-        data: { publicUrl },
+      const {        data: { publicUrl },
       } = supabase.storage.from('bank_logos').getPublicUrl(filePath);
 
       const { error: updateError } = await supabase
@@ -286,7 +281,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
       </div>
 
       {/* Message */}
-      {message && (
+      {
+  message && (
         <div
           className={`p-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}
         >
@@ -312,7 +308,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
                     {initials}
                   </div>
                 )}
-                {isUploadingLogo && (
+                {
+  isUploadingLogo && (
                   <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
                     <div className="w-5 h-5 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                   </div>
@@ -389,7 +386,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
 
             <div className="p-6">
               {/* Tab 1: Bank Identity */}
-              {activeTab === 1 && (
+              {
+  activeTab === 1 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">Bank Identity</h3>
@@ -494,7 +492,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
               )}
 
               {/* Tab 2: Authorized Contact */}
-              {activeTab === 2 && (
+              {
+  activeTab === 2 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">
@@ -578,7 +577,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
               )}
 
               {/* Tab 3: Legal Engagement Preferences */}
-              {activeTab === 3 && (
+              {
+  activeTab === 3 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">
@@ -639,7 +639,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
               )}
 
               {/* Tab 4: Jurisdiction & Court Coverage */}
-              {activeTab === 4 && (
+              {
+  activeTab === 4 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">
@@ -700,7 +701,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
               )}
 
               {/* Tab 5: Workflow & Communication Settings */}
-              {activeTab === 5 && (
+              {
+  activeTab === 5 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">
@@ -774,7 +776,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
               )}
 
               {/* Tab 6: Compliance & Authorization */}
-              {activeTab === 6 && (
+              {
+  activeTab === 6 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">
@@ -850,7 +853,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
               )}
 
               {/* Tab 7: Billing Preference */}
-              {activeTab === 7 && (
+              {
+  activeTab === 7 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">Billing Preference</h3>
@@ -904,7 +908,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
               )}
 
               {/* Tab 8: Profile Status (Read-only) */}
-              {activeTab === 8 && (
+              {
+  activeTab === 8 && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">Profile Status</h3>

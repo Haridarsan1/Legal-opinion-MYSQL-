@@ -90,7 +90,8 @@ export default function CaseStatusFlow({ currentStatus, slaDeadline }: Props) {
   return (
     <div className="space-y-4">
       {/* SLA Indicator */}
-      {slaStatus && (
+      {
+  slaStatus && (
         <div
           className={`p-3 rounded-lg border-2 ${
             slaStatus.color === 'red'
@@ -121,8 +122,10 @@ export default function CaseStatusFlow({ currentStatus, slaDeadline }: Props) {
                 }`}
               >
                 {slaStatus.status === 'overdue' && 'SLA Overdue'}
-                {slaStatus.status === 'warning' && 'SLA Deadline Approaching'}
-                {slaStatus.status === 'onTrack' && 'On Track'}
+                {
+  slaStatus.status === 'warning' && 'SLA Deadline Approaching'}
+                {
+  slaStatus.status === 'onTrack' && 'On Track'}
               </p>
               <p
                 className={`text-xs ${
@@ -152,7 +155,8 @@ export default function CaseStatusFlow({ currentStatus, slaDeadline }: Props) {
           return (
             <div key={step.key} className="relative pb-8 last:pb-0">
               {/* Connection Line */}
-              {index < STATUS_STEPS.length - 1 && (
+              {
+  index < STATUS_STEPS.length - 1 && (
                 <div
                   className={`absolute left-3 top-6 w-0.5 h-full ${
                     isCompleted ? 'bg-green-500' : 'bg-slate-200'
@@ -208,7 +212,8 @@ export default function CaseStatusFlow({ currentStatus, slaDeadline }: Props) {
                 </div>
 
                 {/* Current Badge */}
-                {isCurrent && (
+                {
+  isCurrent && (
                   <span className="px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full">
                     Current
                   </span>
@@ -220,7 +225,8 @@ export default function CaseStatusFlow({ currentStatus, slaDeadline }: Props) {
       </div>
 
       {/* Special States */}
-      {currentStatus === 'cancelled' && (
+      {
+  currentStatus === 'cancelled' && (
         <div className="p-3 bg-red-50 border-2 border-red-200 rounded-lg">
           <p className="text-sm font-semibold text-red-900">Case Cancelled</p>
           <p className="text-xs text-red-700">This case has been cancelled and will not proceed.</p>

@@ -99,7 +99,8 @@ export default function AuditGradeDocuments({
 
       <div className="p-6 space-y-6">
         {/* Required Documents Checklist */}
-        {requiredDocuments.length > 0 && (
+        {
+  requiredDocuments.length > 0 && (
           <div>
             <h3 className="text-sm font-semibold text-slate-700 mb-3">
               Required Documents Checklist
@@ -139,7 +140,8 @@ export default function AuditGradeDocuments({
                       Reviewed
                     </span>
                   )}
-                  {item.uploaded && !item.reviewed && (
+                  {
+  item.uploaded && !item.reviewed && (
                     <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">
                       Uploaded
                     </span>
@@ -234,12 +236,14 @@ export default function AuditGradeDocuments({
                       </div>
 
                       {/* Review Status */}
-                      {isReviewed && doc.reviewer && (
+                      {
+  isReviewed && doc.reviewer && (
                         <div className="mt-2 flex items-center gap-2 text-xs text-green-700">
                           <CheckCircle className="size-3.5" />
                           <span>
                             Reviewed by {doc.reviewer.full_name}
-                            {doc.reviewed_at &&
+                            {
+  doc.reviewed_at &&
                               ` ${formatDistanceToNow(new Date(doc.reviewed_at), { addSuffix: true })}`}
                           </span>
                         </div>
@@ -301,7 +305,8 @@ export default function AuditGradeDocuments({
       </div>
 
       {/* Preview Modal (Simple placeholder) */}
-      {previewDoc && (
+      {
+  previewDoc && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setPreviewDoc(null)}

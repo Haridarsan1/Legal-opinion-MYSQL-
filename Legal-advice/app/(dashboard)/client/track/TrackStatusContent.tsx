@@ -100,7 +100,8 @@ export default function TrackStatusContent({ requests }: Props) {
 
           <div className="flex gap-2">
             {/* Sort dropdown - only show in Grid View */}
-            {viewMode === 'grid' && (
+            {
+  viewMode === 'grid' && (
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
@@ -115,7 +116,8 @@ export default function TrackStatusContent({ requests }: Props) {
             )}
 
             {/* View Mode Toggle */}
-            {isHydrated && (
+            {
+  isHydrated && (
               <div className="flex bg-slate-100 p-1 rounded-lg">
                 <button
                   onClick={() => setViewMode('grid')}
@@ -150,7 +152,8 @@ export default function TrackStatusContent({ requests }: Props) {
       </div>
 
       {/* View Renderer */}
-      {isHydrated && (
+      {
+  isHydrated && (
         <>
           {viewMode === 'grid' ? (
             <CaseGridView requests={filteredRequests} />

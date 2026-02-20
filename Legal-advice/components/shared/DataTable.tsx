@@ -90,7 +90,8 @@ export default function DataTable<T extends Record<string, any>>({
                 >
                   <div className="flex items-center gap-2">
                     {column.label}
-                    {column.sortable && sortKey === column.key && (
+                    {
+  column.sortable && sortKey === column.key && (
                       <>
                         {sortDirection === 'asc' ? (
                           <ChevronUp className="size-4" />

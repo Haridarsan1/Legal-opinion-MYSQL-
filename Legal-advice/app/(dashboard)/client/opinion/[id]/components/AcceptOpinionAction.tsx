@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
+const supabase = createClient();
+
 interface Props {
   requestId: string;
   requestNumber: string;
@@ -18,10 +20,7 @@ export default function AcceptOpinionAction({
   onClose,
   onComplete,
   currentUserId,
-}: Props) {
-  const supabase = createClient();
-
-  const [isConfirming, setIsConfirming] = useState(false);
+}: Props) {const [isConfirming, setIsConfirming] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [understood, setUnderstood] = useState(false);

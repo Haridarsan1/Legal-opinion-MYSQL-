@@ -227,13 +227,15 @@ export default function ContentManagementPage() {
           </div>
         )}
 
-        {activeTab === 'checklists' && (
+        {
+  activeTab === 'checklists' && (
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
             <p className="text-slate-600">Request Checklists Management - Coming Soon</p>
           </div>
         )}
 
-        {activeTab === 'templates' && (
+        {
+  activeTab === 'templates' && (
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
             <p className="text-slate-600">Opinion Templates Management - Coming Soon</p>
           </div>

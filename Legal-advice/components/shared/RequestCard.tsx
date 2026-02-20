@@ -82,7 +82,8 @@ export default function RequestCard({
                 }`}
             >
               {isPublic ? <Globe className="size-3" /> : <Lock className="size-3" />}
-              {isPublic ? 'Public' : 'Private'}
+              {
+  isPublic ? 'Public' : 'Private'}
             </span>
           </div>
           {isPublic && publicStatus === 'LAWYERS_INTERESTED' ? (

@@ -1,11 +1,12 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Card from '@/components/shared/Card';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';// Opinion section structure
 
-// Opinion section structure
+const supabase = createClient();
 interface OpinionSections {
   facts: string;
   issues: string;
@@ -14,8 +15,7 @@ interface OpinionSections {
   references: string;
 }
 
-interface OpinionVersion {
-  id: string;
+interface OpinionVersion {  id: string;
   version_number: number;
   content_sections: OpinionSections;
   status: 'draft' | 'peer_review' | 'approved' | 'signed' | 'published';
@@ -36,12 +36,8 @@ export default function OpinionEditor({
   opinionSubmissionId,
   onSave,
   onPublish,
-}: OpinionEditorProps) {
-  const supabase = createClient();
-
-  // State
-  const [sections, setSections] = useState<OpinionSections>({
-    facts: '',
+}: OpinionEditorProps) {    // State
+  const [sections, setSections] = useState<OpinionSections>({    facts: '',
     issues: '',
     analysis: '',
     conclusion: '',
@@ -57,17 +53,15 @@ export default function OpinionEditor({
 
   // Load existing autosave or latest version
   useEffect(() => {
-    const loadOpinion = async () => {
-      // Try loading autosave first
+    const loadOpinion = async () => {      // Try loading autosave first
       const { data: autosave } = await supabase
         .from('opinion_autosaves')
         .select('content_sections')
         .eq('opinion_submission_id', opinionSubmissionId)
-        .eq('lawyer_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('lawyer_id', (await auth())?.user?.id)
         .single();
 
-      if (autosave) {
-        setSections(autosave.content_sections as OpinionSections);
+      if (autosave) {        setSections(autosave.content_sections as OpinionSections);
         setLastSaved(new Date());
         return;
       }
@@ -112,7 +106,7 @@ export default function OpinionEditor({
 
     setIsAutosaving(true);
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const user = (await auth())?.user;
     if (!user) return;
 
     const { error } = await supabase.from('opinion_autosaves').upsert(
@@ -156,7 +150,7 @@ export default function OpinionEditor({
   const saveVersion = async () => {
     if (isLocked) return;
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const user = (await auth())?.user;
     if (!user) return;
 
     // Get next version number
@@ -248,14 +242,17 @@ export default function OpinionEditor({
                   {currentVersion && (
                     <span className="font-medium">Version {currentVersion.version_number}</span>
                   )}
-                  {lastSaved && <span>Last saved: {lastSaved.toLocaleTimeString()}</span>}
-                  {isAutosaving && (
+                  {
+  lastSaved && <span>Last saved: {lastSaved.toLocaleTimeString()}</span>}
+                  {
+  isAutosaving && (
                     <span className="text-blue-600 flex items-center gap-2">
                       <LoadingSpinner size="sm" />
                       Autosaving...
                     </span>
                   )}
-                  {isLocked && (
+                  {
+  isLocked && (
                     <span className="text-red-600 font-semibold">🔒 Locked (Signed)</span>
                   )}
                 </div>
@@ -292,7 +289,8 @@ export default function OpinionEditor({
                   }`}
                 >
                   {sectionLabels[section]}
-                  {sections[section] && <span className="ml-2 text-green-600">✓</span>}
+                  {
+  sections[section] && <span className="ml-2 text-green-600">✓</span>}
                 </button>
               ))}
             </div>
@@ -366,7 +364,8 @@ export default function OpinionEditor({
                 </button>
               ))}
 
-              {versions.length === 0 && (
+              {
+  versions.length === 0 && (
                 <p className="text-sm text-gray-500 text-center py-4">No versions yet</p>
               )}
             </div>

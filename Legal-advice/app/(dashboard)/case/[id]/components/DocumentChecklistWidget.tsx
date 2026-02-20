@@ -26,9 +26,7 @@ export default function DocumentChecklistWidget({ requestId, caseType, userRole 
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState({ total: 0, completed: 0, mandatory: 0, percentage: 0 });
-  const supabase = createClient();
-
-  useEffect(() => {
+    useEffect(() => {
     loadChecklist();
   }, [requestId]);
 
@@ -232,12 +230,14 @@ export default function DocumentChecklistWidget({ requestId, caseType, userRole 
                   <div className="flex-1">
                     <h4 className="font-semibold text-slate-900 text-sm">
                       {item.document_name}
-                      {item.is_mandatory && <span className="ml-2 text-red-600 text-xs">*</span>}
+                      {
+  item.is_mandatory && <span className="ml-2 text-red-600 text-xs">*</span>}
                     </h4>
                     {item.description && (
                       <p className="text-xs text-slate-600 mt-0.5">{item.description}</p>
                     )}
-                    {item.file_type_hints && (
+                    {
+  item.file_type_hints && (
                       <p className="text-xs text-slate-500 mt-1">
                         Suggested formats: {item.file_type_hints}
                       </p>
@@ -247,14 +247,16 @@ export default function DocumentChecklistWidget({ requestId, caseType, userRole 
                 </div>
 
                 {/* Lawyer Notes */}
-                {item.notes && (
+                {
+  item.notes && (
                   <div className="mt-2 p-2 bg-white rounded border border-slate-200">
                     <p className="text-xs text-slate-700">{item.notes}</p>
                   </div>
                 )}
 
                 {/* Lawyer Actions */}
-                {userRole === 'lawyer' && item.status === 'pending' && !item.is_mandatory && (
+                {
+  userRole === 'lawyer' && item.status === 'pending' && !item.is_mandatory && (
                   <button
                     onClick={() => handleMarkNotRequired(item.id)}
                     className="mt-2 text-xs text-slate-600 hover:text-slate-900 underline"

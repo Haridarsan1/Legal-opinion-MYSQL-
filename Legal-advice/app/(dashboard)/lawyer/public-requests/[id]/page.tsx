@@ -191,7 +191,8 @@ export default function PublicRequestDetailPage() {
                   <span>{request.department.name} Department</span>
                 </div>
               )}
-              {request.jurisdiction && (
+              {
+  request.jurisdiction && (
                 <div className="flex items-center gap-1.5">
                   <Globe className="w-4 h-4 text-slate-400" />
                   <span>{request.jurisdiction}</span>
@@ -306,7 +307,8 @@ export default function PublicRequestDetailPage() {
             </div>
 
             {/* Attachments Section */}
-            {request.attachments_count ? (
+            {
+  request.attachments_count ? (
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                   <h3 className="font-semibold text-slate-900 flex items-center gap-2">

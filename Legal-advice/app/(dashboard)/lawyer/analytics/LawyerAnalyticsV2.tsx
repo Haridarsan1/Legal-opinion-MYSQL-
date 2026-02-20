@@ -73,9 +73,7 @@ export default function LawyerAnalyticsContent({
   messagesSent: initialMessagesSent,
   messagesReceived: initialMessagesReceived,
 }: Props) {
-  const supabase = createClient();
-
-  const [cases, setCases] = useState<LegalRequest[]>(initialCases);
+    const [cases, setCases] = useState<LegalRequest[]>(initialCases);
   const [ratings, setRatings] = useState<Rating[]>(initialRatings);
   const [profileViews, setProfileViews] = useState(initialProfileViews);
   const [messagesSent, setMessagesSent] = useState<Message[]>(initialMessagesSent);
@@ -483,14 +481,16 @@ export default function LawyerAnalyticsContent({
               {kpis.avgRating > 0 ? kpis.avgRating.toFixed(1) : '—'}
             </div>
             <p className="text-xs text-slate-500">
-              {ratings.length} {ratings.length === 1 ? 'review' : 'reviews'}
+              {ratings.length} {
+  ratings.length === 1 ? 'review' : 'reviews'}
             </p>
           </div>
         </div>
       </div>
 
       {/* SLA & Efficiency Insights */}
-      {insights.length > 0 && (
+      {
+  insights.length > 0 && (
         <div>
           <h2 className="text-lg font-bold text-slate-900 mb-4">Insights</h2>
           <div className="grid gap-4">
@@ -511,10 +511,12 @@ export default function LawyerAnalyticsContent({
                       {insight.type === 'warning' && (
                         <AlertCircle className="w-5 h-5 text-amber-600" />
                       )}
-                      {insight.type === 'success' && (
+                      {
+  insight.type === 'success' && (
                         <CheckCircle className="w-5 h-5 text-green-600" />
                       )}
-                      {insight.type === 'info' && <Lightbulb className="w-5 h-5 text-blue-600" />}
+                      {
+  insight.type === 'info' && <Lightbulb className="w-5 h-5 text-blue-600" />}
                       <h3 className="font-semibold text-slate-900">{insight.title}</h3>
                     </div>
                     <p className="text-sm text-slate-600">{insight.description}</p>
@@ -762,7 +764,8 @@ export default function LawyerAnalyticsContent({
       </div>
 
       {/* Recent Feedback */}
-      {ratings.length > 0 && ratings.some((r) => r.feedback) && (
+      {
+  ratings.length > 0 && ratings.some((r) => r.feedback) && (
         <div>
           <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Client Feedback</h2>
           <div className="grid gap-4">
@@ -798,7 +801,8 @@ export default function LawyerAnalyticsContent({
       )}
 
       {/* Action Recommendations */}
-      {recommendations.length > 0 && (
+      {
+  recommendations.length > 0 && (
         <div>
           <h2 className="text-lg font-bold text-slate-900 mb-4">Recommended Actions</h2>
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">

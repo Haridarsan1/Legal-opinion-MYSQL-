@@ -122,7 +122,8 @@ export default function StampedOpinionSection({ cases }: StampedOpinionSectionPr
               </div>
 
               {/* Submission Form */}
-              {isExpanded && (
+              {
+  isExpanded && (
                 <div className="mt-4 pt-4 border-t border-slate-200 space-y-4">
                   {/* File Upload */}
                   <div>

@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { hasPermission } from '@/lib/permissions';
 import { Profile } from '@/lib/types';
@@ -10,12 +12,10 @@ import { Profile } from '@/lib/types';
  * CRITICAL: This triggers document visibility
  */
 export async function acceptRequest(requestId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -102,12 +102,10 @@ export async function acceptRequest(requestId: string) {
  * Reject request - Lawyer declines the assigned request
  */
 export async function rejectRequest(requestId: string, note?: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -181,12 +179,10 @@ export async function rejectRequest(requestId: string, note?: string) {
  * Get request acceptance status
  */
 export async function getRequestAcceptance(requestId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -217,12 +213,10 @@ export async function createClarificationRequest(
   message: string,
   priority: 'low' | 'medium' | 'high' | 'urgent' = 'medium'
 ) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -299,12 +293,10 @@ export async function replytoClarification(
   reply: string,
   attachments?: any[]
 ) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -380,12 +372,10 @@ export async function replytoClarification(
  * Mark clarification as resolved
  */
 export async function markClarificationResolved(clarificationId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -437,12 +427,10 @@ export async function markClarificationResolved(clarificationId: string) {
  * Request peer review on opinion draft
  */
 export async function requestPeerReview(opinionId: string, reviewerId: string, reason?: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -516,12 +504,10 @@ export async function submitPeerReview(
   status: 'approved' | 'changes_requested' | 'rejected',
   feedback: string
 ) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -572,12 +558,10 @@ export async function submitPeerReview(
  * Request required documents from client
  */
 export async function requestRequiredDocuments(requestId: string, message?: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) return { success: false, error: 'Unauthorized' };
 
   try {
@@ -608,9 +592,7 @@ export async function requestRequiredDocuments(requestId: string, message?: stri
  * Notify that documents have been documents uploaded
  */
 export async function notifyDocumentsUploaded(requestId: string) {
-  const supabase = await createClient();
-
-  // Check if we should move to in_review
+  const supabase = await createClient();// Check if we should move to in_review
   // Only if current status is 'documents_pending' or similar
   const { data: request } = await supabase
     .from('legal_requests')
@@ -621,9 +603,8 @@ export async function notifyDocumentsUploaded(requestId: string) {
   if (request?.status === 'documents_pending') {
     await supabase.from('legal_requests').update({ status: 'in_review' }).eq('id', requestId);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (user) {
       await supabase.from('request_status_history').insert({
         request_id: requestId,
@@ -645,12 +626,10 @@ export async function notifyDocumentsUploaded(requestId: string) {
  * Get request timeline (status history + key events)
  */
 export async function getRequestTimeline(requestId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };

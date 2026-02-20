@@ -73,7 +73,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'clarifications' && (
+        {
+  activeTab === 'clarifications' && (
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Clarifications</h3>
@@ -88,7 +89,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'documents' && (
+        {
+  activeTab === 'documents' && (
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Case Documents</h3>
@@ -100,7 +102,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'opinion' && (
+        {
+  activeTab === 'opinion' && (
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Legal Opinion</h3>
@@ -116,7 +119,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'timeline' && (
+        {
+  activeTab === 'timeline' && (
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Case Timeline</h3>

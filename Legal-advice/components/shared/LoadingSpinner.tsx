@@ -56,7 +56,8 @@ export default function LoadingSpinner({
   return (
     <div className="flex items-center justify-center gap-3 py-8">
       {spinner}
-      {text && <span className="text-slate-500 text-sm font-medium">{text}</span>}
+      {
+  text && <span className="text-slate-500 text-sm font-medium">{text}</span>}
     </div>
   );
 }

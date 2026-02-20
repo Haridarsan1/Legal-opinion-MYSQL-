@@ -135,7 +135,8 @@ export default function ClientSidebar({ user }: ClientSidebarProps) {
         {/* User Profile with Dropdown */}
         <div className="px-4 pb-4 border-t border-gray-100 pt-4 relative" ref={dropdownRef}>
           {/* Dropdown Menu */}
-          {isDropdownOpen && (
+          {
+  isDropdownOpen && (
             <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
               <button
                 onClick={handleSwitchAccount}

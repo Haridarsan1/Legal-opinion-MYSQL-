@@ -44,8 +44,7 @@ interface RequestData {
 }
 
 export default function OpinionPrintView({ opinionVersionId, requestId }: OpinionPrintViewProps) {
-  const supabase = createClient();
-  const [opinion, setOpinion] = useState<OpinionData | null>(null);
+    const [opinion, setOpinion] = useState<OpinionData | null>(null);
   const [signature, setSignature] = useState<SignatureData | null>(null);
   const [request, setRequest] = useState<RequestData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

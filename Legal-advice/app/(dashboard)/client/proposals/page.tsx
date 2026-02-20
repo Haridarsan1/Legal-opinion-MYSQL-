@@ -152,7 +152,8 @@ export default function ProposalsListingPage() {
         </div>
 
         {/* Results */}
-        {loading ? (
+        {
+  loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader className="size-8 text-primary animate-spin" />
           </div>

@@ -5,6 +5,8 @@ import { X, MessageCircle, Send, Loader2, CheckCircle, AlertCircle } from 'lucid
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
+const supabase = createClient();
+
 interface Lawyer {
   id: string;
   full_name: string;
@@ -24,15 +26,12 @@ const QUICK_PROMPTS = [
   'What documents are usually required?',
 ];
 
-export default function SendMessageModal({ isOpen, onClose, lawyer, clientId }: Props) {
-  const [message, setMessage] = useState('');
+export default function SendMessageModal({ isOpen, onClose, lawyer, clientId }: Props) {const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
   const handleQuickPrompt = (prompt: string) => {
     setMessage(prompt);

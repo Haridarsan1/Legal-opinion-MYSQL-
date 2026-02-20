@@ -186,7 +186,8 @@ export default function AuditTimeline({ auditLogs }: AuditTimelineProps) {
                                 </div>
 
                                 {/* SLA Impact Badge */}
-                                {actionDisplay.slaImpact && (
+                                {
+  actionDisplay.slaImpact && (
                                   <span
                                     className={`text-xs font-medium px-2 py-1 rounded flex-shrink-0 ${
                                       actionDisplay.slaImpact === 'Paused'
@@ -202,7 +203,8 @@ export default function AuditTimeline({ auditLogs }: AuditTimelineProps) {
                               </div>
 
                               {/* Additional details */}
-                              {log.details && Object.keys(log.details).length > 0 && (
+                              {
+  log.details && Object.keys(log.details).length > 0 && (
                                 <div className="mt-2 pt-2 border-t border-slate-200">
                                   <pre className="text-xs text-slate-600 font-mono">
                                     {JSON.stringify(log.details, null, 2)}

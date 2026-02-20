@@ -94,7 +94,8 @@ export default function OpinionHeader({
           </div>
 
           {/* Center: Lawyer Info */}
-          {lawyer && (
+          {
+  lawyer && (
             <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200">
               {lawyer.avatar_url ? (
                 <Image
@@ -122,7 +123,8 @@ export default function OpinionHeader({
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm border-2 ${statusConfig.color}`}
             >
               {isAccepted ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-              {statusConfig.label}
+              {
+  statusConfig.label}
             </div>
             {isAccepted && acceptedAt && (
               <p className="text-xs text-slate-500">

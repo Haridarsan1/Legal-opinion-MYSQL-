@@ -108,7 +108,8 @@ export default function LegalContextSection({
           </div>
 
           {/* Active Risk Flags */}
-          {activeRiskFlags.length > 0 ? (
+          {
+  activeRiskFlags.length > 0 ? (
             <div className="flex flex-wrap gap-2 mb-3">
               {activeRiskFlags.map((flag) => {
                 const flagData = getRiskFlagDisplay(flag);
@@ -150,7 +151,8 @@ export default function LegalContextSection({
           )}
 
           {/* Add Flag Dropdown */}
-          {isAddingFlag && (
+          {
+  isAddingFlag && (
             <div className="border border-slate-200 rounded-lg p-3 bg-slate-50">
               <p className="text-xs font-medium text-slate-600 mb-2">Select a risk flag to add:</p>
               <div className="space-y-1">

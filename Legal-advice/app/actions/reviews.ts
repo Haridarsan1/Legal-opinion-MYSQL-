@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 // =====================================================
@@ -36,12 +38,12 @@ interface ActionResult<T = any> {
 
 export async function getReviewEligibility(
   requestId: string
-): Promise<ActionResult<{ eligible: boolean; reason?: string }>> {
+): Promise<ActionResult<{
+  const supabase = await createClient();
+eligible: boolean; reason?: string }>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
@@ -94,7 +96,7 @@ export async function getReviewEligibility(
 // =====================================================
 
 async function updateLawyerStats(lawyerId: string) {
-  const supabase = await createClient();
+  
 
   // Calculate new average and count
   const { data: reviews, error } = await supabase
@@ -137,7 +139,7 @@ export async function submitReview(
   reviewText: string,
   interactionType: string
 ): Promise<ActionResult> {
-  try {
+  const supabase = await createClient();try {
     // 1. Validate Input
     if (rating < 1 || rating > 5) return { success: false, error: 'Invalid rating (1-5)' };
 
@@ -150,10 +152,8 @@ export async function submitReview(
       };
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
 
     // Fetch lawyer ID again to be safe
     const { data: request } = await supabase
@@ -203,11 +203,9 @@ export async function updateLawyerReview(
   rating: number,
   reviewText: string
 ): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
@@ -245,11 +243,9 @@ export async function updateLawyerReview(
 // =====================================================
 
 export async function deleteLawyerReview(reviewId: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
 
     // Get review details first to know which lawyer to update stats for
     const { data: review } = await supabase
@@ -282,8 +278,8 @@ export async function deleteLawyerReview(reviewId: string): Promise<ActionResult
 // =====================================================
 
 export async function getLawyerReviews(lawyerId: string): Promise<ActionResult<LawyerReview[]>> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     const { data, error } = await supabase
       .from('lawyer_reviews')
@@ -314,8 +310,8 @@ export async function getLawyerReviews(lawyerId: string): Promise<ActionResult<L
 // 8. GET LAWYER RATING SUMMARY
 // =====================================================
 export async function getLawyerRatingSummary(lawyerId: string) {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Optimization: Fetch directly from profiles if available, but for distribution we still need raw reviews or a separate stats table.
     // For now, continuing to calculate distribution on fly, but taking average from profiles could be faster if we trust it 100%.

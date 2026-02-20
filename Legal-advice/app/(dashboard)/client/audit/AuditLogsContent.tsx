@@ -279,8 +279,10 @@ export default function AuditLogsContent({ logs: initialLogs }: Props) {
                 <Calendar className="w-4 h-4" />
                 <span>
                   {dateRange === '7' && 'Last 7 days'}
-                  {dateRange === '30' && 'Last 30 days'}
-                  {dateRange === 'all' && 'All time'}
+                  {
+  dateRange === '30' && 'Last 30 days'}
+                  {
+  dateRange === 'all' && 'All time'}
                 </span>
                 <ChevronDown className="w-4 h-4" />
               </button>
@@ -433,7 +435,8 @@ export default function AuditLogsContent({ logs: initialLogs }: Props) {
                               </h4>
                               <p className="text-sm text-slate-600 mt-1">
                                 {log.details?.description || `Action: ${log.action}`}
-                                {log.request && ` • ${log.request.request_number}`}
+                                {
+  log.request && ` • ${log.request.request_number}`}
                               </p>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -459,7 +462,8 @@ export default function AuditLogsContent({ logs: initialLogs }: Props) {
                           </div>
 
                           {/* Category Badge */}
-                          {category && (
+                          {
+  category && (
                             <span
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${category.bgColor} ${category.color} border ${category.borderColor}`}
                             >
@@ -468,7 +472,8 @@ export default function AuditLogsContent({ logs: initialLogs }: Props) {
                           )}
 
                           {/* Expandable Details */}
-                          {isExpanded && hasDetails && (
+                          {
+  isExpanded && hasDetails && (
                             <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                               {log.ip_address && (
                                 <div className="flex items-center gap-2 text-sm">
@@ -477,7 +482,8 @@ export default function AuditLogsContent({ logs: initialLogs }: Props) {
                                   <span className="font-mono text-slate-900">{log.ip_address}</span>
                                 </div>
                               )}
-                              {log.user_agent && (
+                              {
+  log.user_agent && (
                                 <div className="flex items-start gap-2 text-sm">
                                   <Smartphone className="w-4 h-4 text-slate-400 mt-0.5" />
                                   <div>

@@ -1,10 +1,13 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
+
+const supabase = createClient();
   Shield,
   CheckCircle2,
   User,
@@ -17,8 +20,7 @@ import {
   X,
 } from 'lucide-react';
 
-export default function LawyerSignupPage() {
-  const [formData, setFormData] = useState({
+export default function LawyerSignupPage() {const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
@@ -35,9 +37,7 @@ export default function LawyerSignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  const practiceAreaOptions = [
+    const practiceAreaOptions = [
     'Civil',
     'Family',
     'Intellectual Property',
@@ -78,7 +78,10 @@ export default function LawyerSignupPage() {
     try {
       console.log('🔑 Creating LAWYER account with role: lawyer');
 
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      const signUpRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
         email: formData.email,
         password: formData.password,
         options: {
@@ -93,7 +96,10 @@ export default function LawyerSignupPage() {
             jurisdiction: formData.jurisdiction,
           },
         },
+      })
       });
+      const signUpData = await signUpRes.json();
+      const { error } = signUpData;
 
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error('Failed to create user account');
@@ -110,7 +116,8 @@ export default function LawyerSignupPage() {
       console.log('📋 Assigned role:', profileCheck?.role);
 
       if (selectedFile) {
-        const { data: sessionData } = await supabase.auth.getSession();
+        const session = await auth();
+  const user = session?.user;
 
         if (sessionData.session) {
           const sanitizedName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');

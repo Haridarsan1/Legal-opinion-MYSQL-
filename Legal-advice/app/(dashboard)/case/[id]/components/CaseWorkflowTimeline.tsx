@@ -54,7 +54,8 @@ export default function CaseWorkflowTimeline({
   return (
     <div className="space-y-4">
       {/* SLA Header / Completion Status */}
-      {showSLAHeader && (
+      {
+  showSLAHeader && (
         <div
           className={cn(
             'flex items-center justify-between p-3 rounded-lg border',
@@ -143,7 +144,8 @@ export default function CaseWorkflowTimeline({
                         {formatDistanceToNow(new Date(stage.timestamp), { addSuffix: true })}
                       </span>
                     )}
-                    {stage.actor && stage.status !== 'pending' && (
+                    {
+  stage.actor && stage.status !== 'pending' && (
                       <span
                         className={cn(
                           'px-2 py-0.5 rounded-full font-medium',
@@ -153,8 +155,10 @@ export default function CaseWorkflowTimeline({
                         )}
                       >
                         {stage.actor === 'client' && 'Client'}
-                        {stage.actor === 'lawyer' && 'Lawyer'}
-                        {stage.actor === 'system' && 'System'}
+                        {
+  stage.actor === 'lawyer' && 'Lawyer'}
+                        {
+  stage.actor === 'system' && 'System'}
                       </span>
                     )}
                   </div>

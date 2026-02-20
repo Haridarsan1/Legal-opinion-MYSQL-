@@ -32,9 +32,7 @@ export default function DocumentRow({ document, userId, lawyerProfile }: Props) 
   const [showActions, setShowActions] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  const handleMarkReviewed = async () => {
+    const handleMarkReviewed = async () => {
     const { error } = await supabase
       .from('documents')
       .update({
@@ -191,7 +189,8 @@ export default function DocumentRow({ document, userId, lawyerProfile }: Props) 
       </div>
 
       {/* Preview Modal */}
-      {showPreview && (
+      {
+  showPreview && (
         <DocumentPreview
           document={document}
           onClose={() => setShowPreview(false)}

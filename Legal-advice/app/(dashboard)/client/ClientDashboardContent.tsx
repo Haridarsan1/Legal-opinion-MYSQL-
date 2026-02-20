@@ -189,9 +189,7 @@ export default function ClientDashboardContent({
   marketplaceMetrics,
 }: Props) {
   const router = useRouter();
-  const supabase = createClient();
-
-  const [requests, setRequests] = useState<LifecycleSummary[]>(initialData);
+    const [requests, setRequests] = useState<LifecycleSummary[]>(initialData);
   const [unreadMessages, setUnreadMessages] = useState(initialUnreadMessages);
   const [activities, setActivities] = useState<Activity[]>([]);
 
@@ -401,7 +399,8 @@ export default function ClientDashboardContent({
         </div>
       )}
 
-      {hasRequests ? (
+      {
+  hasRequests ? (
         <>
           {/* Live Status Overview */}
           <div>
@@ -447,7 +446,8 @@ export default function ClientDashboardContent({
           </div>
 
           {/* Active Requests */}
-          {activeRequests.length > 0 && (
+          {
+  activeRequests.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-slate-900">Active Requests</h2>
@@ -483,7 +483,8 @@ export default function ClientDashboardContent({
                               </h3>
                               <p className="text-sm text-slate-600">
                                 {request.request_number} •{' '}
-                                {request.department?.name || 'Legal Request'}
+                                {
+  request.department?.name || 'Legal Request'}
                               </p>
                             </div>
                           </div>
@@ -528,7 +529,8 @@ export default function ClientDashboardContent({
                           className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors whitespace-nowrap flex items-center gap-2"
                         >
                           {request.lifecycleState === 'clarification_pending' && 'Respond Now'}
-                          {request.lifecycleState === 'opinion_ready' && 'Download Opinion'}
+                          {
+  request.lifecycleState === 'opinion_ready' && 'Download Opinion'}
                           {!['clarification_pending', 'opinion_ready'].includes(
                             request.lifecycleState
                           ) && 'View Details'}
@@ -543,7 +545,8 @@ export default function ClientDashboardContent({
           )}
 
           {/* Activity & Updates */}
-          {activities.length > 0 && (
+          {
+  activities.length > 0 && (
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Activity</h2>

@@ -195,7 +195,8 @@ export default function PublicRequestsPage() {
         </div>
 
         {/* Results */}
-        {loading ? (
+        {
+  loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader className="size-8 text-primary animate-spin" />
           </div>
@@ -284,7 +285,8 @@ export default function PublicRequestsPage() {
                             )}
 
                             {/* Complexity Level */}
-                            {request.complexity_level && (
+                            {
+  request.complexity_level && (
                               <div
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-sm font-medium ${
                                   request.complexity_level === 'high'
@@ -302,7 +304,8 @@ export default function PublicRequestsPage() {
                             )}
 
                             {/* Required Experience */}
-                            {request.required_experience_years != null && (
+                            {
+  request.required_experience_years != null && (
                               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-50 border border-purple-200 text-sm">
                                 <Award className="w-3.5 h-3.5 text-purple-600" />
                                 <span className="text-purple-700 font-medium">
@@ -312,7 +315,8 @@ export default function PublicRequestsPage() {
                             )}
 
                             {/* Confidentiality */}
-                            {request.confidentiality_type &&
+                            {
+  request.confidentiality_type &&
                               request.confidentiality_type !== 'public' && (
                                 <div
                                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-sm font-medium ${
@@ -331,7 +335,8 @@ export default function PublicRequestsPage() {
                               )}
 
                             {/* Deadline Countdown */}
-                            {request.proposal_deadline && (
+                            {
+  request.proposal_deadline && (
                               <DeadlineCountdown deadline={request.proposal_deadline} />
                             )}
                           </div>
@@ -358,10 +363,12 @@ export default function PublicRequestsPage() {
                         </div>
 
                         {/* Proposal Status or Submit Button */}
-                        {request.hasMyProposal ? (
+                        {
+  request.hasMyProposal ? (
                           <div className="mt-auto space-y-2">
                             {/* Proposal Status Tracker */}
-                            {request.myProposalStatus && (
+                            {
+  request.myProposalStatus && (
                               <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-3">
                                 <ProposalStatusTracker
                                   currentStatus={request.myProposalStatus as any}
@@ -431,7 +438,8 @@ export default function PublicRequestsPage() {
       </div>
 
       {/* Proposal Submission Modal */}
-      {showProposalModal && selectedRequest && (
+      {
+  showProposalModal && selectedRequest && (
         <ProposalSubmissionModal
           requestId={selectedRequest.id}
           requestTitle={selectedRequest.title}

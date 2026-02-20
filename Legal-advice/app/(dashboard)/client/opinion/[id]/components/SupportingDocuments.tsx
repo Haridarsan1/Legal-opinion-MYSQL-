@@ -71,7 +71,8 @@ export default function SupportingDocuments({ documents, requestId }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {/* Filter */}
-            {documentTypes.length > 1 && (
+            {
+  documentTypes.length > 1 && (
               <div className="relative">
                 <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <select
@@ -89,7 +90,8 @@ export default function SupportingDocuments({ documents, requestId }: Props) {
               </div>
             )}
             {/* Download All */}
-            {documents.length > 0 && (
+            {
+  documents.length > 0 && (
               <button
                 onClick={handleDownloadAll}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
@@ -152,7 +154,8 @@ export default function SupportingDocuments({ documents, requestId }: Props) {
       </div>
 
       {/* Preview Modal */}
-      {selectedDocument && (
+      {
+  selectedDocument && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}

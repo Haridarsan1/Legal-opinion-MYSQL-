@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState } from 'react';
 import { Mail } from 'lucide-react';
@@ -20,11 +21,8 @@ export default function ForgotPasswordForm() {
 
     setLoading(true);
 
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+    try {const session = await auth();
+  const user = session?.user;
 
       if (error) {
         toast.error(error.message);

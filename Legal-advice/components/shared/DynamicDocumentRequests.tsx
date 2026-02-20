@@ -116,7 +116,8 @@ export default function DynamicDocumentRequests({
         </div>
 
         {/* Progress Bar */}
-        {totalCount > 0 && (
+        {
+  totalCount > 0 && (
           <div className="w-full bg-slate-200 rounded-full h-2">
             <div
               className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-500"
@@ -128,7 +129,8 @@ export default function DynamicDocumentRequests({
 
       <div className="p-6">
         {/* Document Requests List */}
-        {documentRequests.length === 0 ? (
+        {
+  documentRequests.length === 0 ? (
           <div className="text-center py-12">
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <FileText className="size-8 text-slate-400" />
@@ -221,7 +223,8 @@ export default function DynamicDocumentRequests({
         )}
 
         {/* Add Document Request Form (Lawyer Only) */}
-        {userRole === 'lawyer' && canEdit && (
+        {
+  userRole === 'lawyer' && canEdit && (
           <div>
             {!showAddForm ? (
               <button

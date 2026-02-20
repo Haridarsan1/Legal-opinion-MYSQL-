@@ -217,7 +217,8 @@ export default function SavedRequestsPage() {
         </div>
       )}
 
-      {isSubmitModalOpen && selectedRequest && (
+      {
+  isSubmitModalOpen && selectedRequest && (
         <ProposalSubmissionModal
           requestId={selectedRequest.id}
           requestTitle={selectedRequest.title}

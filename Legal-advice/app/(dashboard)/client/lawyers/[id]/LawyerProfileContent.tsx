@@ -121,7 +121,8 @@ export default function LawyerProfileContent({
                 </p>
 
                 {/* Rating */}
-                {lawyer.average_rating &&
+                {
+  lawyer.average_rating &&
                   lawyer.average_rating > 0 &&
                   lawyer.total_reviews &&
                   lawyer.total_reviews > 0 && (
@@ -149,13 +150,15 @@ export default function LawyerProfileContent({
                     <span className="text-slate-700">{lawyer.phone}</span>
                   </div>
                 )}
-                {lawyer.location && (
+                {
+  lawyer.location && (
                   <div className="flex items-center gap-3 text-sm">
                     <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     <span className="text-slate-700">{lawyer.location}</span>
                   </div>
                 )}
-                {lawyer.years_of_experience && (
+                {
+  lawyer.years_of_experience && (
                   <div className="flex items-center gap-3 text-sm">
                     <Briefcase className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     <span className="text-slate-700">
@@ -166,7 +169,8 @@ export default function LawyerProfileContent({
               </div>
 
               {/* Verified Badge */}
-              {lawyer.bar_council_id && (
+              {
+  lawyer.bar_council_id && (
                 <div className="flex items-center justify-center gap-2 mb-6 pb-6 border-b border-slate-200">
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium">
                     <Check className="w-4 h-4" />
@@ -210,7 +214,8 @@ export default function LawyerProfileContent({
                       <span className="text-sm font-medium">{lawyer.availability_status}</span>
                     </div>
                   )}
-                  {lawyer.response_time && (
+                  {
+  lawyer.response_time && (
                     <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg">
                       <Clock className="w-4 h-4" />
                       <span className="text-sm font-medium">
@@ -228,12 +233,14 @@ export default function LawyerProfileContent({
                           💬 Chat
                         </span>
                       )}
-                      {lawyer.consultation_modes.includes('call') && (
+                      {
+  lawyer.consultation_modes.includes('call') && (
                         <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full text-sm font-medium">
                           📞 Call
                         </span>
                       )}
-                      {lawyer.consultation_modes.includes('video') && (
+                      {
+  lawyer.consultation_modes.includes('video') && (
                         <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full text-sm font-medium">
                           📹 Video
                         </span>
@@ -262,7 +269,8 @@ export default function LawyerProfileContent({
             </div>
 
             {/* 3. Areas of Expertise */}
-            {lawyer.specialization && (
+            {
+  lawyer.specialization && (
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Areas of Expertise</h3>
                 <div className="flex flex-wrap gap-2">
@@ -297,7 +305,8 @@ export default function LawyerProfileContent({
                       </div>
                     </div>
                   )}
-                  {lawyer.degree && (
+                  {
+  lawyer.degree && (
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                         <Check className="w-4 h-4 text-blue-600" />
@@ -308,7 +317,8 @@ export default function LawyerProfileContent({
                       </div>
                     </div>
                   )}
-                  {lawyer.license_status && (
+                  {
+  lawyer.license_status && (
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                         <Check className="w-4 h-4 text-green-600" />
@@ -319,12 +329,14 @@ export default function LawyerProfileContent({
                       </div>
                     </div>
                   )}
-                  {lawyer.enrollment_year && (
+                  {
+  lawyer.enrollment_year && (
                     <div className="flex items-center gap-2 text-sm text-slate-600 ml-11">
                       <span>Enrolled: {lawyer.enrollment_year}</span>
                     </div>
                   )}
-                  {lawyer.jurisdiction && (
+                  {
+  lawyer.jurisdiction && (
                     <div className="flex items-center gap-2 text-sm text-slate-600 ml-11">
                       <span>Jurisdiction: {lawyer.jurisdiction}</span>
                     </div>
@@ -346,7 +358,8 @@ export default function LawyerProfileContent({
                       <div className="text-sm text-slate-600 mt-1">Years of Practice</div>
                     </div>
                   )}
-                  {lawyer.total_cases_handled && (
+                  {
+  lawyer.total_cases_handled && (
                     <div className="text-center p-4 bg-slate-50 rounded-lg">
                       <div className="text-3xl font-bold text-slate-900">
                         ~{lawyer.total_cases_handled}
@@ -354,7 +367,8 @@ export default function LawyerProfileContent({
                       <div className="text-sm text-slate-600 mt-1">Cases Handled</div>
                     </div>
                   )}
-                  {lawyer.specialization && (
+                  {
+  lawyer.specialization && (
                     <div className="col-span-2 sm:col-span-1">
                       <div className="text-sm font-medium text-slate-900 mb-2">Case Types:</div>
                       <div className="flex flex-wrap gap-1">

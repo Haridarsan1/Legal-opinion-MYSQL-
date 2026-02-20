@@ -1,10 +1,13 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { createClient } from '@/lib/supabase/client';
 import Card from '@/components/shared/Card';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+
+const supabase = createClient();
 
 interface SignatureValidation {
   no_open_clarifications: boolean;
@@ -37,10 +40,7 @@ export default function DigitalSignature({
   requestId,
   mode,
   onSignComplete,
-}: DigitalSignatureProps) {
-  const supabase = createClient();
-
-  const [validation, setValidation] = useState<SignatureValidation | null>(null);
+}: DigitalSignatureProps) {const [validation, setValidation] = useState<SignatureValidation | null>(null);
   const [signature, setSignature] = useState<DigitalSignatureData | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
@@ -56,9 +56,7 @@ export default function DigitalSignature({
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Load existing signature
-  useEffect(() => {
-    const loadSignature = async () => {
-      const { data } = await supabase
+  useEffect(() => {const loadSignature = async () => {const { data } = await supabase
         .from('digital_signatures')
         .select('*')
         .eq('opinion_version_id', opinionVersionId)
@@ -75,7 +73,7 @@ export default function DigitalSignature({
   // Load user profile for pre-filling
   useEffect(() => {
     const loadProfile = async () => {
-      const user = (await supabase.auth.getUser()).data.user;
+      const user = (await auth())?.user;
       if (!user) return;
 
       const { data } = await supabase
@@ -84,8 +82,7 @@ export default function DigitalSignature({
         .eq('id', user.id)
         .single();
 
-      if (data) {
-        setSignerName(data.full_name || '');
+      if (data) {setSignerName(data.full_name || '');
         setSignerBarId(data.bar_council_id || '');
         setSignerDesignation('Advocate'); // Default
       }
@@ -154,7 +151,7 @@ export default function DigitalSignature({
     setValidation(validationResult);
 
     // Save validation to database
-    const user = (await supabase.auth.getUser()).data.user;
+    const user = (await auth())?.user;
     if (user) {
       await supabase.from('opinion_signature_validations').insert({
         opinion_version_id: opinionVersionId,
@@ -197,7 +194,7 @@ export default function DigitalSignature({
 
     setIsSigning(true);
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const user = (await auth())?.user;
     if (!user) return;
 
     // Get opinion version content for hash
@@ -393,7 +390,8 @@ export default function DigitalSignature({
             </div>
           )}
 
-          {validation && (
+          {
+  validation && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <ValidationCheck
@@ -422,18 +420,21 @@ export default function DigitalSignature({
                 </div>
               )}
 
-              {validation.validation_passed && !signature && (
+              {
+  validation.validation_passed && !signature && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
                   <p className="text-green-800 font-medium">✓ All validation checks passed</p>
                   <p className="text-green-600 text-sm mt-1">Opinion is ready to be signed.</p>
                 </div>
               )}
 
-              {signature && (
+              {
+  signature && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
                   <p className="text-blue-800 font-medium">
                     ✓ Opinion already signed on{' '}
-                    {format(new Date(signature.signature_timestamp), 'MMM d, yyyy h:mm a')}
+                    {
+  format(new Date(signature.signature_timestamp), 'MMM d, yyyy h:mm a')}
                   </p>
                 </div>
               )}
@@ -443,7 +444,8 @@ export default function DigitalSignature({
       </Card>
 
       {/* Sign Modal */}
-      {showSignModal && (
+      {
+  showSignModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-bold mb-6">Digital Signature</h3>

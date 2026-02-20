@@ -303,21 +303,26 @@ export default function AssignedRequestsContent({ cases, departments, stats }: P
         </div>
 
         {/* Active Filter Chips */}
-        {activeFilterCount > 0 && (
+        {
+  activeFilterCount > 0 && (
           <div className="flex flex-wrap gap-2 pt-2">
             {filters.priority.map((p) => (
               <Chip key={p} label={`Priority: ${p}`} onRemove={() => removeFilter('priority', p)} />
             ))}
-            {filters.status.map((s) => (
+            {
+  filters.status.map((s) => (
               <Chip key={s} label={`Status: ${s}`} onRemove={() => removeFilter('status', s)} />
             ))}
-            {filters.department.map((d) => (
+            {
+  filters.department.map((d) => (
               <Chip key={d} label={`Dept: ${d}`} onRemove={() => removeFilter('department', d)} />
             ))}
-            {filters.clientType.map((c) => (
+            {
+  filters.clientType.map((c) => (
               <Chip key={c} label={`Client: ${c}`} onRemove={() => removeFilter('clientType', c)} />
             ))}
-            {filters.sla.map((s) => (
+            {
+  filters.sla.map((s) => (
               <Chip key={s} label={`Due: ${s}`} onRemove={() => removeFilter('sla', s)} />
             ))}
             {(filters.dateRange.start || filters.dateRange.end) && (
@@ -439,10 +444,12 @@ export default function AssignedRequestsContent({ cases, departments, stats }: P
                           }`}
                         >
                           <Check className="w-3.5 h-3.5" />{' '}
-                          {caseItem.lawyer_acceptance_status === 'accepted' ? 'Accepted' : 'Accept'}
+                          {
+  caseItem.lawyer_acceptance_status === 'accepted' ? 'Accepted' : 'Accept'}
                         </button>
                       )}
-                      {caseItem.lawyer_acceptance_status !== 'accepted' && (
+                      {
+  caseItem.lawyer_acceptance_status !== 'accepted' && (
                         <button
                           onClick={() => handleReject(caseItem.id)}
                           disabled={
@@ -455,7 +462,8 @@ export default function AssignedRequestsContent({ cases, departments, stats }: P
                           }`}
                         >
                           <X className="w-3.5 h-3.5" />{' '}
-                          {caseItem.lawyer_acceptance_status === 'rejected' ? 'Rejected' : 'Reject'}
+                          {
+  caseItem.lawyer_acceptance_status === 'rejected' ? 'Rejected' : 'Reject'}
                         </button>
                       )}
                     </div>

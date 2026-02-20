@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -8,11 +10,9 @@ import { revalidatePath } from 'next/cache';
  * Transitions status from 'opinion_ready' -> 'client_acknowledged'.
  */
 export async function acknowledgeOpinion(requestId: string) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
@@ -68,11 +68,9 @@ export async function acknowledgeOpinion(requestId: string) {
  * Allowed only if all queries are resolved.
  */
 export async function confirmNoFurtherQuestions(requestId: string) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
@@ -154,11 +152,9 @@ export async function confirmNoFurtherQuestions(requestId: string) {
  * Allowed only if status is 'client_acknowledged'.
  */
 export async function submitPostOpinionQuery(requestId: string, queryText: string) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
@@ -219,11 +215,9 @@ export async function submitPostOpinionQuery(requestId: string, queryText: strin
  * Allowed only for the assigned lawyer.
  */
 export async function resolvePostOpinionQuery(queryId: string, responseText: string) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
@@ -288,11 +282,9 @@ export async function resolvePostOpinionQuery(queryId: string, responseText: str
  * Allowed only if all queries are resolved and client has acknowledged.
  */
 export async function closeCase(requestId: string) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 

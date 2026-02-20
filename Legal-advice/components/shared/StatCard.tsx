@@ -52,11 +52,14 @@ export default function StatCard({
             )}
           >
             {trend === 'up' && '+'}
-            {trend === 'down' && '-'}
-            {trendValue}
+            {
+  trend === 'down' && '-'}
+            {
+  trendValue}
           </span>
         )}
-        {subtitle && <span className="text-slate-400 font-medium">{subtitle}</span>}
+        {
+  subtitle && <span className="text-slate-400 font-medium">{subtitle}</span>}
       </div>
 
       {/* Gradient decoration */}

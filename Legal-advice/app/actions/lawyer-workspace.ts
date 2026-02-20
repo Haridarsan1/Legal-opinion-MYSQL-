@@ -1,11 +1,12 @@
 'use server';
+import { auth } from '@/auth';
+import { createClient } from '@/lib/supabase/server';
 
 /**
  * Lawyer Workspace Server Actions
  * Professional case management features for lawyers
  */
 
-import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { RiskFlag, InternalNote, OpinionSubmission } from '@/lib/types';
@@ -34,14 +35,14 @@ export async function toggleRiskFlag(
   requestId: string,
   flag: RiskFlag,
   add: boolean
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
     // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -101,13 +102,13 @@ export async function toggleRiskFlag(
 export async function markDocumentReviewed(
   documentId: string,
   requestId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -145,13 +146,13 @@ export async function markDocumentReviewed(
 export async function unmarkDocumentReviewed(
   documentId: string,
   requestId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -186,13 +187,13 @@ export async function createInternalNote(
   requestId: string,
   noteText: string,
   noteType: 'general' | 'risk' | 'research' | 'strategy' = 'general'
-): Promise<{ success: boolean; error?: string; note?: InternalNote }> {
+): Promise<{
+success: boolean; error?: string; note?: InternalNote }> {
   try {
     const supabase = await getSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -232,7 +233,8 @@ export async function createInternalNote(
 
 export async function getInternalNotes(
   requestId: string
-): Promise<{ success: boolean; data?: InternalNote[]; error?: string }> {
+): Promise<{
+success: boolean; data?: InternalNote[]; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
@@ -269,13 +271,13 @@ export async function getInternalNotes(
 export async function pauseSLA(
   requestId: string,
   reason: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -309,13 +311,13 @@ export async function pauseSLA(
   }
 }
 
-export async function resumeSLA(requestId: string): Promise<{ success: boolean; error?: string }> {
+export async function resumeSLA(requestId: string): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -386,13 +388,13 @@ export async function resumeSLA(requestId: string): Promise<{ success: boolean; 
 export async function escalateToFirm(
   requestId: string,
   note: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -445,7 +447,8 @@ export async function escalateToFirm(
 
 export async function updateCaseHealth(
   requestId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
@@ -481,6 +484,7 @@ export async function updateCaseHealth(
 // =====================================================
 
 export async function submitProfessionalOpinion(data: {
+  const supabase = await createClient();
   requestId: string;
   opinionType: 'preliminary' | 'final';
   assumptions: string;
@@ -495,13 +499,13 @@ export async function submitProfessionalOpinion(data: {
     opinion_proofread: boolean;
   };
   fileData: { name: string; type: string; size: number }; // File metadata, actual upload handled separately
-}): Promise<{ success: boolean; error?: string; version?: number }> {
+}): Promise<{
+success: boolean; error?: string; version?: number }> {
   try {
     const supabase = await getSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -592,12 +596,12 @@ export async function submitProfessionalOpinion(data: {
 
 export async function getLawyersForSecondOpinion(
   search: string = ''
-): Promise<{ success: boolean; data?: any[]; error?: string }> {
+): Promise<{
+success: boolean; data?: any[]; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Not authenticated' };
 
@@ -628,12 +632,12 @@ export async function createSecondOpinionRequest(
   originalRequestId: string,
   targetLawyerId: string,
   note: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Not authenticated' };
 
@@ -666,9 +670,8 @@ export async function getIncomingReviewRequests(): Promise<{
 }> {
   try {
     const supabase = await getSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
 
     if (!user) return { success: false, error: 'Not authenticated' };
 
@@ -706,7 +709,8 @@ export async function updateSecondOpinionStatus(
   requestId: string, // ID of the second_opinion_request
   status: 'accepted' | 'rejected' | 'completed' | 'changes_requested',
   notes?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+success: boolean; error?: string }> {
   try {
     const supabase = await getSupabaseClient();
 
@@ -744,9 +748,8 @@ export async function getLawyerDashboardSummaries(): Promise<{
   error?: string;
 }> {
   const supabase = await getSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) return { success: false, error: 'Unauthorized' };
 

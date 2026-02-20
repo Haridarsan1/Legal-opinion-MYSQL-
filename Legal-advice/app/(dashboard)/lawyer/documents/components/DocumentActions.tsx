@@ -16,9 +16,7 @@ interface Props {
 export default function DocumentActions({ document, userId, onClose, onPreview }: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const supabase = createClient();
-
-  // Close on outside click
+    // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -118,7 +116,8 @@ export default function DocumentActions({ document, userId, onClose, onPreview }
       </button>
 
       {/* Delete (if lawyer uploaded) */}
-      {canDelete && (
+      {
+  canDelete && (
         <>
           <div className="border-t border-slate-100 my-1" />
           <button

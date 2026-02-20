@@ -4,6 +4,8 @@ import { useState, useRef } from 'react';
 import { Upload, FileText, X, Eye } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
+const supabase = createClient();
+
 interface Props {
   requestId: string;
   currentPdfUrl?: string | null;
@@ -18,9 +20,7 @@ export default function OpinionPDFUploader({
   onUploadComplete,
   isLawyer,
   disabled = false,
-}: Props) {
-  const supabase = createClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+}: Props) {const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 

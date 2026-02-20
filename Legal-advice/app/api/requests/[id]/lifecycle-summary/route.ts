@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import {
   resolveLifecycleStatus,
@@ -27,7 +29,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
         return NextResponse.json({ error: 'Request ID is missing' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    
     console.log('[API] Supabase client created.');
     console.log('[API] Processing request:', id);
 

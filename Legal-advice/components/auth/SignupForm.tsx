@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -40,9 +41,7 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -90,7 +89,10 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
 
     try {
       // 1. Sign up with Supabase Auth
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      const signUpRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
         email: formData.email,
         password: formData.password,
         options: {
@@ -99,7 +101,10 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
             role: formData.role,
           },
         },
+      })
       });
+      const signUpData = await signUpRes.json();
+      const { error } = signUpData;
 
       if (signUpError) {
         throw signUpError;
@@ -142,12 +147,8 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const session = await auth();
+  const user = session?.user;
 
       if (error) {
         throw error;
@@ -213,7 +214,8 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
             </div>
 
             {/* Error Message */}
-            {error && (
+            {
+  error && (
               <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
@@ -342,7 +344,8 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
                 </label>
               )}
 
-              {formData.role === 'lawyer' && (
+              {
+  formData.role === 'lawyer' && (
                 <label className="flex flex-col">
                   <span className="text-text-main dark:text-slate-200 text-sm font-semibold pb-2">
                     Bar Council ID (Optional)

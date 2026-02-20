@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import ClientDashboardContent from './ClientDashboardContent';
 import { redirect } from 'next/navigation';
 
@@ -9,14 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ClientDashboardPage() {
-  const supabase = await createClient();
+  const session = await auth();
+  const user = session?.user;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
+  if (!user) {redirect('/login');
   }
 
   // Fetch user profile

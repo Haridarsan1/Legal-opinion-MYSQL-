@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import LawyerProfileContent from './LawyerProfileContent';
 
@@ -10,11 +12,8 @@ export const metadata: Metadata = {
 
 export default async function LawyerProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   // Fetch lawyer profile
   const { data: lawyer, error } = await supabase

@@ -1,15 +1,17 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = await createClient();
+  
 
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });

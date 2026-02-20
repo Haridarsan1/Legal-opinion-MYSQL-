@@ -79,7 +79,8 @@ export default function ActionGuidanceSidebar({
 
         <div className="space-y-3">
           {/* Primary Action */}
-          {primaryAction && (
+          {
+  primaryAction && (
             <div>
               <button
                 onClick={primaryAction.onClick}
@@ -93,7 +94,8 @@ export default function ActionGuidanceSidebar({
           )}
 
           {/* Clarification Alert */}
-          {hasPendingClarifications && (
+          {
+  hasPendingClarifications && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-start gap-2 mb-2">
                 <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -145,7 +147,8 @@ export default function ActionGuidanceSidebar({
       </div>
 
       {/* Lawyer Contact Card */}
-      {request.lawyer && (
+      {
+  request.lawyer && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6">
           <h3 className="font-bold text-slate-900 mb-4">Contact Lawyer</h3>
           <div className="space-y-3">
@@ -160,7 +163,8 @@ export default function ActionGuidanceSidebar({
                 <span>{request.lawyer.phone}</span>
               </a>
             )}
-            {request.lawyer.email && (
+            {
+  request.lawyer.email && (
               <a
                 href={`mailto:${request.lawyer.email}`}
                 className="flex items-center gap-3 text-sm text-slate-700 hover:text-blue-600 transition-colors"

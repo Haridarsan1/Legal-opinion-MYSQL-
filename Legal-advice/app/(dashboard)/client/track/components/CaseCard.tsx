@@ -49,7 +49,8 @@ export default function CaseCard({ request }: Props) {
                   }`}
               >
                 {isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                {isPublic ? 'Public' : 'Private'}
+                {
+  isPublic ? 'Public' : 'Private'}
               </span>
 
               {/* ID Badge */}
@@ -83,8 +84,10 @@ export default function CaseCard({ request }: Props) {
                 className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold ${sla.color} ${sla.bgColor} border ${sla.borderColor}`}
               >
                 {sla.status === 'overdue' && <AlertTriangle className="w-3.5 h-3.5" />}
-                {sla.status === 'at-risk' && <Clock className="w-3.5 h-3.5" />}
-                {sla.text}
+                {
+  sla.status === 'at-risk' && <Clock className="w-3.5 h-3.5" />}
+                {
+  sla.text}
               </div>
             )}
             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}>
@@ -148,7 +151,8 @@ export default function CaseCard({ request }: Props) {
         </div>
 
         {/* Right: Assigned Lawyer (If Private/Assigned) */}
-        {request.lawyer ? (
+        {
+  request.lawyer ? (
           <div className="flex items-center gap-3 pl-4 sm:border-l border-slate-100">
             <div className="text-right hidden sm:block">
               <p className="text-xs text-slate-500">Lawyer</p>
@@ -180,12 +184,14 @@ export default function CaseCard({ request }: Props) {
           className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1 transition-colors"
         >
           {isExpanded ? 'Hide Details' : 'Show Details'}
-          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          {
+  isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
 
         <div className="flex gap-2">
           {/* Dynamic Primary Action */}
-          {nextStep.actionLabel && nextStep.actionUrl ? (
+          {
+  nextStep.actionLabel && nextStep.actionUrl ? (
             <Link
               href={`/client/track/${request.id}${nextStep.actionUrl}`}
               className="btn-primary-sm bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 shadow-sm"
@@ -204,7 +210,8 @@ export default function CaseCard({ request }: Props) {
       </div>
 
       {/* Expandable Content */}
-      {isExpanded && (
+      {
+  isExpanded && (
         <div className="px-5 py-4 border-t border-slate-200 bg-white">
           <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
             Latest Activity

@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -30,9 +31,7 @@ export default function ClientSignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -75,7 +74,10 @@ export default function ClientSignupPage() {
     try {
       console.log('🔑 Creating CLIENT account with role: client');
 
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      const signUpRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
         email: formData.email,
         password: formData.password,
         options: {
@@ -85,7 +87,10 @@ export default function ClientSignupPage() {
             role: 'client',
           },
         },
+      })
       });
+      const signUpData = await signUpRes.json();
+      const { error } = signUpData;
 
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error('Failed to create user account');
@@ -116,12 +121,8 @@ export default function ClientSignupPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const session = await auth();
+  const user = session?.user;
 
       if (error) throw error;
     } catch (err: any) {

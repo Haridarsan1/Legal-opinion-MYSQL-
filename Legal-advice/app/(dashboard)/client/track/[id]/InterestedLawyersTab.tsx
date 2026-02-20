@@ -113,7 +113,8 @@ export default function InterestedLawyersTab({ caseId, publicStatus }: Props) {
   return (
     <div className="space-y-8">
       {/* Selected Lawyer Section */}
-      {selectedLawyer && (
+      {
+  selectedLawyer && (
         <div>
           <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
             <CheckCircle className="size-5 text-green-600" />
@@ -124,7 +125,8 @@ export default function InterestedLawyersTab({ caseId, publicStatus }: Props) {
       )}
 
       {/* Pending Lawyers Section */}
-      {pendingLawyers.length > 0 && !selectedLawyer && (
+      {
+  pendingLawyers.length > 0 && !selectedLawyer && (
         <div>
           <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
             <Users className="size-5 text-blue-600" />
@@ -144,7 +146,8 @@ export default function InterestedLawyersTab({ caseId, publicStatus }: Props) {
         </div>
       )}
 
-      {pendingLawyers.length > 0 && selectedLawyer && (
+      {
+  pendingLawyers.length > 0 && selectedLawyer && (
         <div>
           <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
             <Users className="size-5 text-slate-600" />
@@ -206,14 +209,16 @@ function LawyerCard({ lawyer, isSelected, onSelect, isSelecting }: LawyerCardPro
                   {lawyer.lawyer.years_of_experience}+ years experience
                 </p>
               )}
-              {lawyer.lawyer.bar_council_id && (
+              {
+  lawyer.lawyer.bar_council_id && (
                 <p className="text-xs text-slate-600">Bar ID: {lawyer.lawyer.bar_council_id}</p>
               )}
             </div>
           </div>
 
           {/* Specializations */}
-          {lawyer.lawyer.specialization && lawyer.lawyer.specialization.length > 0 && (
+          {
+  lawyer.lawyer.specialization && lawyer.lawyer.specialization.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {lawyer.lawyer.specialization.slice(0, 3).map((spec, i) => (
                 <span
@@ -240,7 +245,8 @@ function LawyerCard({ lawyer, isSelected, onSelect, isSelecting }: LawyerCardPro
         {/* Details & Action */}
         <div className="md:col-span-2 flex flex-col gap-4">
           {/* Timeline */}
-          {lawyer.timeline_estimate && (
+          {
+  lawyer.timeline_estimate && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
               <Clock className="size-5 text-slate-400 flex-shrink-0" />
               <div>
@@ -251,7 +257,8 @@ function LawyerCard({ lawyer, isSelected, onSelect, isSelecting }: LawyerCardPro
           )}
 
           {/* Fee */}
-          {lawyer.fee_estimate && (
+          {
+  lawyer.fee_estimate && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
               <IndianRupee className="size-5 text-slate-400 flex-shrink-0" />
               <div>
@@ -284,7 +291,8 @@ function LawyerCard({ lawyer, isSelected, onSelect, isSelecting }: LawyerCardPro
             </button>
           )}
 
-          {isSelected && (
+          {
+  isSelected && (
             <div className="mt-auto p-3 rounded-lg bg-green-50 border border-green-300 text-center">
               <p className="text-xs font-bold text-green-700">✓ Selected Lawyer</p>
               <p className="text-sm text-green-700 font-semibold mt-1">Case in Progress</p>

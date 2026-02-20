@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -30,13 +31,9 @@ export default function AccountSwitcher({ isOpen, onClose, currentUserId }: Acco
     setSwitchingTo(account.id);
 
     try {
-      const supabase = createClient();
-
-      // Set the session from stored account
-      const { error } = await supabase.auth.setSession({
-        access_token: account.session.access_token,
-        refresh_token: account.session.refresh_token,
-      });
+            // Set the session from stored account
+      const session = await auth();
+  const user = session?.user;
 
       if (error) {
         console.error('Switch account error:', error);
@@ -129,7 +126,8 @@ export default function AccountSwitcher({ isOpen, onClose, currentUserId }: Acco
                             {getInitials(account.name)}
                           </div>
                         )}
-                        {isCurrent && (
+                        {
+  isCurrent && (
                           <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
                             <Check className="w-3 h-3 text-white" strokeWidth={3} />
                           </div>

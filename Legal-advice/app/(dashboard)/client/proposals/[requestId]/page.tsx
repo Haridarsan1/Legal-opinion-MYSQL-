@@ -190,7 +190,8 @@ export default function ProposalComparisonPage() {
         </div>
 
         {/* No proposals state */}
-        {proposals.length === 0 ? (
+        {
+  proposals.length === 0 ? (
           <div className="bg-slate-50 rounded-xl p-8 text-center border border-slate-200">
             <AlertCircle className="size-12 text-slate-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-slate-900 mb-2">No Proposals Yet</h3>
@@ -201,7 +202,8 @@ export default function ProposalComparisonPage() {
         ) : (
           <>
             {/* Accepted Proposal Section */}
-            {acceptedProposal && (
+            {
+  acceptedProposal && (
               <div className="bg-gradient-to-r from-green-50 to-white rounded-xl p-6 border-2 border-green-300 mb-4">
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle className="size-6 text-green-600" />
@@ -409,7 +411,8 @@ function ProposalCard({
                   <span>{proposal.lawyer.years_of_experience}+ years</span>
                 </div>
               )}
-              {proposal.lawyer.bar_council_id && (
+              {
+  proposal.lawyer.bar_council_id && (
                 <p className="text-xs text-slate-500">Bar ID: {proposal.lawyer.bar_council_id}</p>
               )}
               <div className="mt-2">{getStatusBadge(proposal.status)}</div>
@@ -417,7 +420,8 @@ function ProposalCard({
           </div>
 
           {/* Specializations */}
-          {proposal.lawyer.specialization &&
+          {
+  proposal.lawyer.specialization &&
             (() => {
               // Handle specialization which could be string[] or JSON string
               let specs: string[] = [];
@@ -455,7 +459,8 @@ function ProposalCard({
             })()}
 
           {/* Bio */}
-          {proposal.lawyer.bio && (
+          {
+  proposal.lawyer.bio && (
             <p className="text-sm text-slate-600 line-clamp-3">{proposal.lawyer.bio}</p>
           )}
         </div>

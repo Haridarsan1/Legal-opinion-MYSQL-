@@ -234,7 +234,8 @@ export default function ProfessionalOpinionSubmission({
                   </label>
                 ))}
 
-                {checklistComplete && (
+                {
+  checklistComplete && (
                   <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg mt-3">
                     <CheckCircle className="size-5 text-green-600" />
                     <span className="text-sm font-medium text-green-700">
@@ -272,7 +273,8 @@ export default function ProfessionalOpinionSubmission({
             </div>
 
             {/* Mark as Final */}
-            {canMarkFinal && (
+            {
+  canMarkFinal && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input

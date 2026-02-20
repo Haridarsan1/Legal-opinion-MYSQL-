@@ -55,7 +55,8 @@ export default function CaseTableRow({ request }: Props) {
                     }`}
                 >
                   {isPublic ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
-                  {isPublic ? 'Public' : 'Private'}
+                  {
+  isPublic ? 'Public' : 'Private'}
                 </span>
                 <span className="text-xs font-mono text-slate-400">
                   #{request.request_number || request.id.slice(0, 8)}
@@ -110,8 +111,10 @@ export default function CaseTableRow({ request }: Props) {
               className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap ${sla.color} ${sla.bgColor} border ${sla.borderColor}`}
             >
               {sla.status === 'overdue' && <AlertTriangle className="w-3.5 h-3.5" />}
-              {sla.status === 'at-risk' && <Clock className="w-3.5 h-3.5" />}
-              {sla.text}
+              {
+  sla.status === 'at-risk' && <Clock className="w-3.5 h-3.5" />}
+              {
+  sla.text}
             </div>
           ) : (
             <span className="text-xs text-slate-400">—</span>
@@ -169,7 +172,8 @@ export default function CaseTableRow({ request }: Props) {
       </tr>
 
       {/* Expanded Row */}
-      {isExpanded && (
+      {
+  isExpanded && (
         <tr>
           <td colSpan={7} className="p-0">
             <ExpandedRowDetails request={request} />

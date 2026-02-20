@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import CaseWorkspace from './CaseWorkspace';
 
@@ -9,12 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
-  const supabase = await createClient();
+  
   const { id } = await params;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect('/login');

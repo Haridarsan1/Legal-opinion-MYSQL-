@@ -29,9 +29,7 @@ export default function LawyerRequestDetailPage() {
   const fetchRequestData = async () => {
     try {
       setLoading(true);
-      const supabase = createClient();
-
-      // Fetch request details
+            // Fetch request details
       const { data: req, error: reqError } = await supabase
         .from('legal_requests')
         .select(
@@ -169,11 +167,13 @@ export default function LawyerRequestDetailPage() {
       </div>
 
       {/* Acceptance Status */}
-      {request.accepted_by_lawyer && (
+      {
+  request.accepted_by_lawyer && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <p className="text-sm text-green-800">
             ✓ You accepted this request on{' '}
-            {new Date(request.lawyer_acceptance_date).toLocaleString()}
+            {
+  new Date(request.lawyer_acceptance_date).toLocaleString()}
           </p>
         </div>
       )}
@@ -229,7 +229,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'clarifications' && (
+        {
+  activeTab === 'clarifications' && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-slate-900">Clarifications</h3>
             {clarifications.length === 0 ? (
@@ -256,7 +257,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'documents' && (
+        {
+  activeTab === 'documents' && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-slate-900">Documents</h3>
             {!request.accepted_by_lawyer ? (
@@ -289,7 +291,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'opinion' && (
+        {
+  activeTab === 'opinion' && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-slate-900">Legal Opinion</h3>
             {!opinion ? (
@@ -314,7 +317,8 @@ export default function LawyerRequestDetailPage() {
           </div>
         )}
 
-        {activeTab === 'timeline' && (
+        {
+  activeTab === 'timeline' && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-slate-900">Request Timeline</h3>
             {timeline.length === 0 ? (

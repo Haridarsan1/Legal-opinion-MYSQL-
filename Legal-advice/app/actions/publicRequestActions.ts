@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { hasPermission } from '@/lib/permissions';
 
@@ -8,18 +10,16 @@ import { hasPermission } from '@/lib/permissions';
  * Get public open requests for lawyers to browse
  */
 export async function getPublicOpenRequests(filters?: {
+  const supabase = await createClient();
   departmentId?: string;
   priority?: string;
   search?: string;
   limit?: number;
   offset?: number;
-}) {
-  const supabase = await createClient();
-
-  const {
+}) {const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -121,12 +121,10 @@ export async function getPublicOpenRequests(filters?: {
  * Get lawyer's own public claims
  */
 export async function getMyPublicClaims() {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -176,12 +174,10 @@ export async function getMyPublicClaims() {
  * Get interested lawyers for a client's public case
  */
 export async function getInterestedLawyers(caseId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -241,12 +237,10 @@ export async function getInterestedLawyers(caseId: string) {
  * Lawyer expresses interest in a public case
  */
 export async function createPublicClaim(formData: FormData) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -301,12 +295,10 @@ export async function createPublicClaim(formData: FormData) {
  * Client selects a lawyer for public request
  */
 export async function selectLawyerForPublicRequest(caseId: string, claimId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -347,12 +339,10 @@ export async function selectLawyerForPublicRequest(caseId: string, claimId: stri
  * Lawyer withdraws a public claim
  */
 export async function withdrawPublicClaim(claimId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -390,12 +380,10 @@ export async function withdrawPublicClaim(claimId: string) {
  * Get public request notifications
  */
 export async function getPublicRequestNotifications() {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -433,12 +421,10 @@ export async function getPublicRequestNotifications() {
  * Mark public request notification as read
  */
 export async function markNotificationAsRead(notificationId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -468,12 +454,10 @@ export async function markNotificationAsRead(notificationId: string) {
  * Returns aggregated data: total proposals, average fee, fee range, average timeline
  */
 export async function getProposalStats(requestId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -525,12 +509,10 @@ export async function getProposalStats(requestId: string) {
  * Get a single public request with full details for the lawyer view
  */
 export async function getPublicRequestDetails(requestId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };

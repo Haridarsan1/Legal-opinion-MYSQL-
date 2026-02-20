@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import LawyerDocuments from './LawyerDocuments';
 
@@ -9,11 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default async function LawyerDocumentsPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect('/login');

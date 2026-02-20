@@ -30,3 +30,5 @@ Thumbs.db
 
 # Optional: coverage
 coverage/
+
+/lib/generated/prisma

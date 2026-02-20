@@ -8,8 +8,9 @@ import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import type { UserRole } from '@/lib/types';
 
-export default function SignupForm() {
-  const router = useRouter();
+const supabase = createClient();
+
+export default function SignupForm() {const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,10 +38,11 @@ export default function SignupForm() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-
-      // Sign up with email and password
-      const { data, error } = await supabase.auth.signUp({
+            // Sign up with email and password
+      const signUpRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
         email,
         password,
         options: {
@@ -50,7 +52,10 @@ export default function SignupForm() {
             organization: organization || null,
           },
         },
+      })
       });
+      const signUpData = await signUpRes.json();
+      const { error } = signUpData;
 
       if (error) {
         toast.error(error.message);

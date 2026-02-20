@@ -35,8 +35,7 @@ export default function JuniorLawyerDashboard({
   activeResearchCases: any[];
   avgRating: number;
 }) {
-  const supabase = createClient();
-  const router = useRouter();
+    const router = useRouter();
 
   const handleStartTask = async (taskId: string) => {
     const { error } = await supabase
@@ -251,7 +250,8 @@ export default function JuniorLawyerDashboard({
                             </span>
                           )}
 
-                          {task.status === 'pending' ? (
+                          {
+  task.status === 'pending' ? (
                             <button
                               onClick={() => handleStartTask(task.id)}
                               className="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors ml-auto"
@@ -328,12 +328,14 @@ function StatCard({ label, value, icon: Icon, trend, priority, subtext, color }:
             {trend}
           </span>
         )}
-        {priority && (
+        {
+  priority && (
           <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-1 rounded border border-amber-100 uppercase tracking-wide">
             Priority
           </span>
         )}
-        {subtext && (
+        {
+  subtext && (
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
             {subtext}
           </span>

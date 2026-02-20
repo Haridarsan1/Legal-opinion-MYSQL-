@@ -22,9 +22,7 @@ export default function RequestSecondOpinionPage() {
   const params = useParams();
   const router = useRouter();
   const requestId = params.id as string;
-  const supabase = createClient();
-
-  const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
   const [opinion, setOpinion] = useState<any>(null);
   const [activeVersion, setActiveVersion] = useState<any>(null);
   const [lawyers, setLawyers] = useState<DirectoryLawyer[]>([]);

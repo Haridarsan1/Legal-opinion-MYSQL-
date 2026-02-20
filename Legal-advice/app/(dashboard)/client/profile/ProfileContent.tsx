@@ -28,17 +28,16 @@ import type { Profile } from '@/lib/types';
 import Image from 'next/image';
 import LocationAutocomplete from '@/components/shared/LocationAutocomplete';
 
+const supabase = createClient();
+
 interface Props {
   profile: Profile | null;
 }
 
 type Tab = 'personal' | 'contact' | 'security' | 'preferences';
 
-export default function ProfileContent({ profile }: Props) {
-  const router = useRouter();
-  const supabase = createClient();
-
-  const [activeTab, setActiveTab] = useState<Tab>('personal');
+export default function ProfileContent({ profile }: Props) {const router = useRouter();
+    const [activeTab, setActiveTab] = useState<Tab>('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -219,7 +218,8 @@ export default function ProfileContent({ profile }: Props) {
       </div>
 
       {/* Success/Error Message */}
-      {message && (
+      {
+  message && (
         <div
           className={`p-4 rounded-xl flex items-center gap-3 ${
             message.type === 'success'
@@ -228,7 +228,8 @@ export default function ProfileContent({ profile }: Props) {
           }`}
         >
           {message.type === 'success' && <Check className="w-5 h-5 flex-shrink-0" />}
-          {message.type === 'error' && <X className="w-5 h-5 flex-shrink-0" />}
+          {
+  message.type === 'error' && <X className="w-5 h-5 flex-shrink-0" />}
           <span className="font-medium">{message.text}</span>
         </div>
       )}
@@ -292,7 +293,8 @@ export default function ProfileContent({ profile }: Props) {
               <p className="text-white/70 text-sm flex items-center gap-1.5 justify-center sm:justify-start">
                 <Calendar className="w-4 h-4" />
                 Member since{' '}
-                {new Date(profile.created_at).toLocaleDateString('en-US', {
+                {
+  new Date(profile.created_at).toLocaleDateString('en-US', {
                   month: 'short',
                   year: 'numeric',
                 })}
@@ -350,7 +352,8 @@ export default function ProfileContent({ profile }: Props) {
         {/* Tab Content */}
         <div className="p-6 sm:p-8">
           {/* Personal Info Tab */}
-          {activeTab === 'personal' && (
+          {
+  activeTab === 'personal' && (
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
@@ -415,7 +418,8 @@ export default function ProfileContent({ profile }: Props) {
           )}
 
           {/* Contact & Address Tab */}
-          {activeTab === 'contact' && (
+          {
+  activeTab === 'contact' && (
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-slate-900 mb-4">Contact Information</h3>
@@ -541,7 +545,8 @@ export default function ProfileContent({ profile }: Props) {
           )}
 
           {/* Account & Security Tab */}
-          {activeTab === 'security' && (
+          {
+  activeTab === 'security' && (
             <div className="space-y-6">
               <div className="grid gap-4">
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
@@ -570,7 +575,8 @@ export default function ProfileContent({ profile }: Props) {
                   </div>
                 )}
 
-                {profile.created_at && (
+                {
+  profile.created_at && (
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                     <div className="flex items-center justify-between">
                       <div>
@@ -604,7 +610,7 @@ export default function ProfileContent({ profile }: Props) {
                     type="button"
                     className="w-full px-4 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm flex items-center justify-center gap-2"
                     onClick={async () => {
-                      await supabase.auth.signOut();
+                      // supabase.auth.signOut migrated to NextAuth signOut()
                       router.push('/login');
                     }}
                   >
@@ -617,7 +623,8 @@ export default function ProfileContent({ profile }: Props) {
           )}
 
           {/* Preferences Tab */}
-          {activeTab === 'preferences' && (
+          {
+  activeTab === 'preferences' && (
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-slate-900 mb-4">Notification Preferences</h3>
@@ -704,7 +711,8 @@ export default function ProfileContent({ profile }: Props) {
         </div>
 
         {/* Sticky Save Bar */}
-        {isEditing && (
+        {
+  isEditing && (
           <div className="border-t border-slate-200 p-6 bg-slate-50/50 flex items-center justify-between sticky bottom-0">
             <p className="text-sm text-slate-600">You have unsaved changes</p>
             <div className="flex gap-3">

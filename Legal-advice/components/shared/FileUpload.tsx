@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
+const supabase = createClient();
+
 interface FileUploadProps {
   onUploadComplete: (files: UploadedFile[]) => void;
   maxFiles?: number;
@@ -38,14 +40,11 @@ export default function FileUpload({
   bucketName = 'documents',
   folder = 'uploads',
   className,
-}: FileUploadProps) {
-  const [files, setFiles] = useState<File[]>([]);
+}: FileUploadProps) {const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
-
-  const handleDrag = (e: DragEvent<HTMLDivElement>) => {
+    const handleDrag = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -204,7 +203,8 @@ export default function FileUpload({
       </div>
 
       {/* File List */}
-      {files.length > 0 && (
+      {
+  files.length > 0 && (
         <div className="flex flex-col gap-2">
           {files.map((file, index) => (
             <div

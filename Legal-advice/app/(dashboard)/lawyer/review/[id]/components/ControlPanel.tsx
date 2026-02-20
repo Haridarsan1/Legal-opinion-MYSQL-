@@ -281,7 +281,8 @@ export default function ControlPanel({
       </div>
 
       {/* Modals */}
-      {showPauseModal && (
+      {
+  showPauseModal && (
         <Modal
           title="Pause SLA"
           onClose={() => setShowPauseModal(false)}
@@ -300,7 +301,8 @@ export default function ControlPanel({
         </Modal>
       )}
 
-      {showEscalateModal && (
+      {
+  showEscalateModal && (
         <Modal
           title="Escalate to Firm Admin"
           onClose={() => setShowEscalateModal(false)}
@@ -319,7 +321,8 @@ export default function ControlPanel({
         </Modal>
       )}
 
-      {showNoteModal && (
+      {
+  showNoteModal && (
         <Modal
           title="Add Internal Note"
           onClose={() => setShowNoteModal(false)}

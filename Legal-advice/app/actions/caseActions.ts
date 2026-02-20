@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 // Define valid status transitions
@@ -25,13 +27,12 @@ export async function updateCaseStatus(
   newStatus: RequestStatus,
   notes?: string
 ) {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Unauthorized' };
     }
@@ -102,12 +103,9 @@ export async function updateCaseStatus(
 }
 
 export async function acceptCase(requestId: string) {
-  try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Unauthorized' };
     }
@@ -157,12 +155,9 @@ export async function acceptCase(requestId: string) {
 }
 
 export async function rejectCase(requestId: string, reason: string) {
-  try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();try {
+    const session = await auth();
+  const user = session?.user;
     if (!user) {
       return { success: false, error: 'Unauthorized' };
     }
@@ -212,8 +207,8 @@ export async function rejectCase(requestId: string, reason: string) {
 }
 
 export async function calculateSLA(requestId: string) {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     const { data: request } = await supabase
       .from('legal_requests')

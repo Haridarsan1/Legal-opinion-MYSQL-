@@ -1,19 +1,19 @@
 'use server';
+import { createClient } from '@/lib/supabase/server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 
 /**
  * Server Actions for Lawyer Dashboard
  */
 
 export async function updateCaseStatus(caseId: string, status: string, notes?: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -58,8 +58,8 @@ export async function updateCaseStatus(caseId: string, status: string, notes?: s
 }
 
 export async function acceptCase(caseId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createClient();const session = await auth();
+  const user = session?.user;
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {
@@ -100,8 +100,8 @@ export async function acceptCase(caseId: string) {
 }
 
 export async function declineCase(caseId: string, reason: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createClient();const session = await auth();
+  const user = session?.user;
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {
@@ -143,12 +143,10 @@ export async function declineCase(caseId: string, reason: string) {
 }
 
 export async function requestClarification(caseId: string, subject: string, message: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -205,12 +203,10 @@ export async function requestClarification(caseId: string, subject: string, mess
 }
 
 export async function submitOpinion(caseId: string, opinionText: string, opinionFile?: File) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -280,12 +276,10 @@ export async function submitOpinion(caseId: string, opinionText: string, opinion
 }
 
 export async function saveDraft(caseId: string, draftText: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -312,12 +306,10 @@ export async function saveDraft(caseId: string, draftText: string) {
 }
 
 export async function addInternalNote(caseId: string, note: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -344,12 +336,10 @@ export async function addInternalNote(caseId: string, note: string) {
 }
 
 export async function updateAvailability(status: 'available' | 'busy' | 'on_leave') {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -371,12 +361,10 @@ export async function updateAvailability(status: 'available' | 'busy' | 'on_leav
 }
 
 export async function updateSpecializations(specializations: string[]) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -395,12 +383,10 @@ export async function updateSpecializations(specializations: string[]) {
 }
 
 export async function markClarificationResolved(clarificationId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -423,12 +409,10 @@ export async function markClarificationResolved(clarificationId: string) {
 }
 
 export async function getLawyerMarketplaceMetrics() {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }

@@ -102,7 +102,8 @@ export default function LawyerDocuments({ documents, userId, lawyerProfile }: Pr
         />
 
         {/* Document Table */}
-        {filteredDocuments.length > 0 ? (
+        {
+  filteredDocuments.length > 0 ? (
           <DocumentTable
             documents={filteredDocuments}
             userId={userId}

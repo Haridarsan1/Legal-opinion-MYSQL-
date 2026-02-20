@@ -101,9 +101,7 @@ export default function LawyerDashboardContent({
   unreadMessages: initialUnread,
 }: Props) {
   const router = useRouter();
-  const supabase = createClient();
-
-  const [cases, setCases] = useState<LegalRequest[]>(initialCases);
+    const [cases, setCases] = useState<LegalRequest[]>(initialCases);
   const [averageRating, setAverageRating] = useState(initialRating);
   const [unreadMessages, setUnreadMessages] = useState(initialUnread);
 
@@ -288,7 +286,8 @@ export default function LawyerDashboardContent({
                 <>
                   You have{' '}
                   <span className="font-semibold text-amber-600">
-                    {attentionRequired.length} {attentionRequired.length === 1 ? 'case' : 'cases'}
+                    {attentionRequired.length} {
+  attentionRequired.length === 1 ? 'case' : 'cases'}
                   </span>{' '}
                   requiring attention
                 </>
@@ -402,7 +401,8 @@ export default function LawyerDashboardContent({
       </div>
 
       {/* Attention Required */}
-      {attentionRequired.length > 0 && (
+      {
+  attentionRequired.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-4">
             <AlertCircle className="w-5 h-5 text-amber-600" />

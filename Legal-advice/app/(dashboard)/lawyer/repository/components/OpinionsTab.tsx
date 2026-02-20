@@ -128,12 +128,14 @@ function OpinionCard({ document }: { document: any }) {
               {document.opinion_type === 'final' ? 'Final Opinion' : 'Preliminary'}
             </span>
           )}
-          {document.version && (
+          {
+  document.version && (
             <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded">
               {document.version}
             </span>
           )}
-          {document.status && (
+          {
+  document.status && (
             <span
               className={`px-2 py-1 text-xs font-medium rounded ${
                 document.status === 'final'

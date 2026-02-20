@@ -1,14 +1,16 @@
+import { createClient } from '@/lib/supabase/server';
 
 import { TrendingUp, Clock, FileCheck, AlertCircle } from 'lucide-react';
 import StatusBadge from '@/components/shared/StatusBadge';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { hasPermission } from '@/lib/permissions';
 
 export default async function BankHomePage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) redirect('/login');
 

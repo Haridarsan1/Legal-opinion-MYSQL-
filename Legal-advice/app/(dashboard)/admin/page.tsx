@@ -1,13 +1,15 @@
+import { createClient } from '@/lib/supabase/server';
 import { TrendingUp, Users, DollarSign, Activity } from 'lucide-react';
 import Link from 'next/link';
 
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { hasPermission } from '@/lib/permissions';
 
 export default async function AdminHomePage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) redirect('/login');
 

@@ -1,0 +1,291 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../lib/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model audit_logs {
+  id             String          @id @default(uuid()) @db.Char(36)
+  user_id        String?         @db.Char(36)
+  request_id     String?         @db.Char(36)
+  action         String
+  details        Json?
+  ip_address     String?
+  user_agent     String?
+  created_at     DateTime?       @default(now()) 
+  legal_requests legal_requests? @relation(fields: [request_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles       profiles?       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_audit_logs_created_at")
+  @@index([request_id], map: "idx_audit_logs_request")
+  @@index([user_id], map: "idx_audit_logs_user")
+}
+
+model clarifications {
+  id             String         @id @default(uuid()) @db.Char(36)
+  request_id     String         @db.Char(36)
+  requester_id   String         @db.Char(36)
+  subject        String
+  message        String
+  priority       priority_level @default(medium)
+  is_resolved    Boolean        @default(false)
+  response       String?
+  responded_at   DateTime?      
+  created_at     DateTime?      @default(now()) 
+  legal_requests legal_requests @relation(fields: [request_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles       profiles       @relation(fields: [requester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model departments {
+  id                 String           @id @default(uuid()) @db.Char(36)
+  name               String           @unique
+  description        String?
+  icon               String?
+  sla_hours          Int              @default(48)
+  required_documents Json? @default("[]")
+  active             Boolean          @default(true)
+  created_at         DateTime?        @default(now()) 
+  legal_requests     legal_requests[]
+}
+
+model documents {
+  id                String          @id @default(uuid()) @db.Char(36)
+  request_id        String?         @db.Char(36)
+  uploaded_by       String          @db.Char(36)
+  file_name         String
+  file_path         String
+  file_size         BigInt
+  file_type         String
+  document_type     document_type   @default(other)
+  description       String?
+  version           Int             @default(1)
+  is_latest         Boolean         @default(true)
+  uploaded_at       DateTime?       @default(now()) 
+  category          String?         @default("case_document")
+  visibility        String?         @default("private")
+  tags              Json? @default("[]")
+  practice_area     String?
+  opinion_type      String?
+  is_template       Boolean?        @default(false)
+  template_category String?
+  status            String?         @default("draft")
+  legal_requests    legal_requests? @relation(fields: [request_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles          profiles        @relation(fields: [uploaded_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([category], map: "idx_documents_category")
+  @@index([is_template], map: "idx_documents_is_template")
+  @@index([request_id, is_latest], map: "idx_documents_latest")
+  @@index([practice_area], map: "idx_documents_practice_area")
+  @@index([request_id], map: "idx_documents_request_id")
+  @@index([uploaded_by], map: "idx_documents_uploaded_by")
+  @@index([visibility], map: "idx_documents_visibility")
+}
+
+model legal_clauses {
+  id          String    @id @default(uuid()) @db.Char(36)
+  title       String    @db.VarChar(255)
+  content     String
+  category    String?   @db.VarChar(100)
+  department  String?   @db.VarChar(100)
+  tags        Json?
+  created_by  String?   @db.Char(36)
+  is_approved Boolean?  @default(false)
+  usage_count Int?      @default(0)
+  created_at  DateTime? @default(now()) 
+  updated_at  DateTime? @default(now()) 
+  profiles    profiles? @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+
+  @@index([category], map: "idx_legal_clauses_category")
+  @@index([department], map: "idx_legal_clauses_department")
+}
+
+model legal_requests {
+  id                                                   String            @id @default(uuid()) @db.Char(36)
+  request_number                                       String?           @unique
+  client_id                                            String            @db.Char(36)
+  department_id                                        String            @db.Char(36)
+  assigned_lawyer_id                                   String?           @db.Char(36)
+  assigned_firm_id                                     String?           @db.Char(36)
+  title                                                String
+  description                                          String
+  property_address                                     String?
+  loan_amount                                          Decimal?          @db.Decimal(15, 2)
+  status                                               request_status    @default(submitted)
+  priority                                             priority_level    @default(medium)
+  sla_tier                                             String?
+  sla_deadline                                         DateTime?         
+  submitted_at                                         DateTime?         @default(now()) 
+  assigned_at                                          DateTime?         
+  completed_at                                         DateTime?         
+  created_at                                           DateTime?         @default(now()) 
+  updated_at                                           DateTime?         @default(now()) 
+  closed_at                                            DateTime?         
+  is_closed                                            Boolean?          @default(false)
+  audit_logs                                           audit_logs[]
+  clarifications                                       clarifications[]
+  documents                                            documents[]
+  profiles_legal_requests_assigned_firm_idToprofiles   profiles?         @relation("legal_requests_assigned_firm_idToprofiles", fields: [assigned_firm_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_legal_requests_assigned_lawyer_idToprofiles profiles?         @relation("legal_requests_assigned_lawyer_idToprofiles", fields: [assigned_lawyer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_legal_requests_client_idToprofiles          profiles          @relation("legal_requests_client_idToprofiles", fields: [client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  departments                                          departments       @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  notifications                                        notifications[]
+  ratings                                              ratings?
+  request_closures                                     request_closures?
+
+  @@index([client_id], map: "idx_legal_requests_client")
+  @@index([is_closed], map: "idx_legal_requests_closed")
+  @@index([created_at(sort: Desc)], map: "idx_legal_requests_created_at")
+  @@index([assigned_firm_id], map: "idx_legal_requests_firm")
+  @@index([assigned_lawyer_id], map: "idx_legal_requests_lawyer")
+  @@index([status], map: "idx_legal_requests_status")
+}
+
+model notifications {
+  id                 String          @id @default(uuid()) @db.Char(36)
+  user_id            String          @db.Char(36)
+  type               String
+  title              String
+  message            String
+  related_request_id String?         @db.Char(36)
+  is_read            Boolean         @default(false)
+  created_at         DateTime?       @default(now()) 
+  legal_requests     legal_requests? @relation(fields: [related_request_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles           profiles        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, is_read], map: "idx_notifications_user_unread")
+}
+
+model opinion_templates {
+  id              String    @id @default(uuid()) @db.Char(36)
+  name            String    @db.VarChar(255)
+  department      String    @db.VarChar(100)
+  description     String?
+  structure       Json
+  default_clauses Json?
+  created_by      String?   @db.Char(36)
+  is_active       Boolean?  @default(true)
+  created_at      DateTime? @default(now()) 
+  updated_at      DateTime? @default(now()) 
+  profiles        profiles? @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+
+  @@index([department], map: "idx_opinion_templates_department")
+}
+
+model profiles {
+  id                                                         String              @id @db.Char(36)
+  role                                                       user_role           @default(client)
+  full_name                                                  String
+  email                                                      String              @unique
+  password                                                   String?
+  phone                                                      String?
+  organization                                               String?
+  bar_council_id                                             String?
+  specialization                                             Json?
+  years_of_experience                                        Int?
+  bio                                                        String?
+  avatar_url                                                 String?
+  created_at                                                 DateTime?           @default(now()) 
+  updated_at                                                 DateTime?           @default(now()) 
+  audit_logs                                                 audit_logs[]
+  clarifications                                             clarifications[]
+  documents                                                  documents[]
+  legal_clauses                                              legal_clauses[]
+  legal_requests_legal_requests_assigned_firm_idToprofiles   legal_requests[]    @relation("legal_requests_assigned_firm_idToprofiles")
+  legal_requests_legal_requests_assigned_lawyer_idToprofiles legal_requests[]    @relation("legal_requests_assigned_lawyer_idToprofiles")
+  legal_requests_legal_requests_client_idToprofiles          legal_requests[]    @relation("legal_requests_client_idToprofiles")
+  notifications                                              notifications[]
+  opinion_templates                                          opinion_templates[]
+  ratings_ratings_client_idToprofiles                        ratings[]           @relation("ratings_client_idToprofiles")
+  ratings_ratings_firm_idToprofiles                          ratings[]           @relation("ratings_firm_idToprofiles")
+  ratings_ratings_lawyer_idToprofiles                        ratings[]           @relation("ratings_lawyer_idToprofiles")
+  request_closures                                           request_closures[]
+}
+
+model ratings {
+  id                                   String         @id @default(uuid()) @db.Char(36)
+  request_id                           String         @unique @db.Char(36)
+  client_id                            String         @db.Char(36)
+  lawyer_id                            String?        @db.Char(36)
+  firm_id                              String?        @db.Char(36)
+  overall_rating                       Int
+  feedback                             String?
+  created_at                           DateTime?      @default(now()) 
+  profiles_ratings_client_idToprofiles profiles       @relation("ratings_client_idToprofiles", fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_ratings_firm_idToprofiles   profiles?      @relation("ratings_firm_idToprofiles", fields: [firm_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_ratings_lawyer_idToprofiles profiles?      @relation("ratings_lawyer_idToprofiles", fields: [lawyer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  legal_requests                       legal_requests @relation(fields: [request_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model request_closures {
+  id                          String         @id @default(uuid()) @db.Char(36)
+  request_id                  String         @unique @db.Char(36)
+  closed_by                   String         @db.Char(36)
+  closure_reason              String?
+  client_satisfaction_rating  Int?
+  opinion_delivered           Boolean
+  all_clarifications_resolved Boolean
+  signature_verified          Boolean
+  is_immutable                Boolean?       @default(true)
+  closed_at                   DateTime?      @default(now()) 
+  profiles                    profiles       @relation(fields: [closed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  legal_requests              legal_requests @relation(fields: [request_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([closed_by], map: "idx_request_closures_closed_by")
+  @@index([request_id], map: "idx_request_closures_request")
+}
+
+enum document_type {
+  sale_deed
+  title_certificate
+  encumbrance_certificate
+  tax_receipt
+  legal_opinion
+  supporting_document
+  clarification
+  other
+}
+
+enum opinion_version_status {
+  draft
+  peer_review
+  approved
+  signed
+  published
+}
+
+enum priority_level {
+  low
+  medium
+  high
+  urgent
+}
+
+enum request_status {
+  submitted
+  assigned
+  in_review
+  clarification_requested
+  opinion_ready
+  delivered
+  completed
+  cancelled
+}
+
+enum signature_type_enum {
+  digital
+  electronic
+  scanned
+  biometric
+}
+
+enum user_role {
+  client
+  lawyer
+  firm
+  bank
+  admin
+}

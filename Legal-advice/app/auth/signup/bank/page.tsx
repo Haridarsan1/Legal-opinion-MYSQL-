@@ -35,9 +35,7 @@ export default function BankSignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -59,7 +57,10 @@ export default function BankSignupPage() {
     try {
       console.log('🔑 Creating BANK account with role: bank');
 
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      const signUpRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
         email: formData.officialEmail,
         password: formData.password,
         options: {
@@ -74,7 +75,10 @@ export default function BankSignupPage() {
             authorized_person_phone: formData.officialPhone,
           },
         },
+      })
       });
+      const signUpData = await signUpRes.json();
+      const { error } = signUpData;
 
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error('Failed to create user account');

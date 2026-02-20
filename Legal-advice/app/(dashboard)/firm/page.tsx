@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import Card from '@/components/shared/Card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, CheckSquare, AlertCircle, Building2, Users } from 'lucide-react';
@@ -8,12 +10,11 @@ import { redirect } from 'next/navigation';
 import { hasPermission } from '@/lib/permissions';
 
 export default async function FirmOwnerDashboard() {
-  const supabase = await createClient();
+  
 
   // 1. Get User & Profile
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
   if (!user) {
     redirect('/login');
   }
@@ -162,7 +163,8 @@ export default async function FirmOwnerDashboard() {
                     </td>
                   </tr>
                 ))}
-                {recentActivity.length === 0 && (
+                {
+  recentActivity.length === 0 && (
                   <tr>
                     <td colSpan={4} className="p-8 text-center text-slate-500">
                       No recent activity

@@ -246,7 +246,8 @@ export default function NewRequestForm({ departments }: Props) {
         </div>
 
         {/* Step 1: Visibility Selection */}
-        {currentStep === 1 && (
+        {
+  currentStep === 1 && (
           <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               How would you like to post your request?
@@ -373,7 +374,8 @@ export default function NewRequestForm({ departments }: Props) {
         )}
 
         {/* Step 2: Department & Lawyer Selection */}
-        {currentStep === 2 && (
+        {
+  currentStep === 2 && (
           <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               {visibility === 'private' ? 'Select Department & Lawyer' : 'Select Department'}
@@ -408,7 +410,8 @@ export default function NewRequestForm({ departments }: Props) {
               </div>
 
               {/* Lawyer Selection (Private Only) */}
-              {visibility === 'private' && (
+              {
+  visibility === 'private' && (
                 <div>
                   <label className="block text-sm font-bold text-slate-900 mb-3">
                     Select Lawyer <span className="text-red-600">*</span>
@@ -573,7 +576,8 @@ export default function NewRequestForm({ departments }: Props) {
         )}
 
         {/* Step 3: Project Specifications */}
-        {currentStep === 3 && (
+        {
+  currentStep === 3 && (
           <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Project Specifications</h2>
             <p className="text-slate-600 mb-8">
@@ -788,7 +792,8 @@ export default function NewRequestForm({ departments }: Props) {
             </div>
           </div>
         )}
-        {currentStep === 4 && (
+        {
+  currentStep === 4 && (
           <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Request Title</h2>
             <p className="text-slate-600 mb-8">

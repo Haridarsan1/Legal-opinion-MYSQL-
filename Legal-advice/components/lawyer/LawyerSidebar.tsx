@@ -111,7 +111,8 @@ export default function LawyerSidebar({ user }: LawyerSidebarProps) {
   return (
     <>
       {/* Mobile Overlay */}
-      {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-[80]" onClick={close} />}
+      {
+  isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-[80]" onClick={close} />}
 
       <aside
         className={`
@@ -163,7 +164,8 @@ export default function LawyerSidebar({ user }: LawyerSidebarProps) {
             </button>
 
             {/* Dropdown Menu */}
-            {isDropdownOpen && (
+            {
+  isDropdownOpen && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="py-1">
                   <button

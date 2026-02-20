@@ -82,7 +82,8 @@ export default function RequestActionsBar({ request, requestId }: RequestActions
               Edit Request
             </button>
           )}
-          {canDelete && (
+          {
+  canDelete && (
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium"
@@ -101,7 +102,8 @@ export default function RequestActionsBar({ request, requestId }: RequestActions
       )}
 
       {/* Edit Mode */}
-      {isEditing && (
+      {
+  isEditing && (
         <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900">Edit Request</h3>
@@ -158,7 +160,8 @@ export default function RequestActionsBar({ request, requestId }: RequestActions
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
+      {
+  showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 max-w-md w-full">
             <div className="flex items-center gap-3 mb-4">

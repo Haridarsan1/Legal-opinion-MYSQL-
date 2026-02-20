@@ -80,8 +80,7 @@ export default function CaseDocuments({
     userRole === 'client' ? ['submitted', 'assigned', 'in_review'].includes(requestStatus) : true; // Lawyers can always upload opinion documents
 
   // Generate signed URL for document preview
-  const getSignedUrl = async (filePath: string) => {
-    try {
+  const getSignedUrl = async (filePath: string) => {try {
       const { data, error } = await supabase.storage
         .from('legal-documents')
         .createSignedUrl(filePath, 3600); // URL valid for 1 hour
@@ -94,8 +93,7 @@ export default function CaseDocuments({
     }
   };
 
-  const handleCreateRequest = async () => {
-    if (!newRequestTitle.trim()) return;
+  const handleCreateRequest = async () => {if (!newRequestTitle.trim()) return;
 
     try {
       const { data, error } = await supabase
@@ -130,8 +128,7 @@ export default function CaseDocuments({
     }
   };
 
-  const handleFileUpload = async (requestTargetId?: string) => {
-    if (uploadedFiles.length === 0) return;
+  const handleFileUpload = async (requestTargetId?: string) => {if (uploadedFiles.length === 0) return;
 
     setIsUploading(true);
     setUploadProgress({});
@@ -218,8 +215,7 @@ export default function CaseDocuments({
     }
   };
 
-  const handleVerifyDocument = async (documentId: string, status: 'verified' | 'rejected') => {
-    if (userRole !== 'lawyer') return;
+  const handleVerifyDocument = async (documentId: string, status: 'verified' | 'rejected') => {if (userRole !== 'lawyer') return;
 
     try {
       const { data, error } = await supabase
@@ -367,7 +363,8 @@ export default function CaseDocuments({
                   </div>
 
                   {/* Uploaded files for this request */}
-                  {relatedDocs.length > 0 && (
+                  {
+  relatedDocs.length > 0 && (
                     <div className="space-y-2 pl-4 border-l-2 border-slate-300">
                       {relatedDocs.map((doc) => (
                         <div
@@ -391,7 +388,8 @@ export default function CaseDocuments({
                   )}
 
                   {/* Upload Area for specific request */}
-                  {activeRequestUpload === req.id && (
+                  {
+  activeRequestUpload === req.id && (
                     <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-blue-300">
                       <div className="mb-4">
                         <input
@@ -418,7 +416,8 @@ export default function CaseDocuments({
                         </p>
 
                         {/* Selected Files List */}
-                        {uploadedFiles.length > 0 && (
+                        {
+  uploadedFiles.length > 0 && (
                           <div className="space-y-2 mb-4">
                             {uploadedFiles.map((file, index) => (
                               <div
@@ -472,7 +471,8 @@ export default function CaseDocuments({
                       </div>
 
                       {/* Upload Progress for Requested Docs */}
-                      {isUploading && Object.keys(uploadProgress).length > 0 && (
+                      {
+  isUploading && Object.keys(uploadProgress).length > 0 && (
                         <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                           <div className="flex items-center justify-between mb-3">
                             <p className="text-sm font-semibold text-blue-900">
@@ -520,7 +520,8 @@ export default function CaseDocuments({
       </div>
 
       {/* General Upload Section */}
-      {canUpload && (
+      {
+  canUpload && (
         <div>
           <label className="block text-sm font-semibold text-slate-900 mb-2">
             General {userRole === 'lawyer' ? 'Opinion' : 'Supporting'} Documents
@@ -576,7 +577,8 @@ export default function CaseDocuments({
               ))}
 
               {/* Upload Progress Bars */}
-              {isUploading && Object.keys(uploadProgress).length > 0 && (
+              {
+  isUploading && Object.keys(uploadProgress).length > 0 && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-semibold text-blue-900">
@@ -626,7 +628,8 @@ export default function CaseDocuments({
           )}
 
           {/* Preview Modal */}
-          {previewFile && previewUrl && (
+          {
+  previewFile && previewUrl && (
             <div
               className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
               onClick={() => {
@@ -687,7 +690,8 @@ export default function CaseDocuments({
           )}
 
           {/* Uploaded Document Preview Modal */}
-          {previewDocument && (
+          {
+  previewDocument && (
             <div
               className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
               onClick={() => {
@@ -784,7 +788,8 @@ export default function CaseDocuments({
                           {formatDistanceToNow(new Date(doc.uploaded_at), { addSuffix: true })}
                         </p>
                         {/* Verification Status Badge */}
-                        {doc.verification_status && (
+                        {
+  doc.verification_status && (
                           <span
                             className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                               doc.verification_status === 'verified'
@@ -795,8 +800,10 @@ export default function CaseDocuments({
                             }`}
                           >
                             {doc.verification_status === 'verified' && '✓ Verified'}
-                            {doc.verification_status === 'rejected' && '✗ Rejected'}
-                            {doc.verification_status === 'pending' && '⏳ Pending Verification'}
+                            {
+  doc.verification_status === 'rejected' && '✗ Rejected'}
+                            {
+  doc.verification_status === 'pending' && '⏳ Pending Verification'}
                           </span>
                         )}
                       </div>
@@ -816,7 +823,8 @@ export default function CaseDocuments({
                 </div>
 
                 {/* Lawyer Comment Display */}
-                {doc.lawyer_comment && (
+                {
+  doc.lawyer_comment && (
                   <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
                     <p className="text-xs font-semibold text-slate-600 mb-1">Lawyer Comment:</p>
                     <p className="text-sm text-slate-700">{doc.lawyer_comment}</p>
@@ -824,7 +832,8 @@ export default function CaseDocuments({
                 )}
 
                 {/* Verification Actions (Lawyer Only) */}
-                {userRole === 'lawyer' &&
+                {
+  userRole === 'lawyer' &&
                   (!doc.verification_status || doc.verification_status === 'pending') &&
                   (verifyingDoc === doc.id ? (
                     <div className="mt-3 space-y-3 p-3 bg-white rounded-lg border-2 border-blue-200">
@@ -878,7 +887,8 @@ export default function CaseDocuments({
       </div>
 
       {/* Opinion Documents */}
-      {opinionDocs.length > 0 && (
+      {
+  opinionDocs.length > 0 && (
         <div>
           <h3 className="font-semibold text-slate-900 mb-3">Opinion Documents</h3>
           <div className="space-y-3">

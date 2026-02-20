@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 
 export interface SearchResult {
   type: 'lawyer' | 'practice_area' | 'service';
@@ -20,7 +22,7 @@ export interface GroupedResults {
 export async function searchGlobal(
   query: string
 ): Promise<{ success: boolean; data?: GroupedResults; error?: string }> {
-  const supabase = await createClient();
+  
 
   if (!query || query.trim().length < 2) {
     return { success: true, data: { lawyers: [], practiceAreas: [], services: [] } };

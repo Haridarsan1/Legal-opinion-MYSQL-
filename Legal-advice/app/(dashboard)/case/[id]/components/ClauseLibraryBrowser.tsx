@@ -30,9 +30,7 @@ export default function ClauseLibraryBrowser({ onInsert, department }: Props) {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const supabase = createClient();
-
-  useEffect(() => {
+    useEffect(() => {
     loadClauses();
   }, [department]);
 
@@ -199,7 +197,8 @@ export default function ClauseLibraryBrowser({ onInsert, department }: Props) {
                       {clause.category}
                     </span>
                   )}
-                  {clause.tags?.slice(0, 3).map((tag) => (
+                  {
+  clause.tags?.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
                       className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs"
@@ -215,7 +214,8 @@ export default function ClauseLibraryBrowser({ onInsert, department }: Props) {
       </div>
 
       {/* Preview Modal */}
-      {selectedClause && (
+      {
+  selectedClause && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
             {/* Modal Header */}
@@ -229,7 +229,8 @@ export default function ClauseLibraryBrowser({ onInsert, department }: Props) {
                         {selectedClause.category}
                       </span>
                     )}
-                    {selectedClause.department && (
+                    {
+  selectedClause.department && (
                       <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">
                         {selectedClause.department}
                       </span>
@@ -280,7 +281,8 @@ export default function ClauseLibraryBrowser({ onInsert, department }: Props) {
                 className="flex-1 px-4 py-2 border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? 'Copied!' : 'Copy to Clipboard'}
+                {
+  copied ? 'Copied!' : 'Copy to Clipboard'}
               </button>
               {onInsert && (
                 <button

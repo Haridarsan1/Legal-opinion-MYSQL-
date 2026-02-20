@@ -15,9 +15,7 @@ export default function CaseSecondOpinion({ requestId, userId, userRole }: CaseS
   const [opinionVersionId, setOpinionVersionId] = useState<string | null>(null);
   const [availableLawyers, setAvailableLawyers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
-
-  useEffect(() => {
+    useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch the latest opinion version

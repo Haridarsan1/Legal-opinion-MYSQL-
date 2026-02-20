@@ -82,7 +82,8 @@ export default function ViewOpinionContent({
           {/* Left/Main Content - 8 columns on desktop */}
           <div className="lg:col-span-8 space-y-8">
             {/* Executive Summary */}
-            {request.executive_summary && <ExecutiveSummary summary={request.executive_summary} />}
+            {
+  request.executive_summary && <ExecutiveSummary summary={request.executive_summary} />}
 
             {/* Full Legal Opinion */}
             <OpinionContent
@@ -115,7 +116,8 @@ export default function ViewOpinionContent({
       </div>
 
       {/* Modals */}
-      {showClarificationModal && (
+      {
+  showClarificationModal && (
         <RequestClarificationModal
           requestId={request.id}
           onClose={() => setShowClarificationModal(false)}
@@ -123,7 +125,8 @@ export default function ViewOpinionContent({
         />
       )}
 
-      {showAcceptModal && (
+      {
+  showAcceptModal && (
         <AcceptOpinionAction
           requestId={request.id}
           requestNumber={request.request_number}
@@ -133,7 +136,8 @@ export default function ViewOpinionContent({
         />
       )}
 
-      {showRatingModal && (
+      {
+  showRatingModal && (
         <RatingModal
           requestId={request.id}
           lawyerId={request.lawyer?.id}

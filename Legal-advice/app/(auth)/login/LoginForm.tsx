@@ -27,13 +27,8 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-
-      // Sign in with email and password
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+            // Sign in with email and password
+      const { error } = { error: 'Use NextAuth signIn() instead' }; // TODO: migrate to signIn from next-auth/react
 
       if (error) {
         toast.error(error.message);

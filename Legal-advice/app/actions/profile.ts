@@ -1,38 +1,24 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-
-/**
- * Server Actions for Profile Management
- */
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function updateProfile(formData: FormData) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return { error: 'Unauthorized' };
-  }
+  const session = await auth();
+  const user = session?.user;
+  if (!user?.id) return { error: 'Unauthorized' };
 
   try {
     const fullName = formData.get('full_name') as string;
     const phone = formData.get('phone') as string;
     const organization = formData.get('organization') as string;
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        full_name: fullName,
-        phone,
-        organization,
-      })
-      .eq('id', user.id);
-
-    if (error) throw error;
+    await prisma.profiles.update({
+      where: { id: user.id },
+      data: { full_name: fullName, phone, organization },
+    });
 
     revalidatePath('/dashboard/client/profile');
     return { success: true };
@@ -42,33 +28,22 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function updatePassword(currentPassword: string, newPassword: string) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return { error: 'Unauthorized' };
-  }
+  const session = await auth();
+  const user = session?.user;
+  if (!user?.id) return { error: 'Unauthorized' };
 
   try {
-    // Verify current password by attempting to sign in
-    const { error: verifyError } = await supabase.auth.signInWithPassword({
-      email: user.email!,
-      password: currentPassword,
+    const profile = await prisma.profiles.findUnique({ where: { id: user.id } });
+    if (!profile?.password) return { error: 'No password set for this account' };
+
+    const passwordsMatch = await bcrypt.compare(currentPassword, profile.password);
+    if (!passwordsMatch) return { error: 'Current password is incorrect' };
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.profiles.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
     });
-
-    if (verifyError) {
-      return { error: 'Current password is incorrect' };
-    }
-
-    // Update password
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (error) throw error;
 
     return { success: true };
   } catch (error: any) {
@@ -77,47 +52,11 @@ export async function updatePassword(currentPassword: string, newPassword: strin
 }
 
 export async function uploadProfilePicture(file: File) {
-  const supabase = await createClient();
+  const session = await auth();
+  const user = session?.user;
+  if (!user?.id) return { error: 'Unauthorized' };
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return { error: 'Unauthorized' };
-  }
-
-  try {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
-
-    // Upload to storage
-    const { error: uploadError } = await supabase.storage
-      .from('profile-pictures')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-      });
-
-    if (uploadError) throw uploadError;
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
-
-    // Update profile
-    const { error } = await supabase
-      .from('profiles')
-      .update({ avatar_url: publicUrl })
-      .eq('id', user.id);
-
-    if (error) throw error;
-
-    revalidatePath('/dashboard/client/profile');
-    return { success: true, url: publicUrl };
-  } catch (error: any) {
-    return { error: error.message };
-  }
+  // NOTE: File storage via Supabase is removed. 
+  // Implement your own file storage here (e.g., local disk, S3, Cloudinary).
+  return { error: 'File upload not yet configured. Please integrate a storage provider.' };
 }

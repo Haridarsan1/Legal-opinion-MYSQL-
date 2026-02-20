@@ -124,7 +124,8 @@ export default function OpinionChecklist({
                 }`}
               >
                 {item.label}
-                {item.required && <span className="ml-1 text-red-500">*</span>}
+                {
+  item.required && <span className="ml-1 text-red-500">*</span>}
               </p>
             </div>
           </button>
@@ -140,11 +141,13 @@ export default function OpinionChecklist({
         </div>
       )}
 
-      {unresolvedClarifications > 0 && (
+      {
+  unresolvedClarifications > 0 && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-800">
             ⚠️ {unresolvedClarifications} unresolved{' '}
-            {unresolvedClarifications === 1 ? 'clarification' : 'clarifications'}. Resolve before
+            {
+  unresolvedClarifications === 1 ? 'clarification' : 'clarifications'}. Resolve before
             submitting opinion.
           </p>
         </div>

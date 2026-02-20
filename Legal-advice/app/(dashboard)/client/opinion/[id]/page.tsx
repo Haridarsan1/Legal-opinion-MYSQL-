@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import ViewOpinionContent from './components/ViewOpinionContent';
 
@@ -10,13 +12,13 @@ interface PageProps {
 
 export default async function ClientOpinionPage({ params }: PageProps) {
   const { id } = await params;
-  const supabase = await createClient();
+  
 
   // Get current user
   const {
     data: { user },
     error: userError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (userError || !user) {
     redirect('/login');

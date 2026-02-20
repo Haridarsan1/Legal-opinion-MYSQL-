@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/server';
 /**
  * Example Integration of Enterprise Lawyer Workspace
  *
@@ -20,7 +21,6 @@ import {
 } from '@/app/actions/lawyer-workspace';
 import { resolveLifecycleStatus } from '@/app/domain/lifecycle/LifecycleResolver';
 import Link from 'next/link';
-import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 // Import new components

@@ -110,7 +110,8 @@ export default function AuditTimeline({ events, userRole, defaultCollapsed = fal
               <div className="flex items-start justify-between gap-3 mb-1">
                 <div className="flex items-center gap-2 flex-1">
                   {/* Actor Avatar */}
-                  {event.actor.role !== 'system' &&
+                  {
+  event.actor.role !== 'system' &&
                     (event.actor.avatar ? (
                       <Image
                         src={event.actor.avatar}
@@ -166,7 +167,8 @@ export default function AuditTimeline({ events, userRole, defaultCollapsed = fal
       })}
 
       {/* Collapse/Expand Button */}
-      {events.length > 3 && (
+      {
+  events.length > 3 && (
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"

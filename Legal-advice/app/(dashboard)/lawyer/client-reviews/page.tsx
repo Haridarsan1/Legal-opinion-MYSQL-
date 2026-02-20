@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,10 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ClientReviewsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect('/login');
@@ -41,7 +40,8 @@ export default async function ClientReviewsPage() {
       </header>
 
       {/* Default State: No Reviews */}
-      {reviews.length === 0 && (
+      {
+  reviews.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200">
           <div className="bg-slate-50 p-4 rounded-full mb-4">
             <MessageCircle className="w-8 h-8 text-slate-400" />
@@ -53,7 +53,8 @@ export default async function ClientReviewsPage() {
         </div>
       )}
 
-      {reviews.length > 0 && (
+      {
+  reviews.length > 0 && (
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Summary Card */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 h-fit space-y-6">

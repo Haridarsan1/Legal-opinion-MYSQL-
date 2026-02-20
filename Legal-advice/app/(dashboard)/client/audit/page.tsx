@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import AuditLogsContent from './AuditLogsContent';
 
 export const metadata: Metadata = {
@@ -8,11 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function AuditLogsPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     return <div>Unauthorized</div>;

@@ -91,7 +91,8 @@ export default function LawyerCard({ lawyer, viewMode, onPreview }: LawyerCardPr
               {initials}
             </div>
           )}
-          {lawyer.availability_status === 'Available' && (
+          {
+  lawyer.availability_status === 'Available' && (
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
           )}
         </div>
@@ -116,7 +117,8 @@ export default function LawyerCard({ lawyer, viewMode, onPreview }: LawyerCardPr
                     Top Rated
                   </span>
                 )}
-                {isRisingStar && (
+                {
+  isRisingStar && (
                   <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wide rounded-full border border-blue-200">
                     Rising Star
                   </span>
@@ -246,7 +248,8 @@ export default function LawyerCard({ lawyer, viewMode, onPreview }: LawyerCardPr
           </div>
 
           {/* Status Badges */}
-          {isOnline && (
+          {
+  isOnline && (
             <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-200 shadow-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -260,7 +263,8 @@ export default function LawyerCard({ lawyer, viewMode, onPreview }: LawyerCardPr
         {/* Name & Title */}
         <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-primary transition-colors flex items-center justify-center gap-1.5">
           {lawyer.full_name}
-          {isVerified && <ShieldCheck className="w-4 h-4 text-blue-500" />}
+          {
+  isVerified && <ShieldCheck className="w-4 h-4 text-blue-500" />}
         </h3>
         <p className="text-sm font-medium text-slate-500 mb-2 truncate px-4">
           {lawyer.title || primarySpecialization}
@@ -273,7 +277,8 @@ export default function LawyerCard({ lawyer, viewMode, onPreview }: LawyerCardPr
               TOP RATED
             </span>
           )}
-          {isRisingStar && (
+          {
+  isRisingStar && (
             <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-200 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
               RISING STAR
@@ -282,7 +287,8 @@ export default function LawyerCard({ lawyer, viewMode, onPreview }: LawyerCardPr
         </div>
 
         {/* Chips */}
-        {specArray.length > 0 && (
+        {
+  specArray.length > 0 && (
           <div className="flex flex-wrap justify-center gap-1.5 mb-4">
             {specArray.slice(0, 2).map((spec, i) => (
               <span
@@ -292,7 +298,8 @@ export default function LawyerCard({ lawyer, viewMode, onPreview }: LawyerCardPr
                 {spec}
               </span>
             ))}
-            {specArray.length > 2 && (
+            {
+  specArray.length > 2 && (
               <span className="px-2 py-1 bg-slate-50 text-slate-500 text-xs font-semibold rounded-lg border border-slate-100">
                 +{specArray.length - 2}
               </span>

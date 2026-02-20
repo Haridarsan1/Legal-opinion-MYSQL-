@@ -22,9 +22,7 @@ export default function NotificationsPageContent({
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(initialNotifications.length === PAGE_SIZE);
-  const supabase = createClient();
-
-  const unreadCount = useMemo(
+    const unreadCount = useMemo(
     () => notifications.filter((notification) => !notification.is_read).length,
     [notifications]
   );
@@ -150,14 +148,16 @@ export default function NotificationsPageContent({
         </div>
       )}
 
-      {hasMore && (
+      {
+  hasMore && (
         <button
           type="button"
           onClick={handleLoadMore}
           className="mx-auto inline-flex items-center gap-2 px-5 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {loadingMore ? 'Loading' : 'Load more'}
+          {
+  loadingMore ? 'Loading' : 'Load more'}
         </button>
       )}
     </div>

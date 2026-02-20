@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -10,18 +11,15 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const supabase = createClient();
-
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+      const session = await auth();
+  const user = session?.user;
 
       if (resetError) {
         throw resetError;
@@ -71,7 +69,8 @@ export default function ForgotPasswordPage() {
             </div>
 
             {/* Success Message */}
-            {success && (
+            {
+  success && (
               <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
                 <p className="font-semibold mb-1">✓ Reset link sent successfully!</p>
                 <p className="text-xs">Check your email for password reset instructions.</p>
@@ -79,7 +78,8 @@ export default function ForgotPasswordPage() {
             )}
 
             {/* Error Message */}
-            {error && (
+            {
+  error && (
               <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>

@@ -174,7 +174,8 @@ export default function LawyerAcceptanceCard({
         <div className="pt-4 border-t border-slate-200">
           <p className="text-xs text-slate-500">
             Submitted{' '}
-            {new Date(submittedAt).toLocaleDateString('en-US', {
+            {
+  new Date(submittedAt).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',

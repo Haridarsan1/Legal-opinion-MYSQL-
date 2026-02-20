@@ -213,7 +213,8 @@ export default function ProposalSubmissionModal({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Read Only Warning */}
-          {isReadOnly && (
+          {
+  isReadOnly && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-3">
               <AlertTriangle className="size-5 text-amber-600 shrink-0" />
               <p className="text-sm text-amber-800">
@@ -234,7 +235,8 @@ export default function ProposalSubmissionModal({
                 <p className="text-lg font-bold text-blue-700">
                   {minBudget ? `₹${minBudget.toLocaleString()}` : 'Open'}
                   {' - '}
-                  {maxBudget ? `₹${maxBudget.toLocaleString()}` : 'Open'}
+                  {
+  maxBudget ? `₹${maxBudget.toLocaleString()}` : 'Open'}
                 </p>
               </div>
             </div>
@@ -251,7 +253,8 @@ export default function ProposalSubmissionModal({
 
             <div className="space-y-4">
               {/* Slider (only if range exists or at least max exists) */}
-              {maxBudget && !isReadOnly && (
+              {
+  maxBudget && !isReadOnly && (
                 <div className="px-1">
                   <input
                     type="range"

@@ -86,7 +86,8 @@ export default function MarketInsightsPanel({ stats, className = '' }: MarketIns
       </div>
 
       {/* Fee Range (if available) */}
-      {stats.lowest_fee !== null &&
+      {
+  stats.lowest_fee !== null &&
         stats.highest_fee !== null &&
         stats.lowest_fee !== stats.highest_fee && (
           <div className="mt-3 pt-3 border-t border-blue-200/50">

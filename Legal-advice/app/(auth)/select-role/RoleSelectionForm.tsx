@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -60,10 +61,8 @@ export default function RoleSelectionForm() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+            const session = await auth();
+  const user = session?.user;
 
       if (!user) {
         toast.error('You must be logged in to select a role');

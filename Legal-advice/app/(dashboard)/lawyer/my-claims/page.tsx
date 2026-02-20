@@ -158,7 +158,8 @@ export default function MyPublicClaimsPage() {
         ) : (
           <div className="space-y-8">
             {/* Pending Claims */}
-            {pendingClaims.length > 0 && (
+            {
+  pendingClaims.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Clock className="size-5 text-blue-600" />
@@ -183,7 +184,8 @@ export default function MyPublicClaimsPage() {
             )}
 
             {/* Selected Claims */}
-            {selectedClaims.length > 0 && (
+            {
+  selectedClaims.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle className="size-5 text-green-600" />
@@ -236,11 +238,13 @@ export default function MyPublicClaimsPage() {
                                 <span>{claim.timeline_estimate}</span>
                               </div>
                             )}
-                            {claim.fee_estimate && (
+                            {
+  claim.fee_estimate && (
                               <div className="flex items-center gap-2 text-slate-600">
                                 <IndianRupee className="size-4 text-slate-400" />
                                 <span>
-                                  {claim.fee_currency} {claim.fee_estimate.toFixed(2)}
+                                  {claim.fee_currency} {
+  claim.fee_estimate.toFixed(2)}
                                 </span>
                               </div>
                             )}
@@ -263,7 +267,8 @@ export default function MyPublicClaimsPage() {
             )}
 
             {/* Rejected Claims */}
-            {rejectedClaims.length > 0 && (
+            {
+  rejectedClaims.length > 0 && (
               <div>
                 <h2 className="text-lg font-bold text-slate-900 mb-4">
                   Rejected Proposals ({rejectedClaims.length})
@@ -286,7 +291,8 @@ export default function MyPublicClaimsPage() {
             )}
 
             {/* Withdrawn Claims */}
-            {withdrawnClaims.length > 0 && (
+            {
+  withdrawnClaims.length > 0 && (
               <div>
                 <h2 className="text-lg font-bold text-slate-900 mb-4">
                   Withdrawn Proposals ({withdrawnClaims.length})
@@ -368,7 +374,8 @@ function ClaimCard({
                 <span>{claim.timeline_estimate}</span>
               </div>
             )}
-            {claim.fee_estimate && (
+            {
+  claim.fee_estimate && (
               <div className="flex items-center gap-1 text-slate-600">
                 <IndianRupee className="size-4 text-slate-400" />
                 <span>{claim.fee_estimate.toFixed(2)}</span>

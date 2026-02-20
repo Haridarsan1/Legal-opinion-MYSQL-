@@ -1,18 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Navbar from '@/components/layout/Navbar';
 import { SidebarProvider } from '@/components/providers/SidebarProvider';
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {const session = await auth();
+  const user = session?.user;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
+  if (!user) {redirect('/login');
   }
 
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();

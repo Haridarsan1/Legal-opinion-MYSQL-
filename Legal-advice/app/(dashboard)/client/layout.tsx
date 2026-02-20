@@ -1,16 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import ClientSidebar from '@/components/client/ClientSidebar';
 
-export default async function ClientLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
+export default async function ClientLayout({ children }: { children: React.ReactNode }) {const session = await auth();
+  const user = session?.user;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/auth/login');
+  if (!user) {redirect('/auth/login');
   }
 
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();

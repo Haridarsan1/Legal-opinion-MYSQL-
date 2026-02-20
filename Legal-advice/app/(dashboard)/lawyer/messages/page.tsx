@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import MessagesContent from '../../client/messages/MessagesContent';
 
@@ -9,11 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function LawyerMessagesPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect('/login');

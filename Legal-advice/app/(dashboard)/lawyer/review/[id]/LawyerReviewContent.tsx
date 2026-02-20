@@ -240,7 +240,8 @@ export default function LawyerReviewContent({
             </div>
             <p className="text-slate-600 text-sm">
               Case #{request.request_number} • Submitted{' '}
-              {format(new Date(request.created_at), 'MMM d, yyyy')}
+              {
+  format(new Date(request.created_at), 'MMM d, yyyy')}
             </p>
           </div>
         </div>
@@ -323,7 +324,8 @@ export default function LawyerReviewContent({
                     className={`w-4 h-4 ${activeTab === tab.id ? 'text-primary' : 'text-slate-400'}`}
                   />
                   {tab.label}
-                  {tab.badge !== undefined && (
+                  {
+  tab.badge !== undefined && (
                     <span
                       className={`
                                             ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold leading-none
@@ -353,7 +355,8 @@ export default function LawyerReviewContent({
                 </div>
               )}
 
-              {activeTab === 'documents' && (
+              {
+  activeTab === 'documents' && (
                 <div className="animate-in fade-in duration-300">
                   <CaseDocuments
                     requestId={request.id}
@@ -366,7 +369,8 @@ export default function LawyerReviewContent({
                 </div>
               )}
 
-              {activeTab === 'clarifications' && (
+              {
+  activeTab === 'clarifications' && (
                 <div className="animate-in fade-in duration-300">
                   <CaseClarifications
                     requestId={request.id}
@@ -378,7 +382,8 @@ export default function LawyerReviewContent({
                 </div>
               )}
 
-              {activeTab === 'opinion' && (
+              {
+  activeTab === 'opinion' && (
                 <CaseOpinion
                   requestId={request.id}
                   opinionText={request.opinion_text}
@@ -391,7 +396,8 @@ export default function LawyerReviewContent({
                 />
               )}
 
-              {activeTab === 'second_opinion' && (
+              {
+  activeTab === 'second_opinion' && (
                 <div className="animate-in fade-in duration-300">
                   <CaseSecondOpinion requestId={request.id} userId={lawyerId} userRole="lawyer" />
                 </div>
@@ -403,7 +409,8 @@ export default function LawyerReviewContent({
         {/* Right Column - Client & Timeline (Always Visible) */}
         <div className="space-y-6">
           {/* Internal Review Reviewer Card */}
-          {isReviewer && secondOpinionRequest && (
+          {
+  isReviewer && secondOpinionRequest && (
             <div className="bg-white rounded-2xl border-2 border-indigo-100 shadow-sm p-6 relative overflow-hidden">
               <div className="absolute -top-6 -right-6 p-4 opacity-5">
                 <Signature className="w-40 h-40 text-indigo-900" />
@@ -483,7 +490,8 @@ export default function LawyerReviewContent({
 
                   <p className="text-xs text-slate-500">
                     Submitted on{' '}
-                    {format(
+                    {
+  format(
                       new Date(secondOpinionRequest.updated_at || secondOpinionRequest.created_at),
                       'MMM d, yyyy'
                     )}
@@ -493,7 +501,8 @@ export default function LawyerReviewContent({
             </div>
           )}
 
-          {request.client && (
+          {
+  request.client && (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <h3 className="font-bold text-slate-900 mb-4 flex items-center justify-between">
                 Client Details

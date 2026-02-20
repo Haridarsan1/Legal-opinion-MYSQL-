@@ -67,7 +67,8 @@ export default function ClientRequestsList({ initialRequests }: ClientRequestsLi
       </div>
 
       {/* Content */}
-      {filteredRequests.length === 0 ? (
+      {
+  filteredRequests.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-white p-12 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 mb-4">
             {activeTab === 'public' ? (

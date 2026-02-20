@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { Metadata } from 'next';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import NewRequestForm from './NewRequestForm';
 
 export const metadata: Metadata = {
@@ -8,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewRequestPage() {
-  const supabase = await createClient();
+  
 
   // Fetch departments for selection
   const { data: departments } = await supabase

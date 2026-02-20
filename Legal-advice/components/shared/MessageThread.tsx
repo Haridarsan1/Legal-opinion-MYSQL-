@@ -45,9 +45,7 @@ export default function MessageThread({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const supabase = createClient();
-
-  // Scroll to bottom of messages
+    // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -77,41 +75,10 @@ export default function MessageThread({
 
   // Setup realtime subscription
   useEffect(() => {
-    const channel = supabase
-      .channel(`request_messages:${requestId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'request_messages',
-          filter: `request_id=eq.${requestId}`,
-        },
-        (payload) => {
-          // Fetch the complete message with sender/recipient details
-          const fetchNewMessage = async () => {
-            const result = await getRequestMessages(requestId);
-            if (result.success && result.data) {
-              const normalizedMessages = result.data.map((msg: any) => ({
-                ...msg,
-                sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender,
-                recipient: Array.isArray(msg.recipient) ? msg.recipient[0] : msg.recipient,
-              }));
-              setMessages(normalizedMessages);
-              scrollToBottom();
-              // Mark as read if it's for current user
-              if (payload.new.recipient_id === currentUserId) {
-                await markMessagesAsRead(requestId);
-              }
-            }
-          };
-          fetchNewMessage();
-        }
-      )
-      .subscribe();
+    const 
 
     return () => {
-      supabase.removeChannel(channel);
+      
     };
   }, [requestId, currentUserId, supabase]);
 
@@ -196,7 +163,8 @@ export default function MessageThread({
                   }`}
                 >
                   {/* Avatar */}
-                  {message.sender.avatar_url ? (
+                  {
+  message.sender.avatar_url ? (
                     <img
                       src={message.sender.avatar_url}
                       alt={message.sender.full_name}

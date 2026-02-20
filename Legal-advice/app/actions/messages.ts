@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -12,12 +14,10 @@ export async function sendMessage(
   messageText: string,
   attachments?: any[]
 ) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -98,12 +98,10 @@ export async function sendMessage(
  * Get all messages for a request
  */
 export async function getRequestMessages(requestId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -160,12 +158,10 @@ export async function getRequestMessages(requestId: string) {
  * Mark messages as read for the current user
  */
 export async function markMessagesAsRead(requestId: string) {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -196,12 +192,10 @@ export async function markMessagesAsRead(requestId: string) {
  * Get all requests with messages for the current user (client or lawyer)
  */
 export async function getRequestsWithMessages() {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
@@ -272,12 +266,10 @@ export async function getRequestsWithMessages() {
  * List all available lawyers for assignment
  */
 export async function listAvailableLawyers() {
-  const supabase = await createClient();
-
-  const {
+  const supabase = await createClient();const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
 
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };

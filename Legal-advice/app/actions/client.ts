@@ -1,14 +1,16 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
 
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
+
 export async function getClientMarketplaceMetrics() {
-  const supabase = await createClient();
+  
 
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = { data: { user: (await auth())?.user }, error: null };
   if (authError || !user) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -67,10 +69,8 @@ export async function getClientDashboardSummaries(): Promise<{
   data?: LifecycleSummary[];
   error?: string;
 }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) return { success: false, error: 'Unauthorized' };
 

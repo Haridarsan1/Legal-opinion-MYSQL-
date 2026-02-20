@@ -1,4 +1,5 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -22,9 +23,7 @@ import Link from 'next/link';
 
 export default function FirmSignupPage() {
   const router = useRouter();
-  const supabase = createClient();
-
-  const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Form State
@@ -41,7 +40,7 @@ export default function FirmSignupPage() {
     const checkAuth = async () => {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = { data: { user: (await auth())?.user }, error: null };
       if (session) {
         setIsAuthenticated(true);
         if (session.user.email) setEmail(session.user.email);
@@ -69,7 +68,10 @@ export default function FirmSignupPage() {
     try {
       // 1. Authenticate if needed
       if (!isAuthenticated) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const signUpRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           email,
           password,
           options: {
@@ -78,7 +80,10 @@ export default function FirmSignupPage() {
               role: 'firm',
             },
           },
-        });
+        })
+      });
+      const signUpData = await signUpRes.json();
+      const { error } = signUpData;
 
         if (authError) throw authError;
 
@@ -94,7 +99,7 @@ export default function FirmSignupPage() {
       // 2. Create Firm
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = { data: { user: (await auth())?.user }, error: null };
       if (isAuthenticated && !session) {
         // Session might be missing if just signed up with email confirmation flow
         // But we usually need session to create firm.
@@ -300,7 +305,8 @@ export default function FirmSignupPage() {
                         </button>
                       </div>
                       {/* Strength Meter Mockup */}
-                      {password.length > 0 && (
+                      {
+  password.length > 0 && (
                         <div className="flex gap-1 mt-2">
                           <div
                             className={`h-1 flex-1 rounded-full ${password.length > 0 ? 'bg-green-500' : 'bg-slate-100'}`}

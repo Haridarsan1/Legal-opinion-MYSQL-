@@ -1,6 +1,8 @@
 'use server';
-
 import { createClient } from '@/lib/supabase/server';
+
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { hasPermission } from '@/lib/permissions';
 
@@ -61,15 +63,17 @@ interface ActionResult<T = any> {
 
 export async function createProposal(
   formData: FormData
-): Promise<ActionResult<{ proposalId: string }>> {
+): Promise<ActionResult<{
+  const supabase = await createClient();
+proposalId: string }>> {
   try {
-    const supabase = await createClient();
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized. Please log in.' };
@@ -193,14 +197,14 @@ export async function createProposal(
 export async function getProposalsForRequest(
   requestId: string
 ): Promise<ActionResult<ProposalWithDetails[]>> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -255,14 +259,14 @@ export async function getProposalsForRequest(
 // =====================================================
 
 export async function getMyProposals(): Promise<ActionResult<ProposalWithDetails[]>> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -308,20 +312,20 @@ export async function getMyProposals(): Promise<ActionResult<ProposalWithDetails
 export async function updateProposal(
   proposalId: string,
   updates: {
+  const supabase = await createClient();
     proposedFee?: number;
     timelineDays?: number;
     proposalMessage?: string;
     attachments?: any[];
   }
-): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+): Promise<ActionResult> {try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -418,14 +422,14 @@ export async function updateProposal(
 // =====================================================
 
 export async function withdrawProposal(proposalId: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -467,14 +471,14 @@ export async function withdrawProposal(proposalId: string): Promise<ActionResult
 // =====================================================
 
 export async function shortlistProposal(proposalId: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -546,14 +550,14 @@ export async function shortlistProposal(proposalId: string): Promise<ActionResul
 // =====================================================
 
 export async function acceptProposal(proposalId: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -649,14 +653,14 @@ export async function acceptProposal(proposalId: string): Promise<ActionResult> 
 // =====================================================
 
 export async function rejectProposal(proposalId: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();try {
+    
 
     // Get current user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = { data: { user: (await auth())?.user }, error: null };
 
     if (userError || !user) {
       return { success: false, error: 'Unauthorized' };
@@ -729,9 +733,11 @@ export async function rejectProposal(proposalId: string): Promise<ActionResult> 
 
 export async function getProposalCount(
   requestId: string
-): Promise<ActionResult<{ count: number }>> {
+): Promise<ActionResult<{
+  const supabase = await createClient();
+count: number }>> {
   try {
-    const supabase = await createClient();
+    
 
     const { count, error } = await supabase
       .from('request_proposals')

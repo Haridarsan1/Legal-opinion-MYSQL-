@@ -32,7 +32,8 @@ export default function OpinionTabs({ activeTab, onTabChange, counts }: Props) {
           }`}
         >
           {tab.label}
-          {tab.count > 0 && (
+          {
+  tab.count > 0 && (
             <span
               className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
                 activeTab === tab.id ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-600'

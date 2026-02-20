@@ -303,7 +303,8 @@ export default function LawyersListContent({ lawyers, departments }: Props) {
                     onRemove={() => setFilters((prev) => ({ ...prev, location: '' }))}
                   />
                 )}
-                {filters.specializations.map((spec) => (
+                {
+  filters.specializations.map((spec) => (
                   <FilterChip
                     key={spec}
                     label={spec}
@@ -315,25 +316,29 @@ export default function LawyersListContent({ lawyers, departments }: Props) {
                     }
                   />
                 ))}
-                {filters.minExperience > 0 && (
+                {
+  filters.minExperience > 0 && (
                   <FilterChip
                     label={`${filters.minExperience}+ Years Exp.`}
                     onRemove={() => setFilters((prev) => ({ ...prev, minExperience: 0 }))}
                   />
                 )}
-                {filters.minRating > 0 && (
+                {
+  filters.minRating > 0 && (
                   <FilterChip
                     label={`${filters.minRating}+ Stars`}
                     onRemove={() => setFilters((prev) => ({ ...prev, minRating: 0 }))}
                   />
                 )}
-                {filters.availableNow && (
+                {
+  filters.availableNow && (
                   <FilterChip
                     label="Available Now"
                     onRemove={() => setFilters((prev) => ({ ...prev, availableNow: false }))}
                   />
                 )}
-                {filters.maxFee < 10000 && (
+                {
+  filters.maxFee < 10000 && (
                   <FilterChip
                     label={`Max ₹${filters.maxFee}`}
                     onRemove={() => setFilters((prev) => ({ ...prev, maxFee: 10000 }))}

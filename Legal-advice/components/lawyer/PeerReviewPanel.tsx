@@ -1,9 +1,12 @@
 'use client';
+import { useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Card from '@/components/shared/Card';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+
+const supabase = createClient();
 
 interface PeerReview {
   id: string;
@@ -44,10 +47,7 @@ export default function PeerReviewPanel({
   requestId,
   mode,
   onReviewComplete,
-}: PeerReviewPanelProps) {
-  const supabase = createClient();
-
-  const [peerReviews, setPeerReviews] = useState<PeerReview[]>([]);
+}: PeerReviewPanelProps) {const [peerReviews, setPeerReviews] = useState<PeerReview[]>([]);
   const [sectionComments, setSectionComments] = useState<SectionComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -72,9 +72,7 @@ export default function PeerReviewPanel({
   const [commentType, setCommentType] = useState<'suggestion' | 'issue' | 'approval'>('suggestion');
 
   // Load peer reviews
-  useEffect(() => {
-    const loadPeerReviews = async () => {
-      setIsLoading(true);
+  useEffect(() => {const loadPeerReviews = async () => {setIsLoading(true);
 
       const { data: reviews } = await supabase
         .from('peer_reviews')
@@ -138,7 +136,7 @@ export default function PeerReviewPanel({
       return;
     }
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const user = (await auth())?.user;
     if (!user) return;
 
     // Get opinion submission ID
@@ -225,7 +223,7 @@ export default function PeerReviewPanel({
       return;
     }
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const user = (await auth())?.user;
     if (!user) return;
 
     // Get peer review ID (assuming reviewer is adding comment)
@@ -332,13 +330,15 @@ export default function PeerReviewPanel({
                 </div>
               )}
 
-              {review.reviewed_at && (
+              {
+  review.reviewed_at && (
                 <p className="text-xs text-gray-500 mt-2">
                   Reviewed: {new Date(review.reviewed_at).toLocaleString()}
                 </p>
               )}
 
-              {mode === 'review' && review.status === 'requested' && (
+              {
+  mode === 'review' && review.status === 'requested' && (
                 <button
                   onClick={() => {
                     setActiveReviewId(review.id);
@@ -353,7 +353,8 @@ export default function PeerReviewPanel({
           </Card>
         ))}
 
-        {peerReviews.length === 0 && (
+        {
+  peerReviews.length === 0 && (
           <Card>
             <div className="p-6 text-center text-gray-500">No peer reviews requested yet</div>
           </Card>
@@ -361,7 +362,8 @@ export default function PeerReviewPanel({
       </div>
 
       {/* Section Comments */}
-      {mode === 'review' && (
+      {
+  mode === 'review' && (
         <div>
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-semibold">Section Comments</h4>
@@ -403,7 +405,8 @@ export default function PeerReviewPanel({
                     <p className="text-sm text-gray-700">{comment.comment_text}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       {comment.creator?.full_name} •{' '}
-                      {new Date(comment.created_at).toLocaleDateString()}
+                      {
+  new Date(comment.created_at).toLocaleDateString()}
                     </p>
                   </div>
 
@@ -423,7 +426,8 @@ export default function PeerReviewPanel({
       )}
 
       {/* Request Review Modal */}
-      {showRequestModal && (
+      {
+  showRequestModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Request Peer Review</h3>
@@ -476,7 +480,8 @@ export default function PeerReviewPanel({
       )}
 
       {/* Submit Review Modal */}
-      {showReviewModal && (
+      {
+  showReviewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Submit Peer Review</h3>
@@ -526,7 +531,8 @@ export default function PeerReviewPanel({
       )}
 
       {/* Add Comment Modal */}
-      {showCommentForm && (
+      {
+  showCommentForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Add Section Comment</h3>

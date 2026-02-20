@@ -29,7 +29,8 @@ export default function SearchSuggestions({ results, isLoading, onSelect, visibl
       ) : (
         <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
           {/* Practice Areas Section */}
-          {results.practiceAreas.length > 0 && (
+          {
+  results.practiceAreas.length > 0 && (
             <div className="py-2">
               <h3 className="px-4 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Practice Areas
@@ -61,7 +62,8 @@ export default function SearchSuggestions({ results, isLoading, onSelect, visibl
           )}
 
           {/* Lawyers Section */}
-          {results.lawyers.length > 0 && (
+          {
+  results.lawyers.length > 0 && (
             <div className="py-2 border-t border-slate-100">
               <h3 className="px-4 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Legal Experts

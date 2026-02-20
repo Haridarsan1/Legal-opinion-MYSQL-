@@ -11,9 +11,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function testSupabaseConnection() {
   try {
-    const supabase = await createClient();
-
-    // Test 1: Get test user profiles
+        // Test 1: Get test user profiles
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, email, role, full_name')

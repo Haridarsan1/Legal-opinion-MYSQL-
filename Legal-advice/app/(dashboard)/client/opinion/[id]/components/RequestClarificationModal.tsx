@@ -4,16 +4,15 @@ import { useState } from 'react';
 import { X, Send, Paperclip, MessageCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
+const supabase = createClient();
+
 interface Props {
   requestId: string;
   onClose: () => void;
   currentUserId: string;
 }
 
-export default function RequestClarificationModal({ requestId, onClose, currentUserId }: Props) {
-  const supabase = createClient();
-
-  const [subject, setSubject] = useState('');
+export default function RequestClarificationModal({ requestId, onClose, currentUserId }: Props) {const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [priority, setPriority] = useState<'normal' | 'high' | 'urgent'>('normal');
   const [isSubmitting, setIsSubmitting] = useState(false);

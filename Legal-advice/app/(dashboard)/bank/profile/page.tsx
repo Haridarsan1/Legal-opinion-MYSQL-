@@ -1,16 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import BankProfileContent from './BankProfileContent';
 
-export default async function BankProfilePage() {
-  const supabase = await createClient();
+export default async function BankProfilePage() {const session = await auth();
+  const user = session?.user;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/auth/login');
+  if (!user) {redirect('/auth/login');
   }
 
   // Fetch bank profile data

@@ -156,7 +156,8 @@ export default function ClarificationsSection({
 
       <div className="p-6">
         {/* Request Clarification Form (Lawyer only) */}
-        {userRole === 'lawyer' && showRequestForm && (
+        {
+  userRole === 'lawyer' && showRequestForm && (
           <div className="mb-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
             <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
               <MessageSquare className="size-5 text-blue-600" />
@@ -203,7 +204,8 @@ export default function ClarificationsSection({
                     >
                       <Tag className="size-3" />
                       {tag}
-                      {selectedTags.includes(tag) && <X className="size-3" />}
+                      {
+  selectedTags.includes(tag) && <X className="size-3" />}
                     </button>
                   ))}
                 </div>
@@ -271,7 +273,8 @@ export default function ClarificationsSection({
         )}
 
         {/* Clarifications List */}
-        {clarifications && clarifications.length > 0 ? (
+        {
+  clarifications && clarifications.length > 0 ? (
           <div className="space-y-4">
             {clarifications.map((clar) => (
               <div
@@ -305,19 +308,22 @@ export default function ClarificationsSection({
                     <p className="text-sm text-slate-700 mb-2">{clar.message}</p>
                     <p className="text-xs text-slate-500">
                       Asked {formatDistanceToNow(new Date(clar.created_at), { addSuffix: true })} by{' '}
-                      {clar.requester?.full_name || 'Lawyer'}
+                      {
+  clar.requester?.full_name || 'Lawyer'}
                     </p>
                   </div>
                 </div>
 
                 {/* Client Response */}
-                {clar.response && (
+                {
+  clar.response && (
                   <div className="mt-3 pl-6 border-l-2 border-slate-300">
                     <p className="text-sm font-medium text-slate-900 mb-1">Client Response:</p>
                     <p className="text-sm text-slate-700 mb-2">{clar.response}</p>
                     <p className="text-xs text-slate-500">
                       Responded{' '}
-                      {clar.responded_at
+                      {
+  clar.responded_at
                         ? formatDistanceToNow(new Date(clar.responded_at), {
                             addSuffix: true,
                           })
@@ -327,7 +333,8 @@ export default function ClarificationsSection({
                 )}
 
                 {/* Response Form (Client only, for unresolved + no response yet) */}
-                {userRole === 'client' && !clar.response && !clar.is_resolved && (
+                {
+  userRole === 'client' && !clar.response && !clar.is_resolved && (
                   <div className="mt-3">
                     {respondingTo === clar.id ? (
                       <div className="space-y-2">
@@ -373,7 +380,8 @@ export default function ClarificationsSection({
                 )}
 
                 {/* Mark Resolved (Lawyer only, when responded + not resolved) */}
-                {userRole === 'lawyer' && clar.response && !clar.is_resolved && (
+                {
+  userRole === 'lawyer' && clar.response && !clar.is_resolved && (
                   <div className="mt-3">
                     <button
                       onClick={() => handleMarkResolved(clar.id)}

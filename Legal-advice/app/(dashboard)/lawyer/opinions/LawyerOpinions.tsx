@@ -154,7 +154,8 @@ export default function LawyerOpinions({ cases, userId, lawyerName }: Props) {
       </div>
 
       {/* Preview Drawer */}
-      {selectedOpinion && (
+      {
+  selectedOpinion && (
         <OpinionPreview opinion={selectedOpinion} onClose={() => setSelectedOpinion(null)} />
       )}
     </div>

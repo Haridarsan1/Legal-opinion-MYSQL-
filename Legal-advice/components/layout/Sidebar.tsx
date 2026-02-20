@@ -133,7 +133,8 @@ export default function Sidebar({ role, user }: { role: UserRole; user: Profile 
   return (
     <>
       {/* Mobile Overlay */}
-      {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-[80]" onClick={close} />}
+      {
+  isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-[80]" onClick={close} />}
 
       {/* Sidebar */}
       <aside
@@ -190,7 +191,8 @@ export default function Sidebar({ role, user }: { role: UserRole; user: Profile 
         {/* User Profile with Dropdown */}
         <div className="p-4 border-t border-white/10 relative" ref={dropdownRef}>
           {/* Dropdown Menu */}
-          {isDropdownOpen && (
+          {
+  isDropdownOpen && (
             <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
               <button
                 onClick={handleSwitchAccount}

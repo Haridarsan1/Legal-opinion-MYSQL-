@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import NotificationsPageContent from '@/components/notifications/NotificationsPageContent';
 
@@ -8,12 +10,11 @@ export const metadata = {
 };
 
 export default async function NotificationsPage() {
-  const supabase = await createClient();
+  
 
   // Get authenticated user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect('/login');

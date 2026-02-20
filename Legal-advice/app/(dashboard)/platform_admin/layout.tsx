@@ -1,6 +1,8 @@
+import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 
 export const metadata: Metadata = {
   title: 'Platform Admin - Legal Opinion Portal',
@@ -8,15 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PlatformAdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
+  
 
   // Get authenticated user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
-  if (!user) {
-    redirect('/auth/login');
+  if (!user) {redirect('/auth/login');
   }
 
   // Fetch user profile

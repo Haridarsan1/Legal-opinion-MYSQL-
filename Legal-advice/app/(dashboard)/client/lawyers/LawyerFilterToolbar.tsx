@@ -185,7 +185,8 @@ export default function LawyerFilterToolbar({
                     }`}
                   >
                     {exp === 0 ? 'Any Experience' : `${exp}+ Years`}
-                    {minExperience === exp && <Check className="w-4 h-4" />}
+                    {
+  minExperience === exp && <Check className="w-4 h-4" />}
                   </button>
                 ))}
               </div>
@@ -216,7 +217,8 @@ export default function LawyerFilterToolbar({
                   >
                     <span className="flex items-center gap-1.5">
                       {rating === 0 ? 'Any Rating' : `${rating}+ Stars`}
-                      {rating > 0 && <Star className="w-3 h-3 fill-amber-400 text-amber-400" />}
+                      {
+  rating > 0 && <Star className="w-3 h-3 fill-amber-400 text-amber-400" />}
                     </span>
                     {minRating === rating && <Check className="w-4 h-4" />}
                   </button>
@@ -264,7 +266,8 @@ export default function LawyerFilterToolbar({
             </button>
 
             {/* Clear All */}
-            {activeFilterCount > 0 && (
+            {
+  activeFilterCount > 0 && (
               <button
                 onClick={clearFilters}
                 className="ml-auto text-sm font-semibold text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
@@ -276,25 +279,29 @@ export default function LawyerFilterToolbar({
         </div>
 
         {/* Active Filter Chips (Desktop) */}
-        {activeFilterCount > 0 && (
+        {
+  activeFilterCount > 0 && (
           <div className="hidden lg:flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
             {locationQuery && (
               <ActiveFilterChip label={locationQuery} onRemove={() => setLocationQuery('')} />
             )}
-            {selectedSpecializations.map((spec) => (
+            {
+  selectedSpecializations.map((spec) => (
               <ActiveFilterChip
                 key={spec}
                 label={spec}
                 onRemove={() => handleSpecializationToggle(spec)}
               />
             ))}
-            {minExperience > 0 && (
+            {
+  minExperience > 0 && (
               <ActiveFilterChip
                 label={`${minExperience}+ Years`}
                 onRemove={() => setMinExperience(0)}
               />
             )}
-            {minRating > 0 && (
+            {
+  minRating > 0 && (
               <ActiveFilterChip label={`${minRating}+ Stars`} onRemove={() => setMinRating(0)} />
             )}
           </div>

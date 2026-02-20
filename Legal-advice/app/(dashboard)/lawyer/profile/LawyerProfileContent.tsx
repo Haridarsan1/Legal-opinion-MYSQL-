@@ -35,6 +35,8 @@ import Image from 'next/image';
 import LocationAutocomplete from '@/components/shared/LocationAutocomplete';
 import RatingsDisplay from '@/components/shared/RatingsDisplay';
 
+const supabase = createClient();
+
 interface Props {
   profile: Profile | null;
   lawyerProfile: any | null;
@@ -60,11 +62,8 @@ const PRACTICE_AREAS = [
   'Consumer Protection',
 ];
 
-export default function LawyerProfileContent({ profile, lawyerProfile, reviews }: Props) {
-  const router = useRouter();
-  const supabase = createClient();
-
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+export default function LawyerProfileContent({ profile, lawyerProfile, reviews }: Props) {const router = useRouter();
+    const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -335,7 +334,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
       </div>
 
       {/* Success/Error Message */}
-      {message && (
+      {
+  message && (
         <div
           className={`p-4 rounded-xl flex items-center gap-3 ${message.type === 'success'
             ? 'bg-green-50 text-green-700 border border-green-200'
@@ -343,7 +343,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
             }`}
         >
           {message.type === 'success' && <Check className="w-5 h-5 flex-shrink-0" />}
-          {message.type === 'error' && <X className="w-5 h-5 flex-shrink-0" />}
+          {
+  message.type === 'error' && <X className="w-5 h-5 flex-shrink-0" />}
           <span className="font-medium">{message.text}</span>
         </div>
       )}
@@ -433,19 +434,22 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
                   </span>
                 </div>
               )}
-              {formData.jurisdiction && (
+              {
+  formData.jurisdiction && (
                 <div className="flex items-center gap-2">
                   <Scale className="w-4 h-4 text-white/60" />
                   <span className="text-sm text-white/90">{formData.jurisdiction}</span>
                 </div>
               )}
-              {formData.location && (
+              {
+  formData.location && (
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-white/60" />
                   <span className="text-sm text-white/90">{formData.location}</span>
                 </div>
               )}
-              {profile.created_at && (
+              {
+  profile.created_at && (
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-white/60" />
                   <span className="text-sm text-white/90">
@@ -510,12 +514,14 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
         {/* Tab Content */}
         <div className="p-6 sm:p-8 min-h-[400px]">
           {/* Overview Tab */}
-          {activeTab === 'overview' && (
+          {
+  activeTab === 'overview' && (
             <div className="space-y-6 max-w-2xl">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
                   Full Name{' '}
-                  {isVerified && <span className="text-slate-500 font-normal">(Verified)</span>}
+                  {
+  isVerified && <span className="text-slate-500 font-normal">(Verified)</span>}
                 </label>
                 <input
                   type="text"
@@ -586,7 +592,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
           )}
 
           {/* Practice & Expertise Tab */}
-          {activeTab === 'practice' && (
+          {
+  activeTab === 'practice' && (
             <div className="space-y-6 max-w-3xl">
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
@@ -693,7 +700,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
           )}
 
           {/* Credentials Tab */}
-          {activeTab === 'credentials' && (
+          {
+  activeTab === 'credentials' && (
             <div className="space-y-6 max-w-2xl">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
                 <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -710,7 +718,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
                 <div>
                   <label className="block text-sm font-semibold text-slate-900 mb-2">
                     Bar Council ID{' '}
-                    {isVerified && <CheckCircle className="inline w-4 h-4 text-green-600" />}
+                    {
+  isVerified && <CheckCircle className="inline w-4 h-4 text-green-600" />}
                   </label>
                   <input
                     type="text"
@@ -789,7 +798,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
           )}
 
           {/* Availability Tab */}
-          {activeTab === 'availability' && (
+          {
+  activeTab === 'availability' && (
             <div className="space-y-6 max-w-2xl">
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -876,7 +886,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
           )}
 
           {/* Visibility & Preferences Tab */}
-          {activeTab === 'visibility' && (
+          {
+  activeTab === 'visibility' && (
             <div className="space-y-6 max-w-2xl">
               <div>
                 <h3 className="font-semibold text-slate-900 mb-4">Profile Visibility</h3>
@@ -930,7 +941,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
           )}
 
           {/* Reviews Tab */}
-          {activeTab === 'reviews' && (
+          {
+  activeTab === 'reviews' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-slate-900">Client Reviews</h3>
@@ -962,7 +974,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
       </div>
 
       {/* Sticky Save Bar */}
-      {isEditing && (
+      {
+  isEditing && (
         <div className="border-t border-slate-200 p-6 bg-slate-50/50 flex items-center justify-between sticky bottom-0">
           <p className="text-sm text-slate-600">You have unsaved changes</p>
           <div className="flex gap-3">
@@ -996,7 +1009,8 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
       )}
 
       {/* Preview Modal */}
-      {showPreview && (
+      {
+  showPreview && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">

@@ -24,6 +24,8 @@ import Modal from '@/components/shared/Modal';
 import { toast } from 'sonner';
 import PostOpinionQueries from './components/PostOpinionQueries';
 import {
+
+const supabase = createClient();
   acknowledgeOpinion,
   closeCase,
   confirmNoFurtherQuestions,
@@ -68,11 +70,8 @@ export default function CaseOpinion({
   requestStatus,
   pendingClarifications,
   review,
-}: Props) {
-  const router = useRouter();
-  const supabase = createClient();
-
-  // State
+}: Props) {const router = useRouter();
+    // State
   const [isLoading, setIsLoading] = useState(true);
   const [opinion, setOpinion] = useState<LegalOpinion | null>(null);
   const [activeVersion, setActiveVersion] = useState<OpinionVersion | null>(null);
@@ -222,8 +221,7 @@ export default function CaseOpinion({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   // Triggered by "Send to Client" button
-  const handlePublish = () => {
-    setIsPublishModalOpen(true);
+  const handlePublish = () => {setIsPublishModalOpen(true);
   };
 
   const isClientAcknowledged = requestStatus === 'client_acknowledged';
@@ -236,8 +234,7 @@ export default function CaseOpinion({
     setIsSending(true);
     const result = await acknowledgeOpinion(requestId);
     setIsSending(false);
-    if (result.success) {
-      toast.success('Opinion acknowledged');
+    if (result.success) {toast.success('Opinion acknowledged');
       router.refresh();
     } else {
       toast.error(result.error);
@@ -274,8 +271,7 @@ export default function CaseOpinion({
       console.log('[CaseOpinion] confirmNoFurtherQuestions result:', result);
 
       setIsSending(false);
-      if (result.success) {
-        toast.success('Confirmed no further questions');
+      if (result.success) {toast.success('Confirmed no further questions');
         setIsConfirmModalOpen(false);
         router.refresh();
       } else {
@@ -456,7 +452,8 @@ export default function CaseOpinion({
             />
 
             {/* No Further Questions Confirmation */}
-            {canClientConfirm && (
+            {
+  canClientConfirm && (
               <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 text-center">
                 <h4 className="text-lg font-bold text-blue-900 mb-2">
                   Satisfied with the opinion?
@@ -476,7 +473,8 @@ export default function CaseOpinion({
               </div>
             )}
 
-            {isClientConfirmed && !isCaseClosed && (
+            {
+  isClientConfirmed && !isCaseClosed && (
               <div className="mt-8 p-4 bg-green-50 rounded-xl border border-green-200 flex items-center justify-center gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600" />
                 <span className="font-medium text-green-900">
@@ -555,7 +553,8 @@ export default function CaseOpinion({
               Published
             </div>
           )}
-          {isCaseClosed && (
+          {
+  isCaseClosed && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium border border-slate-200">
               <CheckCircle className="w-4 h-4" />
               Case Closed
@@ -618,7 +617,8 @@ export default function CaseOpinion({
       )}
 
       {/* Post Opinion Workflow Section for Lawyer */}
-      {isWorkflowActive && (
+      {
+  isWorkflowActive && (
         <div className="pt-6 border-t border-slate-200 space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-900">Post-Opinion Actions</h3>
@@ -626,7 +626,8 @@ export default function CaseOpinion({
             {!isCaseClosed && (
               <div className="flex items-center gap-2">
                 {/* Client Status Indicator */}
-                {isClientConfirmed ? (
+                {
+  isClientConfirmed ? (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium border border-green-200">
                     <CheckCircle className="w-3.5 h-3.5" />
                     Client Confirmed No Questions

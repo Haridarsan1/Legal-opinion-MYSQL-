@@ -86,7 +86,8 @@ export default function EnhancedCaseHeader({ caseData }: EnhancedCaseHeaderProps
                 </div>
               )}
 
-              {caseData.escalation_owner_profile && (
+              {
+  caseData.escalation_owner_profile && (
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="size-4 text-orange-500 mt-0.5 flex-shrink-0" />
                   <div>
@@ -121,7 +122,8 @@ export default function EnhancedCaseHeader({ caseData }: EnhancedCaseHeaderProps
           </div>
 
           {/* Right: SLA Countdown */}
-          {slaHealth && (
+          {
+  slaHealth && (
             <div
               className={`
                                 flex-shrink-0 lg:min-w-[280px]
@@ -147,7 +149,8 @@ export default function EnhancedCaseHeader({ caseData }: EnhancedCaseHeaderProps
                 />
                 <p className="text-xs font-medium text-slate-600 uppercase tracking-wide">
                   {slaHealth.isOverdue ? 'SLA OVERDUE' : 'SLA Countdown'}
-                  {caseData.sla_paused && (
+                  {
+  caseData.sla_paused && (
                     <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px]">
                       PAUSED
                     </span>
@@ -215,7 +218,8 @@ export default function EnhancedCaseHeader({ caseData }: EnhancedCaseHeaderProps
                 </div>
               )}
 
-              {caseData.sla_tier && (
+              {
+  caseData.sla_tier && (
                 <p className="text-[10px] text-slate-500 mt-2 uppercase tracking-wider">
                   {caseData.sla_tier} SLA Tier
                 </p>
