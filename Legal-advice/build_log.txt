@@ -1,0 +1,127 @@
+
+> legal-opinion@1.0.0 build
+> next build
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\PROJ\Pixel Projects\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\PROJ\Pixel Projects\Legal Advice\stitch_legal_opinion_portal_homepage\package-lock.json
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 80s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/81) ...
+  Generating static pages using 11 workers (20/81) 
+  Generating static pages using 11 workers (40/81) 
+  Generating static pages using 11 workers (60/81) 
+✓ Generating static pages using 11 workers (81/81) in 4.4s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/analytics
+├ ƒ /admin/content
+├ ƒ /admin/disputes
+├ ƒ /admin/security-logs
+├ ƒ /admin/users
+├ ƒ /api/client/proposals/requests
+├ ƒ /api/lawyer/public-requests/[id]
+├ ƒ /api/v1/firms
+├ ƒ /api/v1/firms/[firmId]/employees
+├ ƒ /auth/callback
+├ ○ /auth/forgot-password
+├ ○ /auth/login
+├ ○ /auth/signup
+├ ○ /auth/signup/bank
+├ ○ /auth/signup/client
+├ ○ /auth/signup/firm
+├ ○ /auth/signup/lawyer
+├ ƒ /bank
+├ ƒ /bank/assign
+├ ƒ /bank/audit-logs
+├ ƒ /bank/integration
+├ ƒ /bank/profile
+├ ƒ /bank/ratings
+├ ƒ /bank/sla
+├ ƒ /bank/track
+├ ƒ /bank/upload
+├ ƒ /case/[id]
+├ ƒ /case/[id]/request-second-opinion
+├ ƒ /client
+├ ƒ /client/audit
+├ ƒ /client/audit-logs
+├ ƒ /client/departments
+├ ƒ /client/lawyers
+├ ƒ /client/lawyers/[id]
+├ ƒ /client/messages
+├ ƒ /client/new-request
+├ ƒ /client/new-request/dept-select
+├ ƒ /client/new-request/details-upload
+├ ƒ /client/notifications
+├ ƒ /client/opinion/[id]
+├ ƒ /client/profile
+├ ƒ /client/proposals
+├ ƒ /client/proposals/[requestId]
+├ ƒ /client/ratings
+├ ƒ /client/requests
+├ ƒ /client/requests/[id]
+├ ƒ /client/track
+├ ƒ /client/track/[id]
+├ ƒ /firm
+├ ƒ /firm/analytics
+├ ƒ /firm/assign
+├ ƒ /firm/audit-logs
+├ ƒ /firm/oversight
+├ ƒ /firm/review
+├ ƒ /firm/submit-opinion
+├ ƒ /firm/team
+├ ƒ /firm/versioning
+├ ƒ /firms/[firmId]/onboarding
+├ ○ /forgot-password
+├ ○ /icon.jpg
+├ ƒ /lawyer
+├ ƒ /lawyer/analytics
+├ ƒ /lawyer/assigned
+├ ƒ /lawyer/clarification
+├ ƒ /lawyer/documents
+├ ƒ /lawyer/messages
+├ ƒ /lawyer/my-claims
+├ ƒ /lawyer/my-proposals
+├ ƒ /lawyer/notifications
+├ ƒ /lawyer/opinions
+├ ƒ /lawyer/opinions/reviews
+├ ƒ /lawyer/profile
+├ ƒ /lawyer/public-requests
+├ ƒ /lawyer/public-requests/[id]
+├ ƒ /lawyer/repository
+├ ƒ /lawyer/requests
+├ ƒ /lawyer/requests/[id]
+├ ƒ /lawyer/review/[id]
+├ ƒ /lawyer/saved-requests
+├ ƒ /lawyer/submit-opinion
+├ ○ /login
+├ ƒ /platform_admin
+├ ƒ /platform_admin/analytics
+├ ƒ /platform_admin/content
+├ ƒ /platform_admin/disputes
+├ ƒ /platform_admin/firms
+├ ƒ /platform_admin/security
+├ ƒ /platform_admin/users
+├ ○ /reset-password
+├ ○ /select-role
+└ ○ /signup
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

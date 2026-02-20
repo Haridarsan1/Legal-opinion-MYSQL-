@@ -1,0 +1,67 @@
+import { Metadata } from 'next';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import LawyerDocuments from './LawyerDocuments';
+
+export const metadata: Metadata = {
+  title: 'Document Repository - Legal Opinion Portal',
+  description: 'Manage and review documents across all assigned cases',
+};
+
+export default async function LawyerDocumentsPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  // Fetch user profile to verify lawyer role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, full_name, avatar_url')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile || profile.role !== 'lawyer') {
+    redirect('/lawyer');
+  }
+
+  // Fetch all documents from assigned cases
+  const { data: documents } = await supabase
+    .from('documents')
+    .select(
+      `
+            *,
+            request:legal_requests!inner(
+                id,
+                request_number,
+                title,
+                status,
+                created_at,
+                client:profiles!legal_requests_client_id_fkey(
+                    full_name,
+                    email
+                ),
+                department:departments(
+                    name
+                )
+            ),
+            uploader:profiles!documents_uploaded_by_fkey(
+                full_name,
+                avatar_url
+            ),
+            reviewer:profiles!documents_reviewed_by_fkey(
+                full_name,
+                avatar_url
+            )
+        `
+    )
+    .eq('request.assigned_lawyer_id', user.id)
+    .order('uploaded_at', { ascending: false });
+
+  return <LawyerDocuments documents={documents || []} userId={user.id} lawyerProfile={profile} />;
+}
