@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { signIn } from 'next-auth/react';
+import { toast } from 'sonner';
 import {
   Building2,
   Shield,
@@ -83,16 +84,27 @@ export default function BankSignupPage() {
       if (error) throw new Error(error);
       if (!user) throw new Error('Failed to create user account');
 
+      console.log('✅ Bank account created:', user);
+      toast.success('Account created successfully!');
+
+      // Automatically sign in the user after signup
+      const signInResult = await signIn('credentials', {
+        email: formData.officialEmail,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (!signInResult?.ok) {
+        // If auto-login fails, redirect to login page
+        toast.info('Please log in with your credentials');
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        router.push('/auth/login');
+        return;
+      }
+
+      // Redirect to bank dashboard
+      toast.success('Logged in successfully!');
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const { data: profileCheck } = await (await __getSupabaseClient()).from('profiles')
-        .select('role, full_name, email')
-        .eq('id', user.id)
-        .single();
-
-      console.log('✅ Profile created:', profileCheck);
-      console.log('📋 Assigned role:', profileCheck?.role);
-
       router.push('/bank');
       router.refresh();
     } catch (err: any) {

@@ -5,7 +5,20 @@ export async function POST(req: Request) {
   const supabase = await createClient();
     try {
         const body = await req.json();
-        const { tableName, operation, selectFields, whereClause, data, isSingle, orderClause, limitCount } = body;
+        const {
+          tableName,
+          operation,
+          selectFields,
+          whereClause,
+          orClause,
+            countMode,
+            headOnly,
+          data,
+          isSingle,
+          orderClause,
+          limitCount,
+          offsetCount
+        } = body;
 
                 const query = (await __getSupabaseClient()).from(tableName);
 
@@ -14,10 +27,14 @@ export async function POST(req: Request) {
         builder.operation = operation;
         builder.selectFields = selectFields || [];
         builder.whereClause = whereClause || {};
+        builder.orClause = orClause || [];
+        builder.countMode = countMode || null;
+        builder.headOnly = headOnly || false;
         builder.data = data;
         builder.isSingle = isSingle || false;
         builder.orderClause = orderClause || [];
         builder.limitCount = limitCount || null;
+        builder.offsetCount = offsetCount ?? null;
 
         const result = await builder.execute();
         return NextResponse.json(result);

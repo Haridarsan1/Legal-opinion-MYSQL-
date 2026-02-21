@@ -408,25 +408,13 @@ export async function getLawyerMarketplaceMetrics() {
   }
 
   try {
-    // Get all proposals
-    const { data: proposals, error } = await (await __getSupabaseClient()).from('request_proposals')
-      .select('status')
-      .eq('lawyer_id', user.id);
-
-    if (error) throw error;
-
-    const totalProposals = proposals?.length || 0;
-    const acceptedProposals = proposals?.filter((p: any) => p.status === 'accepted').length || 0;
-    const pendingProposals =
-      proposals?.filter((p: any) => ['submitted', 'shortlisted'].includes(p.status)).length || 0;
-
-    const successRate =
-      totalProposals > 0 ? Math.round((acceptedProposals / totalProposals) * 100) : 0;
-
-    // Get bookmarked count
-    const { count: bookmarkedCount } = await (await __getSupabaseClient()).from('saved_requests')
-      .select('*', { count: 'exact', head: true })
-      .eq('lawyer_id', user.id);
+    // Marketplace tables are not yet present in the MySQL schema.
+    // Return safe defaults to avoid runtime errors.
+    const totalProposals = 0;
+    const acceptedProposals = 0;
+    const pendingProposals = 0;
+    const successRate = 0;
+    const bookmarkedCount = 0;
 
     return {
       success: true,

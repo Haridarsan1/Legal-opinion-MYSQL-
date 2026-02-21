@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
@@ -12,53 +11,53 @@ export default async function LawyerProfilePage() {
     redirect('/auth/login');
   }
 
-  // Fetch lawyer profile data + role-specific lawyer record
-  const { data } = await (await __getSupabaseClient()).from('profiles')
-    .select(
-      `
-      *,
-      lawyer:lawyers(*)
-    `
-    )
-    .eq('id', user.id)
-    .single();
+  // Fetch lawyer profile data
+  const profile = await prisma.profiles.findUnique({
+    where: { id: user.id },
+  });
 
-  const profile = data;
-  const lawyerProfile = (data as any)?.lawyer || null;
+  const lawyerProfile = profile
+    ? {
+        practice_areas: Array.isArray(profile.specialization)
+          ? profile.specialization
+          : profile.specialization
+            ? [profile.specialization]
+            : [],
+        years_of_experience: profile.years_of_experience ?? null,
+        bar_council_id: profile.bar_council_id ?? null,
+        bio: profile.bio ?? null,
+        jurisdiction: null,
+        year_of_enrollment: null,
+      }
+    : null;
 
   if (!profile || profile.role !== 'lawyer') {
     redirect('/auth/login');
   }
 
-  const { data: reviews } = await (await __getSupabaseClient()).from('lawyer_reviews')
-    .select(
-      `
-            id,
-            rating,
-            review_text,
-            created_at,
-            request_id,
-            client:profiles!client_id (
-                full_name,
-                avatar_url
-            )
-        `
-    )
-    .eq('lawyer_id', user.id)
-    .eq('is_visible', true)
-    .order('created_at', { ascending: false });
+  const rawReviews = await prisma.ratings.findMany({
+    where: { lawyer_id: user.id },
+    orderBy: { created_at: 'desc' },
+    include: {
+      profiles_ratings_client_idToprofiles: {
+        select: { full_name: true, avatar_url: true },
+      },
+    },
+  });
+
+  const reviews = rawReviews.map((review) => ({
+    id: review.id,
+    rating: review.overall_rating,
+    review_text: review.feedback,
+    created_at: review.created_at,
+    request_id: review.request_id,
+    client: review.profiles_ratings_client_idToprofiles
+      ? {
+          full_name: review.profiles_ratings_client_idToprofiles.full_name,
+          avatar_url: review.profiles_ratings_client_idToprofiles.avatar_url,
+        }
+      : null,
+  }));
 
   return <LawyerProfileContent profile={profile} lawyerProfile={lawyerProfile} reviews={reviews || []} />;
 }
-
-
-// Auto-injected to fix missing supabase client declarations
-const __getSupabaseClient = async () => {
-  if (typeof window === 'undefined') {
-    const m = await import('@/lib/supabase/server');
-    return await m.createClient();
-  } else {
-    const m = await import('@/lib/supabase/client');
-    return m.createClient();
-  }
-};

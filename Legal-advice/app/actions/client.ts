@@ -5,8 +5,6 @@ import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 
 export async function getClientMarketplaceMetrics() {
-
-
   const {
     data: { user },
     error: authError,
@@ -16,43 +14,14 @@ export async function getClientMarketplaceMetrics() {
   }
 
   try {
-    // Get client's public requests
-    const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
-      .select(
-        `
-                id,
-                status,
-                proposal_count:request_proposals!request_proposals_request_id_fkey(id)
-            `
-      )
-      .eq('client_id', user.id)
-      .eq('request_type', 'public');
-
-    if (error) throw error;
-
-    const activePublicRequests =
-      requests?.filter((r: any) => ['accepting_proposals', 'proposal_review'].includes(r.status))
-        .length || 0;
-
-    const totalProposalsReceived =
-      requests?.reduce((sum: any, r: any) => {
-        // Count array length since we fetch IDs now
-        const count = Array.isArray(r.proposal_count) ? r.proposal_count.length : 0;
-        return sum + count;
-      }, 0) || 0;
-
-    const pendingDecisions =
-      requests?.filter((r: any) => {
-        const hasProposals = (Array.isArray(r.proposal_count) ? r.proposal_count.length : 0) > 0;
-        return hasProposals && ['accepting_proposals', 'proposal_review'].includes(r.status);
-      }).length || 0;
-
+    // Marketplace tables are not yet present in the MySQL schema.
+    // Return safe defaults to avoid runtime errors.
     return {
       success: true,
       data: {
-        activePublicRequests,
-        totalProposalsReceived,
-        pendingDecisions,
+        activePublicRequests: 0,
+        totalProposalsReceived: 0,
+        pendingDecisions: 0,
       },
     };
   } catch (error: any) {

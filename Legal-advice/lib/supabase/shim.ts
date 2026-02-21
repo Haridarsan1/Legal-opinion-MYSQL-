@@ -6,19 +6,29 @@ class PostgresShimQueryBuilder {
     private operation: 'select' | 'insert' | 'update' | 'delete' = 'select';
     private selectFields: string[] = [];
     private whereClause: any = {};
+    private orClause: any[] = [];
+    private countMode: 'exact' | 'planned' | 'estimated' | null = null;
+    private headOnly = false;
     private data: any = null;
     private isSingle = false;
     private orderClause: any[] = [];
     private limitCount: number | null = null;
+    private offsetCount: number | null = null;
 
     constructor(tableName: string) {
         this.tableName = tableName;
     }
 
-    select(fields: string = '*') {
+    select(fields: string = '*', options?: { count?: 'exact' | 'planned' | 'estimated'; head?: boolean }) {
         this.operation = 'select';
         if (fields !== '*') {
             this.selectFields = fields.split(',').map(f => f.trim());
+        }
+        if (options?.count) {
+            this.countMode = options.count;
+        }
+        if (options?.head) {
+            this.headOnly = options.head;
         }
         return this;
     }
@@ -55,6 +65,38 @@ class PostgresShimQueryBuilder {
         return this;
     }
 
+    not(column: string, operator: string, value: any) {
+        if (operator === 'is' && value === null) {
+            this.whereClause[column] = { not: null };
+            return this;
+        }
+
+        if (operator === 'eq') {
+            this.whereClause[column] = { not: value };
+            return this;
+        }
+
+        this.whereClause[column] = { not: value };
+        return this;
+    }
+
+    ilike(column: string, value: string) {
+        const normalized = value.replace(/^%|%$/g, '');
+        this.whereClause[column] = { contains: normalized };
+        return this;
+    }
+
+    or(filter: string) {
+        const clauses = filter
+            .split(',')
+            .map((segment) => segment.trim())
+            .filter(Boolean)
+            .map((segment) => this.parseFilterSegment(segment));
+
+        this.orClause.push(...clauses.filter(Boolean));
+        return this;
+    }
+
     contains(column: string, value: any) {
         this.whereClause[column] = { array_contains: value };
         return this;
@@ -68,6 +110,12 @@ class PostgresShimQueryBuilder {
 
     limit(count: number) {
         this.limitCount = count;
+        return this;
+    }
+
+    range(from: number, to: number) {
+        this.offsetCount = from;
+        this.limitCount = to - from + 1;
         return this;
     }
 
@@ -104,8 +152,17 @@ class PostgresShimQueryBuilder {
         if (this.operation === 'select') {
             const queryParams: any = {};
 
-            if (Object.keys(this.whereClause).length > 0) {
-                queryParams.where = this.whereClause;
+            if (Object.keys(this.whereClause).length > 0 || this.orClause.length > 0) {
+                if (Object.keys(this.whereClause).length > 0 && this.orClause.length > 0) {
+                    queryParams.where = {
+                        AND: [this.whereClause],
+                        OR: this.orClause
+                    };
+                } else if (this.orClause.length > 0) {
+                    queryParams.where = { OR: this.orClause };
+                } else {
+                    queryParams.where = this.whereClause;
+                }
             }
 
             if (this.orderClause.length > 0) {
@@ -116,10 +173,19 @@ class PostgresShimQueryBuilder {
                 queryParams.take = this.limitCount;
             }
 
+            if (this.offsetCount !== null) {
+                queryParams.skip = this.offsetCount;
+            }
+
             if (this.isSingle) {
                 resultData = await model.findFirst(queryParams);
             } else {
                 resultData = await model.findMany(queryParams);
+            }
+
+            if (this.countMode) {
+                const count = await model.count({ where: queryParams.where });
+                return { data: this.headOnly ? null : resultData, count, error: null };
             }
         } else if (this.operation === 'insert') {
             if (Array.isArray(this.data)) {
@@ -155,6 +221,62 @@ class PostgresShimQueryBuilder {
         }
 
         return { data: resultData, error: null };
+    }
+
+    private parseFilterSegment(segment: string) {
+        const [column, operator, ...rest] = segment.split('.');
+        const rawValue = rest.join('.');
+
+        if (!column || !operator) return null;
+
+        if (operator === 'eq') {
+            return { [column]: this.parseValue(rawValue) };
+        }
+
+        if (operator === 'ilike') {
+            return { [column]: { contains: rawValue.replace(/^%|%$/g, '') } };
+        }
+
+        if (operator === 'cs') {
+            const parsed = this.parseSet(rawValue);
+            return { [column]: { array_contains: parsed } };
+        }
+
+        if (operator === 'in') {
+            const parsed = this.parseList(rawValue);
+            return { [column]: { in: parsed } };
+        }
+
+        if (operator === 'is' && rawValue === 'null') {
+            return { [column]: null };
+        }
+
+        return null;
+    }
+
+    private parseValue(value: string) {
+        if (value === 'null') return null;
+        if (value === 'true') return true;
+        if (value === 'false') return false;
+        const numeric = Number(value);
+        if (!Number.isNaN(numeric) && value.trim() !== '') return numeric;
+        return value;
+    }
+
+    private parseSet(value: string) {
+        if (value.startsWith('{') && value.endsWith('}')) {
+            const inner = value.slice(1, -1);
+            return inner.split(',').map((item) => item.trim()).filter(Boolean);
+        }
+        return [value];
+    }
+
+    private parseList(value: string) {
+        if (value.startsWith('(') && value.endsWith(')')) {
+            const inner = value.slice(1, -1);
+            return inner.split(',').map((item) => this.parseValue(item.trim()));
+        }
+        return value.split(',').map((item) => this.parseValue(item.trim()));
     }
 }
 

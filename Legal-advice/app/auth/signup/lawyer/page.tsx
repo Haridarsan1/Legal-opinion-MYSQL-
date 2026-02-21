@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { toast } from 'sonner';
 import {
   Shield,
   CheckCircle2,
@@ -100,46 +102,33 @@ export default function LawyerSignupPage() {
       if (error) throw new Error(error);
       if (!user) throw new Error('Failed to create user account');
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      console.log('✅ Lawyer account created:', user);
+      toast.success('Account created successfully!');
 
-      const { data: profileCheck } = (await __getSupabaseClient()).from('profiles')
-        .select('role, full_name, email')
-        .eq('id', user.id)
-        .single();
+      // Automatically sign in the user after signup
+      const signInResult = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
 
-      console.log('✅ Profile created:', profileCheck);
-      console.log('📋 Assigned role:', profileCheck?.role);
-
-      if (selectedFile) {
-        if (user) {
-          const sanitizedName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const filePath = `lawyers/${user.id}/bar-certificate/${Date.now()}_${sanitizedName}`;
-
-          const { error: uploadError } = await (await __getSupabaseClient()).storage
-            .from('legal-documents')
-            .upload(filePath, selectedFile, { cacheControl: '3600', upsert: false });
-
-          if (uploadError) {
-            console.warn('Certificate upload warning:', uploadError);
-          } else {
-            const { error: certUpdateError } = (await __getSupabaseClient()).from('lawyers')
-              .upsert({ id: user.id, bar_certificate_url: filePath }, { onConflict: 'id' });
-
-            if (certUpdateError) {
-              console.warn('Certificate link warning:', certUpdateError);
-            }
-          }
-        } else {
-          // Email confirmation flow: no session yet, upload must happen after verification.
-          console.warn('Certificate upload deferred: no active session after signup.');
-        }
+      if (!signInResult?.ok) {
+        // If auto-login fails, redirect to login page
+        toast.info('Please log in with your credentials');
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        router.push('/auth/login');
+        return;
       }
 
+      // Redirect to lawyer dashboard
+      toast.success('Logged in successfully!');
+      await new Promise((resolve) => setTimeout(resolve, 500));
       router.push('/lawyer');
       router.refresh();
     } catch (err: any) {
       console.error('Signup error:', err);
       setError(err.message || 'Failed to create account. Please try again.');
+      toast.error(err.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
     }

@@ -96,22 +96,11 @@ export default function MessagesContent({ userId }: Props) {
   const fetchConversations = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = (await __getSupabaseClient()).from('conversations')
-        .select(
-          `
-                    *,
-                    participant_1:participant_1_id(id, full_name, avatar_url, role),
-                    participant_2:participant_2_id(id, full_name, avatar_url, role),
-                    legal_request:request_id(id, request_number, status),
-                    messages(id, content, created_at, sender_id, read)
-                `
-        )
-        .or(`participant_1_id.eq.${userId},participant_2_id.eq.${userId}`)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-
-      setConversations(data || []);
+      const response = await fetch('/api/conversations');
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(data.conversations || []);
+      }
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {

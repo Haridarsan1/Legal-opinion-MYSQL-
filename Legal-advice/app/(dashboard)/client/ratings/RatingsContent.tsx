@@ -69,46 +69,24 @@ export default function RatingsContent({ userId, requests }: Props) {
 
   const fetchInteractions = async () => {
     setIsLoading(true);
-    const interactionData: Record<string, InteractionSummary> = {};
+    try {
+      const response = await fetch('/api/client/ratings/interactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestIds: requests.map((r: any) => r.id),
+        }),
+      });
 
-    for (const request of requests) {
-      // Count messages
-      const { count: messagesCount } = await (await __getSupabaseClient()).from('messages')
-        .select('*', { count: 'exact', head: true })
-        .or(`sender_id.eq.${userId},sender_id.eq.${request.assigned_lawyer_id}`)
-        .in(
-          'conversation_id',
-          await (await __getSupabaseClient()).from('conversations')
-            .select('id')
-            .eq('request_id', request.id)
-            .then((res: any) => res.data?.map((c: any) => c.id) || [])
-        );
-
-      // Count clarifications (simplified - check if any exist)
-      const { count: clarificationsCount } = await (await __getSupabaseClient()).from('clarifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('request_id', request.id);
-
-      // Check if opinion submitted
-      const { data: opinions } = await (await __getSupabaseClient()).from('opinion_submissions')
-        .select('id')
-        .eq('request_id', request.id)
-        .limit(1);
-
-      const opinionSubmitted = (opinions?.length || 0) > 0;
-      const hasInteraction =
-        (messagesCount || 0) > 0 || (clarificationsCount || 0) > 0 || opinionSubmitted;
-
-      interactionData[request.id] = {
-        messagesCount: messagesCount || 0,
-        clarificationsCount: clarificationsCount || 0,
-        opinionSubmitted,
-        hasInteraction,
-      };
+      if (response.ok) {
+        const data = await response.json();
+        setInteractions(data.interactions || {});
+      }
+    } catch (error) {
+      console.error('Error fetching interactions:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setInteractions(interactionData);
-    setIsLoading(false);
   };
 
   // Get eligible requests (with interactions and not already rated)

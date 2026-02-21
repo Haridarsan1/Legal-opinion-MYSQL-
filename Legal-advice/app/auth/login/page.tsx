@@ -43,12 +43,34 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError('Invalid email or password. Please try again.');
+        console.error('SignIn error:', result.error);
         return;
       }
 
-      // Refresh to let the proxy redirect to the correct role dashboard
-      router.refresh();
-      router.push('/');
+      if (!result?.ok) {
+        setError('Login failed. Please try again.');
+        return;
+      }
+
+      // Get the session to determine the user's role
+      const response = await fetch('/api/auth/session');
+      const session = await response.json();
+
+      if (session?.user?.role) {
+        // Redirect to the user's role-specific dashboard
+        const dashboardMap: Record<string, string> = {
+          client: '/client',
+          lawyer: '/lawyer',
+          firm: '/firm',
+          bank: '/bank',
+          admin: '/admin',
+        };
+        const dashboard = dashboardMap[session.user.role] || '/client';
+        router.push(dashboard);
+      } else {
+        // Fallback to home page
+        router.push('/');
+      }
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Invalid email or password. Please try again.');

@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
@@ -16,59 +15,84 @@ export default async function LawyerDashboardPage() {
   const user = session?.user;
 
   if (!user) {
-    redirect('/login');
+    redirect('/auth/login');
   }
 
   // Fetch lawyer profile
-  const { data: profile } = await (await __getSupabaseClient()).from('profiles').select('*').eq('id', user.id).single();
+  const profile = await prisma.profiles.findUnique({
+    where: { id: user.id },
+  });
 
   if (!profile || profile.role !== 'lawyer') {
-    redirect('/login');
+    redirect('/auth/login');
   }
 
   // Fetch assigned cases with client info
-  const { data: assignedCases } = (await __getSupabaseClient()).from('legal_requests')
-    .select(
-      `
-            *,
-            client:client_id(id, full_name, email, avatar_url),
-            department_info:departments(name)
-        `
-    )
-    .eq('assigned_lawyer_id', user.id)
-    .order('created_at', { ascending: false });
+  const assignedCases = await prisma.legal_requests.findMany({
+    where: { assigned_lawyer_id: user.id },
+    include: {
+      profiles_legal_requests_client_idToprofiles: {
+        select: { id: true, full_name: true, email: true, avatar_url: true },
+      },
+      departments: {
+        select: { name: true },
+      },
+    },
+    orderBy: { created_at: 'desc' },
+  });
 
   // Fetch lawyer rating summary
   const ratingSummaryResult = await getLawyerRatingSummary(user.id!);
   const avgRating =
     ratingSummaryResult.success && ratingSummaryResult.data ? ratingSummaryResult.data.average : 0;
 
-  // Fetch unread message count
-  const { data: conversations } = (await __getSupabaseClient()).from('conversations')
-    .select('id')
-    .or(`participant_1_id.eq.${user.id},participant_2_id.eq.${user.id}`);
+  // Fetch unread message count (guard if messaging tables are not in schema)
+  let unreadCount = 0;
+  const prismaAny = prisma as any;
 
-  const { count: unreadCount } = (await __getSupabaseClient()).from('messages')
-    .select('*', { count: 'exact', head: true })
-    .eq('read', false)
-    .neq('sender_id', user.id)
-    .in('conversation_id', conversations?.map((c: any) => c.id) || []);
+  if (prismaAny.conversations && prismaAny.messages) {
+    const userConversations = await prismaAny.conversations.findMany({
+      where: {
+        OR: [
+          { participant_1_id: user.id },
+          { participant_2_id: user.id },
+        ],
+      },
+      select: { id: true },
+    });
 
-  // Fetch tasks
-  const { data: tasks } = (await __getSupabaseClient()).from('firm_tasks')
-    .select('*')
-    .eq('assigned_to', user.id)
-    .neq('status', 'completed')
-    .order('due_date', { ascending: true });
+    const conversationIds = userConversations.map((c: any) => c.id);
+
+    unreadCount = await prismaAny.messages.count({
+      where: {
+        read: false,
+        sender_id: { not: user.id },
+        conversation_id: {
+          in: conversationIds,
+        },
+      },
+    });
+  }
+
+  // Fetch tasks (guard if firm_tasks table is not in schema)
+  let tasks: any[] = [];
+  if ((prisma as any).firm_tasks) {
+    tasks = await (prisma as any).firm_tasks.findMany({
+      where: {
+        assigned_to: user.id,
+        status: { not: 'completed' },
+      },
+      orderBy: { due_date: 'asc' },
+    });
+  }
 
   const canReviewDrafts = hasPermission(profile, 'review_drafts');
   let reviews: any[] = [];
   if (canReviewDrafts) {
-    const { data } = (await __getSupabaseClient()).from('legal_requests')
-      .select('*')
-      .eq('status', 'in_review')
-      .order('updated_at', { ascending: false });
-    reviews = data || [];
+    reviews = await prisma.legal_requests.findMany({
+      where: { status: 'in_review' },
+      orderBy: { updated_at: 'desc' },
+    });
   }
 
   // Fetch marketplace metrics
@@ -103,15 +127,3 @@ import JuniorLawyerDashboard from './JuniorLawyerDashboard';
 import SeniorLawyerDashboard from './SeniorLawyerDashboard';
 import { getLawyerMarketplaceMetrics } from '@/app/actions/lawyer';
 import { getLawyerRatingSummary } from '@/app/actions/reviews';
-
-
-// Auto-injected to fix missing supabase client declarations
-const __getSupabaseClient = async () => {
-  if (typeof window === 'undefined') {
-    const m = await import('@/lib/supabase/server');
-    return await m.createClient();
-  } else {
-    const m = await import('@/lib/supabase/client');
-    return m.createClient();
-  }
-};

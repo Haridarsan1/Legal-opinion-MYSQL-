@@ -21,7 +21,7 @@ import {
   Briefcase,
   Calendar,
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+
 import { formatDistanceToNow, format } from 'date-fns';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -207,21 +207,14 @@ export default function ClientDashboardContent({
   };
 
   const fetchUnreadCount = async () => {
-    const { data: conversations } = await (await __getSupabaseClient()).from('conversations')
-      .select('id')
-      .or(`participant_1_id.eq.${profile?.id},participant_2_id.eq.${profile?.id}`);
-
-    if (conversations) {
-      const { count } = await (await __getSupabaseClient()).from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('read', false)
-        .neq('sender_id', profile?.id)
-        .in(
-          'conversation_id',
-          conversations.map((c: any) => c.id)
-        );
-
-      setUnreadMessages(count || 0);
+    try {
+      const response = await fetch('/api/client/messages/unread-count');
+      if (response.ok) {
+        const data = await response.json();
+        setUnreadMessages(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
     }
   };
 
@@ -654,14 +647,3 @@ export default function ClientDashboardContent({
   );
 }
 
-
-// Auto-injected to fix missing supabase client declarations
-const __getSupabaseClient = async () => {
-  if (typeof window === 'undefined') {
-    const m = await import('@/lib/supabase/server');
-    return await m.createClient();
-  } else {
-    const m = await import('@/lib/supabase/client');
-    return m.createClient();
-  }
-};

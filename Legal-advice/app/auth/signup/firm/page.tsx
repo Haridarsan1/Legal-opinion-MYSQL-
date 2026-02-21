@@ -1,9 +1,10 @@
 'use client';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 import {
   Loader2,
   Mail,
@@ -18,8 +19,9 @@ import {
   EyeOff,
   LayoutTemplate,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import Link from 'next/link';
+
+export const dynamic = 'force-dynamic';
 
 export default function FirmSignupPage() {
   const router = useRouter();
@@ -36,7 +38,7 @@ export default function FirmSignupPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { data: session } = useSession();
+  const { data: session } = useSession() ?? { data: null };
 
   useEffect(() => {
     if (session) {
@@ -84,8 +86,25 @@ export default function FirmSignupPage() {
         if (error) throw new Error(error);
 
         if (user) {
-          toast.success('Verification email sent. Please check your inbox.');
+          // Automatically sign in the user after signup
+          const signInResult = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+          });
+
+          if (!signInResult?.ok) {
+            // If auto-login fails, redirect to login page
+            toast.info('Account created. Please log in with your credentials');
+            setIsLoading(false);
+            router.push('/auth/login');
+            return;
+          }
+
+          toast.success('Account created and logged in successfully!');
           setIsLoading(false);
+          router.push('/firm');
+          router.refresh();
           return;
         }
       }
