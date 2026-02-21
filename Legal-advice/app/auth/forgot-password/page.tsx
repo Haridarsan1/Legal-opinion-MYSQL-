@@ -11,18 +11,22 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-    const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      const session = await auth();
-  const user = session?.user;
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
 
-      if (resetError) {
-        throw resetError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to send reset link.');
       }
 
       setSuccess(true);
@@ -70,20 +74,20 @@ export default function ForgotPasswordPage() {
 
             {/* Success Message */}
             {
-  success && (
-              <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
-                <p className="font-semibold mb-1">✓ Reset link sent successfully!</p>
-                <p className="text-xs">Check your email for password reset instructions.</p>
-              </div>
-            )}
+              success && (
+                <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
+                  <p className="font-semibold mb-1">✓ Reset link sent successfully!</p>
+                  <p className="text-xs">Check your email for password reset instructions.</p>
+                </div>
+              )}
 
             {/* Error Message */}
             {
-  error && (
-              <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+              error && (
+                <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
 
             {/* Input Form */}
             <form className="flex flex-col gap-6" onSubmit={handleSubmit}>

@@ -64,7 +64,7 @@ export default function AssignedRequestsContent({ cases, departments, stats }: P
   };
 
   const filteredCases = useMemo(() => {
-    return cases.filter((c) => {
+    return cases.filter((c: any) => {
       // 1. Search Query
       const matchesSearch = searchQuery
         ? `${c.title} ${c.client?.full_name ?? ''} ${c.id}`
@@ -314,11 +314,11 @@ export default function AssignedRequestsContent({ cases, departments, stats }: P
               <Chip key={s} label={`Status: ${s}`} onRemove={() => removeFilter('status', s)} />
             ))}
             {
-  filters.department.map((d) => (
+  filters.department.map((d: any) => (
               <Chip key={d} label={`Dept: ${d}`} onRemove={() => removeFilter('department', d)} />
             ))}
             {
-  filters.clientType.map((c) => (
+  filters.clientType.map((c: any) => (
               <Chip key={c} label={`Client: ${c}`} onRemove={() => removeFilter('clientType', c)} />
             ))}
             {

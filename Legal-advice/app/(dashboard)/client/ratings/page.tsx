@@ -19,8 +19,7 @@ export default async function RatingsPage() {
   }
 
   // Fetch client's legal requests with lawyer details
-  const { data: requests } = await supabase
-    .from('legal_requests')
+  const { data: requests } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             id,
@@ -49,5 +48,17 @@ export default async function RatingsPage() {
     lawyer: Array.isArray(req.lawyer) ? req.lawyer[0] : req.lawyer,
   }));
 
-  return <RatingsContent userId={user.id} requests={eligibleRequests} />;
+  return <RatingsContent userId={user.id!} requests={eligibleRequests} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

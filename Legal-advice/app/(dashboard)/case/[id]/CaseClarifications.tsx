@@ -62,7 +62,7 @@ export default function CaseClarifications({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter out child clarifications (responses)
-  const parentClarifications = clarifications.filter((c) => !c.parent_id);
+  const parentClarifications = clarifications.filter((c: any) => !c.parent_id);
 
   // Filter documents to show only those uploaded by the client
   const clientDocuments = documents.filter((doc) => doc.uploader_id === clientId);
@@ -107,8 +107,7 @@ export default function CaseClarifications({
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('clarifications')
+      const { error } = (await __getSupabaseClient()).from('clarifications')
         .update({          response: clarificationResponse,
           responded_at: new Date().toISOString(),
           resolution_status: 'responded',
@@ -118,7 +117,7 @@ export default function CaseClarifications({
       if (error) throw error;
 
       setClarifications((prev) =>
-        prev.map((c) =>
+        prev.map((c: any) =>
           c.id === clarificationId
             ? {
                 ...c,
@@ -135,10 +134,10 @@ export default function CaseClarifications({
 
       // If all clarifications resolved, update request status back to in_review
       if (allResolved) {
-        await supabase.from('legal_requests').update({ status: 'in_review' }).eq('id', requestId);
+        await (await __getSupabaseClient()).from('legal_requests').update({ status: 'in_review' }).eq('id', requestId);
 
         // Create audit log
-        await supabase.from('audit_logs').insert({
+        await (await __getSupabaseClient()).from('audit_logs').insert({
           user_id: userId,
           action: 'clarifications_resolved',
           entity_type: 'legal_request',
@@ -168,7 +167,7 @@ export default function CaseClarifications({
       if (!result.success) throw new Error(result.error);
 
       setClarifications((prev) =>
-        prev.map((c) =>
+        prev.map((c: any) =>
           c.id === clarificationId
             ? {
                 ...c,
@@ -422,3 +421,15 @@ export default function CaseClarifications({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

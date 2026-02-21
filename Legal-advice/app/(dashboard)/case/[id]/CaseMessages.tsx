@@ -69,8 +69,7 @@ export default function CaseMessages({
     setIsSendingMessage(true);
 
     try {
-      const { data, error } = await supabase
-        .from('case_messages')
+      const { data, error } = await (await __getSupabaseClient()).from('case_messages')
         .insert({
           request_id: requestId,
           sender_id: userId,
@@ -228,3 +227,15 @@ export default function CaseMessages({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

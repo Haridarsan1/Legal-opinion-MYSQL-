@@ -34,8 +34,7 @@ export async function searchGlobal(
     // Parallel queries for better performance
     const [lawyersResult, practiceAreasResult] = await Promise.all([
       // Search Lawyers
-      supabase
-        .from('lawyer_profiles')
+      (await __getSupabaseClient()).from('lawyer_profiles')
         .select('id, full_name, specialization, avatar_url, city, years_of_experience')
         .or(`full_name.ilike.${searchQuery},specialization.cs.{${query}}`) // naive array search, improved below
         .limit(5),
@@ -99,3 +98,15 @@ function getMockPracticeAreas(query: string): SearchResult[] {
       subtitle: 'Practice Area',
     }));
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -16,19 +16,19 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
   const session = await auth();
   const user = session?.user;
 
-  if (!user) {redirect('/login');
+  if (!user) {
+    redirect('/login');
   }
 
   // Fetch lawyer profile
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles').select('*').eq('id', user.id).single();
 
   if (!profile || profile.role !== 'lawyer') {
     redirect('/login');
   }
 
   // Fetch the legal request with full details
-  const { data: request, error } = await supabase
-    .from('legal_requests')
+  const { data: request, error } = (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -49,8 +49,7 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
   const isAssignedLawyer = request.assigned_lawyer_id === user.id;
 
   // Check if lawyer is a requested second opinion reviewer
-  const { data: secondOpinionRequest } = await supabase
-    .from('second_opinion_requests')
+  const { data: secondOpinionRequest } = (await __getSupabaseClient()).from('second_opinion_requests')
     .select('*')
     .eq('original_request_id', id)
     .eq('shared_with_lawyer_id', user.id)
@@ -94,15 +93,13 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
   }
 
   // Fetch clarifications if any
-  const { data: clarifications } = await supabase
-    .from('clarifications')
+  const { data: clarifications } = (await __getSupabaseClient()).from('clarifications')
     .select('*')
     .eq('request_id', id)
     .order('created_at', { ascending: true });
 
   // Fetch messages
-  const { data: messages } = await supabase
-    .from('case_messages')
+  const { data: messages } = (await __getSupabaseClient()).from('case_messages')
     .select(
       `
             *,
@@ -113,15 +110,13 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
     .order('created_at', { ascending: true });
 
   // Fetch document requests
-  const { data: documentRequests } = await supabase
-    .from('document_requests')
+  const { data: documentRequests } = (await __getSupabaseClient()).from('document_requests')
     .select('*')
     .eq('request_id', id)
     .order('created_at', { ascending: false });
 
   // Check for draft opinion with saved versions
-  const { data: legalOpinion } = await supabase
-    .from('legal_opinions')
+  const { data: legalOpinion } = (await __getSupabaseClient()).from('legal_opinions')
     .select(
       `
             id, 
@@ -140,7 +135,7 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
   // Lifecycle Resolution
   // We need to shape the data into ExtendedRequest
   const latestVersion = legalOpinion?.versions?.sort(
-    (a, b) => b.version_number - a.version_number
+    (a: any, b: any) => b.version_number - a.version_number
   )[0];
 
   // Import dynamically to avoid top-level await issues if any (though standard import is fine usually)
@@ -152,17 +147,16 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
     // Map missing fields if necessary, or ensure they exist
     latest_opinion_version: latestVersion
       ? {
-          is_draft: latestVersion.is_draft,
-          submitted_at: latestVersion.submitted_at,
-        }
+        is_draft: latestVersion.is_draft,
+        submitted_at: latestVersion.submitted_at,
+      }
       : undefined,
     // We might want audit events for perfect resolution, but for now we might skip or fetch them
     // If we want accurate terminal state, we should fetch audit events
   };
 
   // Fetch minimal audit events for status resolution accuracy
-  const { data: auditEvents } = await supabase
-    .from('audit_logs')
+  const { data: auditEvents } = (await __getSupabaseClient()).from('audit_logs')
     .select('action, created_at, details')
     .eq('request_id', id)
     .order('created_at', { ascending: false })
@@ -176,8 +170,7 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
   const progressMetrics = getLifecycleProgress(extendedRequest as any, lifecycleStatus);
 
   // Fetch existing second opinion requests
-  const { data: secondOpinionRequests } = await supabase
-    .from('second_opinion_requests')
+  const { data: secondOpinionRequests } = (await __getSupabaseClient()).from('second_opinion_requests')
     .select('*')
     .eq('original_request_id', id)
     .order('created_at', { ascending: false });
@@ -188,7 +181,7 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
       clarifications={clarifications || []}
       messages={messages || []}
       documentRequests={documentRequests || []}
-      lawyerId={user.id}
+      lawyerId={user.id!}
       userProfile={profile}
       secondOpinionRequest={secondOpinionRequest || undefined}
       hasDraftOpinion={hasSavedDraft}
@@ -198,3 +191,15 @@ export default async function LawyerReviewPage({ params }: { params: Promise<{ i
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

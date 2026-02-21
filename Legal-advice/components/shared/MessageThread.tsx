@@ -45,7 +45,7 @@ export default function MessageThread({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-    // Scroll to bottom of messages
+  // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -73,14 +73,7 @@ export default function MessageThread({
     loadMessages();
   }, [requestId]);
 
-  // Setup realtime subscription
-  useEffect(() => {
-    const 
 
-    return () => {
-      
-    };
-  }, [requestId, currentUserId, supabase]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -158,42 +151,39 @@ export default function MessageThread({
                 className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`flex gap-2 max-w-[70%] ${
-                    isOwnMessage ? 'flex-row-reverse' : 'flex-row'
-                  }`}
+                  className={`flex gap-2 max-w-[70%] ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'
+                    }`}
                 >
                   {/* Avatar */}
                   {
-  message.sender.avatar_url ? (
-                    <img
-                      src={message.sender.avatar_url}
-                      alt={message.sender.full_name}
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                      {message.sender.full_name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
-                    </div>
-                  )}
+                    message.sender.avatar_url ? (
+                      <img
+                        src={message.sender.avatar_url}
+                        alt={message.sender.full_name}
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                        {message.sender.full_name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')}
+                      </div>
+                    )}
 
                   {/* Message bubble */}
                   <div>
                     <div
-                      className={`rounded-lg p-3 ${
-                        isOwnMessage ? 'bg-[#003366] text-white' : 'bg-gray-100 text-gray-900'
-                      }`}
+                      className={`rounded-lg p-3 ${isOwnMessage ? 'bg-[#003366] text-white' : 'bg-gray-100 text-gray-900'
+                        }`}
                     >
                       <p className="text-sm whitespace-pre-wrap break-words">
                         {message.message_text}
                       </p>
                     </div>
                     <div
-                      className={`flex items-center gap-1 mt-1 text-xs text-gray-500 ${
-                        isOwnMessage ? 'justify-end' : 'justify-start'
-                      }`}
+                      className={`flex items-center gap-1 mt-1 text-xs text-gray-500 ${isOwnMessage ? 'justify-end' : 'justify-start'
+                        }`}
                     >
                       <span>{formatTime(message.created_at)}</span>
                       {isOwnMessage && (

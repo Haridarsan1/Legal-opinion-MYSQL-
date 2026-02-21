@@ -27,12 +27,12 @@ async function runVerification() {
 
   try {
     // 0. Get a valid user and department
-    const { data: profile } = await supabase.from('profiles').select('id, user_role').eq('user_role', 'client').limit(1).single();
+    const { data: profile } = (await __getSupabaseClient()).from('profiles').select('id, user_role').eq('user_role', 'client').limit(1).single();
     // If no client profile, try any profile
-    const clientId = profile?.id || (await supabase.from('profiles').select('id').limit(1).single()).data?.id;
+    const clientId = profile?.id || ((await __getSupabaseClient()).from('profiles').select('id').limit(1).single()).data?.id;
     
     // Get a valid department ID
-    const { data: dept } = await supabase.from('departments').select('id').limit(1).single();
+    const { data: dept } = (await __getSupabaseClient()).from('departments').select('id').limit(1).single();
     const departmentId = dept?.id;
 
     if (!clientId || !departmentId) {
@@ -44,8 +44,7 @@ async function runVerification() {
 
     // 1. Create Private Request
     console.log('\nTesting Private Request Creation...');
-    const { data: privateReq, error: privateError } = await supabase
-      .from('legal_requests')
+    const { data: privateReq, error: privateError } = (await __getSupabaseClient()).from('legal_requests')
       .insert({
         title: 'Test Private Request ' + Date.now(),
         description: 'Test Description',
@@ -68,8 +67,7 @@ async function runVerification() {
 
     // 2. Create Public Request
     console.log('\nTesting Public Request Creation...');
-    const { data: publicReq, error: publicError } = await supabase
-      .from('legal_requests')
+    const { data: publicReq, error: publicError } = (await __getSupabaseClient()).from('legal_requests')
       .insert({
         title: 'Test Public Request ' + Date.now(),
         description: 'Test Description',
@@ -92,8 +90,7 @@ async function runVerification() {
     
     // 4a. Create a public request
     console.log('   Creating initial public request...');
-    const { data: proposalReq, error: propReqError } = await supabase
-      .from('legal_requests')
+    const { data: proposalReq, error: propReqError } = (await __getSupabaseClient()).from('legal_requests')
       .insert({
         title: 'Proposal Test Request ' + Date.now(),
         description: 'Testing Proposal Acceptance',
@@ -111,12 +108,11 @@ async function runVerification() {
        console.log(`   Created public request: ${proposalReq.id}`);
        
        // 4b. Create a proposal for this request (simulating a lawyer)
-       const { data: lawyer } = await supabase.from('profiles').select('id').eq('role', 'lawyer').limit(1).single();
+       const { data: lawyer } = (await __getSupabaseClient()).from('profiles').select('id').eq('role', 'lawyer').limit(1).single();
        if (lawyer) {
            console.log(`   Using Lawyer ID: ${lawyer.id}`);
            // Corrected columns based on app/actions/proposals.ts
-           const { data: proposal, error: propError } = await supabase
-            .from('request_proposals')
+           const { data: proposal, error: propError } = (await __getSupabaseClient()).from('request_proposals')
             .insert({
                 request_id: proposalReq.id,
                 lawyer_id: lawyer.id,
@@ -136,8 +132,7 @@ async function runVerification() {
                // 4c. Simulate Acceptance (This logic mimics createCaseFromProposal)
                console.log('   Simulating Acceptance -> Forking to New Case...');
                
-               const { data: newCase, error: newCaseError } = await supabase
-                .from('legal_requests')
+               const { data: newCase, error: newCaseError } = (await __getSupabaseClient()).from('legal_requests')
                 .insert({
                     client_id: clientId,
                     assigned_lawyer_id: lawyer.id,
@@ -173,3 +168,15 @@ async function runVerification() {
 }
 
 runVerification();
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

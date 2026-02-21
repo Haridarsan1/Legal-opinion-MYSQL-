@@ -14,8 +14,7 @@ export default async function BankHomePage() {
 
   if (!user) redirect('/login');
 
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -328,3 +327,15 @@ export default async function BankHomePage() {
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

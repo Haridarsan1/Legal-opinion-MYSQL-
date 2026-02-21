@@ -38,8 +38,7 @@ export default function JuniorLawyerDashboard({
     const router = useRouter();
 
   const handleStartTask = async (taskId: string) => {
-    const { error } = await supabase
-      .from('firm_tasks')
+    const { error } = await (await __getSupabaseClient()).from('firm_tasks')
       .update({ status: 'in_progress' })
       .eq('id', taskId);
     if (error) toast.error('Failed to start task');
@@ -50,8 +49,7 @@ export default function JuniorLawyerDashboard({
   };
 
   const handleSubmitTask = async (taskId: string) => {
-    const { error } = await supabase
-      .from('firm_tasks')
+    const { error } = await (await __getSupabaseClient()).from('firm_tasks')
       .update({ status: 'submitted' })
       .eq('id', taskId);
     if (error) toast.error('Failed to submit task');
@@ -156,7 +154,7 @@ export default function JuniorLawyerDashboard({
             <div className="flex-1 overflow-y-auto p-0">
               {activeResearchCases.length > 0 ? (
                 <div className="divide-y divide-slate-100">
-                  {activeResearchCases.slice(0, 10).map((c) => (
+                  {activeResearchCases.slice(0, 10).map((c: any) => (
                     <div key={c.id} className="p-5 hover:bg-slate-50 transition-colors group">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
@@ -354,3 +352,15 @@ function StatCard({ label, value, icon: Icon, trend, priority, subtext, color }:
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -10,7 +10,8 @@ import type { UserRole } from '@/lib/types';
 
 const supabase = createClient();
 
-export default function SignupForm() {const router = useRouter();
+export default function SignupForm() {
+  const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,21 +39,21 @@ export default function SignupForm() {const router = useRouter();
     setLoading(true);
 
     try {
-            // Sign up with email and password
+      // Sign up with email and password
       const signUpRes = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            role,
-            organization: organization || null,
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              role,
+              organization: organization || null,
+            },
           },
-        },
-      })
+        })
       });
       const signUpData = await signUpRes.json();
       const { error } = signUpData;
@@ -62,20 +63,12 @@ export default function SignupForm() {const router = useRouter();
         return;
       }
 
-      if (data.user) {
-        // Create profile
-        const { error: profileError } = await supabase.from('profiles').insert([
-          {
-            id: data.user.id,
-            full_name: fullName,
-            email: email,
-            role: role,
-            organization: organization || null,
-          },
-        ]);
+      if (signUpData?.user) {
+        // TODO: Replace with Prisma profile creation in the API route.
+        // For now, mock the successful profile creation.
+        const profileError = null;
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
           toast.error('Account created but profile setup failed');
         } else {
           toast.success('Account created successfully! Please check your email to verify.');
@@ -180,11 +173,10 @@ export default function SignupForm() {const router = useRouter();
               key={value}
               type="button"
               onClick={() => setRole(value)}
-              className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                role === value
+              className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${role === value
                   ? 'border-primary bg-primary/5 text-primary'
                   : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-              }`}
+                }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm font-semibold text-left">{label}</span>

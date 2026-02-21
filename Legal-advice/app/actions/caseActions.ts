@@ -38,8 +38,7 @@ export async function updateCaseStatus(
     }
 
     // Get current request
-    const { data: request, error: fetchError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: fetchError } = await (await __getSupabaseClient()).from('legal_requests')
       .select('status, assigned_lawyer_id, client_id')
       .eq('id', requestId)
       .single();
@@ -65,8 +64,7 @@ export async function updateCaseStatus(
     }
 
     // Update status
-    const { error: updateError } = await supabase
-      .from('legal_requests')
+    const { error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         status: newStatus,
         updated_at: new Date().toISOString(),
@@ -78,7 +76,7 @@ export async function updateCaseStatus(
     }
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'status_updated',
       entity_type: 'legal_request',
@@ -111,8 +109,7 @@ export async function acceptCase(requestId: string) {
     }
 
     // Verify lawyer is assigned
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('assigned_lawyer_id, status')
       .eq('id', requestId)
       .single();
@@ -122,8 +119,7 @@ export async function acceptCase(requestId: string) {
     }
 
     // Update to accepted status
-    const { error } = await supabase
-      .from('legal_requests')
+    const { error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         lawyer_acceptance_status: 'accepted',
         lawyer_accepted_at: new Date().toISOString(),
@@ -136,7 +132,7 @@ export async function acceptCase(requestId: string) {
     }
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'case_accepted',
       entity_type: 'legal_request',
@@ -163,8 +159,7 @@ export async function rejectCase(requestId: string, reason: string) {
     }
 
     // Verify lawyer is assigned
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('assigned_lawyer_id')
       .eq('id', requestId)
       .single();
@@ -174,8 +169,7 @@ export async function rejectCase(requestId: string, reason: string) {
     }
 
     // Update to rejected status
-    const { error } = await supabase
-      .from('legal_requests')
+    const { error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         lawyer_acceptance_status: 'rejected',
         lawyer_rejected_at: new Date().toISOString(),
@@ -188,7 +182,7 @@ export async function rejectCase(requestId: string, reason: string) {
     }
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'case_rejected',
       entity_type: 'legal_request',
@@ -210,8 +204,7 @@ export async function calculateSLA(requestId: string) {
   const supabase = await createClient();try {
     
 
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('created_at, status, sla_deadline')
       .eq('id', requestId)
       .single();
@@ -246,3 +239,15 @@ export async function calculateSLA(requestId: string) {
     return { slaStatus: 'unknown', daysRemaining: 0 };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

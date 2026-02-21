@@ -1,5 +1,5 @@
 'use client';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -31,7 +31,7 @@ export default function ClientSignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -78,29 +78,28 @@ export default function ClientSignupPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            phone: formData.phone,
-            role: 'client',
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              phone: formData.phone,
+              role: 'client',
+            },
           },
-        },
-      })
+        })
       });
       const signUpData = await signUpRes.json();
-      const { error } = signUpData;
+      const { error, user } = signUpData;
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error('Failed to create user account');
+      if (error) throw new Error(error);
+      if (!user) throw new Error('Failed to create user account');
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const { data: profileCheck } = await supabase
-        .from('profiles')
+      const { data: profileCheck } = await (await __getSupabaseClient()).from('profiles')
         .select('role, full_name, email')
-        .eq('id', authData.user.id)
+        .eq('id', user.id)
         .single();
 
       console.log('✅ Profile created:', profileCheck);
@@ -121,10 +120,7 @@ export default function ClientSignupPage() {
     setError(null);
 
     try {
-      const session = await auth();
-  const user = session?.user;
-
-      if (error) throw error;
+      await signIn('google', { callbackUrl: '/client' });
     } catch (err: any) {
       console.error('Google signup error:', err);
       setError(err.message || 'Failed to sign up with Google');
@@ -397,3 +393,15 @@ export default function ClientSignupPage() {
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

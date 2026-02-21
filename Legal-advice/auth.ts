@@ -5,7 +5,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
-export const { auth, signIn, signOut, handlers: { GET, POST } } = NextAuth({
+export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
     providers: [
         Credentials({

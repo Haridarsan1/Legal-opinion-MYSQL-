@@ -7,7 +7,7 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { tableName, operation, selectFields, whereClause, data, isSingle, orderClause, limitCount } = body;
 
-                const query = supabase.from(tableName);
+                const query = (await __getSupabaseClient()).from(tableName);
 
         // The query object is our server-side PostgresShimQueryBuilder
         const builder = query as any;
@@ -26,3 +26,15 @@ export async function POST(req: Request) {
         return NextResponse.json({ data: null, error: error.message || 'Server proxy error' }, { status: 500 });
     }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

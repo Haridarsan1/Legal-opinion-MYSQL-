@@ -40,7 +40,9 @@ export default function DigitalSignature({
   requestId,
   mode,
   onSignComplete,
-}: DigitalSignatureProps) {const [validation, setValidation] = useState<SignatureValidation | null>(null);
+}: DigitalSignatureProps) {
+  const { data: session } = useSession();
+  const [validation, setValidation] = useState<SignatureValidation | null>(null);
   const [signature, setSignature] = useState<DigitalSignatureData | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
@@ -56,8 +58,9 @@ export default function DigitalSignature({
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Load existing signature
-  useEffect(() => {const loadSignature = async () => {const { data } = await supabase
-        .from('digital_signatures')
+  useEffect(() => {
+    const loadSignature = async () => {
+      const { data } = (await __getSupabaseClient()).from('digital_signatures')
         .select('*')
         .eq('opinion_version_id', opinionVersionId)
         .order('created_at', { ascending: false })
@@ -73,16 +76,16 @@ export default function DigitalSignature({
   // Load user profile for pre-filling
   useEffect(() => {
     const loadProfile = async () => {
-      const user = (await auth())?.user;
+      const user = session?.user;
       if (!user) return;
 
-      const { data } = await supabase
-        .from('profiles')
+      const { data } = (await __getSupabaseClient()).from('profiles')
         .select('full_name, bar_council_id')
         .eq('id', user.id)
         .single();
 
-      if (data) {setSignerName(data.full_name || '');
+      if (data) {
+        setSignerName(data.full_name || '');
         setSignerBarId(data.bar_council_id || '');
         setSignerDesignation('Advocate'); // Default
       }
@@ -98,8 +101,7 @@ export default function DigitalSignature({
     setIsValidating(true);
 
     // Check 1: No open clarifications
-    const { data: openClarifications } = await supabase
-      .from('clarifications')
+    const { data: openClarifications } = (await __getSupabaseClient()).from('clarifications')
       .select('id')
       .eq('request_id', requestId)
       .eq('status', 'open');
@@ -107,8 +109,7 @@ export default function DigitalSignature({
     const noOpenClarifications = (openClarifications?.length || 0) === 0;
 
     // Check 2: No pending peer reviews
-    const { data: pendingReviews } = await supabase
-      .from('peer_reviews')
+    const { data: pendingReviews } = (await __getSupabaseClient()).from('peer_reviews')
       .select('id')
       .eq('request_id', requestId)
       .in('status', ['requested', 'in_progress']);
@@ -116,8 +117,7 @@ export default function DigitalSignature({
     const noPendingPeerReviews = (pendingReviews?.length || 0) === 0;
 
     // Check 3: All sections complete
-    const { data: version } = await supabase
-      .from('opinion_versions')
+    const { data: version } = (await __getSupabaseClient()).from('opinion_versions')
       .select('content_sections')
       .eq('id', opinionVersionId)
       .single();
@@ -131,8 +131,7 @@ export default function DigitalSignature({
     }
 
     // Check 4: Client notified (check if opinion status updated)
-    const { data: opinion } = await supabase
-      .from('opinion_submissions')
+    const { data: opinion } = (await __getSupabaseClient()).from('opinion_submissions')
       .select('id')
       .eq('request_id', requestId)
       .single();
@@ -151,9 +150,9 @@ export default function DigitalSignature({
     setValidation(validationResult);
 
     // Save validation to database
-    const user = (await auth())?.user;
+    const user = session?.user;
     if (user) {
-      await supabase.from('opinion_signature_validations').insert({
+      (await __getSupabaseClient()).from('opinion_signature_validations').insert({
         opinion_version_id: opinionVersionId,
         no_open_clarifications: noOpenClarifications,
         no_pending_peer_reviews: noPendingPeerReviews,
@@ -194,12 +193,11 @@ export default function DigitalSignature({
 
     setIsSigning(true);
 
-    const user = (await auth())?.user;
+    const user = session?.user;
     if (!user) return;
 
     // Get opinion version content for hash
-    const { data: version } = await supabase
-      .from('opinion_versions')
+    const { data: version } = (await __getSupabaseClient()).from('opinion_versions')
       .select('content_sections, opinion_submission_id')
       .eq('id', opinionVersionId)
       .single();
@@ -215,8 +213,7 @@ export default function DigitalSignature({
     const hash = await generateSignatureHash(contentToHash);
 
     // Create signature record
-    const { data: signatureData, error } = await supabase
-      .from('digital_signatures')
+    const { data: signatureData, error } = (await __getSupabaseClient()).from('digital_signatures')
       .insert({
         opinion_submission_id: version.opinion_submission_id,
         opinion_version_id: opinionVersionId,
@@ -235,8 +232,7 @@ export default function DigitalSignature({
 
     if (!error && signatureData) {
       // Lock the version
-      await supabase
-        .from('opinion_versions')
+      (await __getSupabaseClient()).from('opinion_versions')
         .update({
           is_locked: true,
           locked_at: timestamp,
@@ -246,8 +242,7 @@ export default function DigitalSignature({
         .eq('id', opinionVersionId);
 
       // Update opinion submission
-      await supabase
-        .from('opinion_submissions')
+      (await __getSupabaseClient()).from('opinion_submissions')
         .update({
           is_final: true,
           opinion_status: 'final',
@@ -257,7 +252,7 @@ export default function DigitalSignature({
         .eq('id', version.opinion_submission_id);
 
       // Update request status
-      await supabase.from('legal_requests').update({ status: 'opinion_ready' }).eq('id', requestId);
+      (await __getSupabaseClient()).from('legal_requests').update({ status: 'opinion_ready' }).eq('id', requestId);
 
       setSignature(signatureData as DigitalSignatureData);
       setShowSignModal(false);
@@ -391,154 +386,154 @@ export default function DigitalSignature({
           )}
 
           {
-  validation && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <ValidationCheck
-                  label="No Open Clarifications"
-                  passed={validation.no_open_clarifications}
-                />
-                <ValidationCheck
-                  label="No Pending Peer Reviews"
-                  passed={validation.no_pending_peer_reviews}
-                />
-                <ValidationCheck
-                  label="All Sections Complete"
-                  passed={validation.all_sections_complete}
-                />
-                <ValidationCheck label="Client Notified" passed={validation.client_notified} />
+            validation && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <ValidationCheck
+                    label="No Open Clarifications"
+                    passed={validation.no_open_clarifications}
+                  />
+                  <ValidationCheck
+                    label="No Pending Peer Reviews"
+                    passed={validation.no_pending_peer_reviews}
+                  />
+                  <ValidationCheck
+                    label="All Sections Complete"
+                    passed={validation.all_sections_complete}
+                  />
+                  <ValidationCheck label="Client Notified" passed={validation.client_notified} />
+                </div>
+
+                {!validation.validation_passed && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
+                    <p className="text-red-800 font-medium">
+                      ⚠️ Cannot sign: Some validation checks failed
+                    </p>
+                    <p className="text-red-600 text-sm mt-1">
+                      Please resolve all issues before signing the opinion.
+                    </p>
+                  </div>
+                )}
+
+                {
+                  validation.validation_passed && !signature && (
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
+                      <p className="text-green-800 font-medium">✓ All validation checks passed</p>
+                      <p className="text-green-600 text-sm mt-1">Opinion is ready to be signed.</p>
+                    </div>
+                  )}
+
+                {
+                  signature && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
+                      <p className="text-blue-800 font-medium">
+                        ✓ Opinion already signed on{' '}
+                        {
+                          format(new Date(signature.signature_timestamp), 'MMM d, yyyy h:mm a')}
+                      </p>
+                    </div>
+                  )}
               </div>
-
-              {!validation.validation_passed && (
-                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
-                  <p className="text-red-800 font-medium">
-                    ⚠️ Cannot sign: Some validation checks failed
-                  </p>
-                  <p className="text-red-600 text-sm mt-1">
-                    Please resolve all issues before signing the opinion.
-                  </p>
-                </div>
-              )}
-
-              {
-  validation.validation_passed && !signature && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
-                  <p className="text-green-800 font-medium">✓ All validation checks passed</p>
-                  <p className="text-green-600 text-sm mt-1">Opinion is ready to be signed.</p>
-                </div>
-              )}
-
-              {
-  signature && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-blue-800 font-medium">
-                    ✓ Opinion already signed on{' '}
-                    {
-  format(new Date(signature.signature_timestamp), 'MMM d, yyyy h:mm a')}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+            )}
         </div>
       </Card>
 
       {/* Sign Modal */}
       {
-  showSignModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-6">Digital Signature</h3>
+        showSignModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <h3 className="text-2xl font-bold mb-6">Digital Signature</h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Full Name</label>
-                <input
-                  type="text"
-                  value={signerName}
-                  onChange={(e) => setSignerName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  placeholder="Your full legal name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Designation</label>
-                <input
-                  type="text"
-                  value={signerDesignation}
-                  onChange={(e) => setSignerDesignation(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  placeholder="e.g., Advocate, Senior Advocate"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Bar Council ID</label>
-                <input
-                  type="text"
-                  value={signerBarId}
-                  onChange={(e) => setSignerBarId(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  placeholder="Your Bar Council registration number"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Signature Type</label>
-                <select
-                  value={signatureType}
-                  onChange={(e) => setSignatureType(e.target.value as any)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                >
-                  <option value="digital">Digital Signature</option>
-                  <option value="electronic">Electronic Signature</option>
-                </select>
-              </div>
-
-              <div className="pt-4 border-t">
-                <label className="flex items-start gap-3">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Full Name</label>
                   <input
-                    type="checkbox"
-                    checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="mt-1"
+                    type="text"
+                    value={signerName}
+                    onChange={(e) => setSignerName(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Your full legal name"
                   />
-                  <span className="text-sm text-gray-700">
-                    I certify that this opinion is accurate to the best of my knowledge and
-                    professional judgment. I understand that this digital signature is legally
-                    binding and this opinion cannot be modified after signing.
-                  </span>
-                </label>
-              </div>
-            </div>
+                </div>
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowSignModal(false)}
-                disabled={isSigning}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={signOpinion}
-                disabled={isSigning || !agreedToTerms}
-                className="flex-1 px-4 py-3 bg-green-600 text-white rounded font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSigning ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <LoadingSpinner size="sm" />
-                    Signing...
-                  </span>
-                ) : (
-                  'Sign Opinion'
-                )}
-              </button>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Designation</label>
+                  <input
+                    type="text"
+                    value={signerDesignation}
+                    onChange={(e) => setSignerDesignation(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="e.g., Advocate, Senior Advocate"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Bar Council ID</label>
+                  <input
+                    type="text"
+                    value={signerBarId}
+                    onChange={(e) => setSignerBarId(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Your Bar Council registration number"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Signature Type</label>
+                  <select
+                    value={signatureType}
+                    onChange={(e) => setSignatureType(e.target.value as any)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  >
+                    <option value="digital">Digital Signature</option>
+                    <option value="electronic">Electronic Signature</option>
+                  </select>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I certify that this opinion is accurate to the best of my knowledge and
+                      professional judgment. I understand that this digital signature is legally
+                      binding and this opinion cannot be modified after signing.
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowSignModal(false)}
+                  disabled={isSigning}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={signOpinion}
+                  disabled={isSigning || !agreedToTerms}
+                  className="flex-1 px-4 py-3 bg-green-600 text-white rounded font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSigning ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <LoadingSpinner size="sm" />
+                      Signing...
+                    </span>
+                  ) : (
+                    'Sign Opinion'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }
@@ -547,9 +542,8 @@ export default function DigitalSignature({
 function ValidationCheck({ label, passed }: { label: string; passed: boolean }) {
   return (
     <div
-      className={`p-3 rounded border ${
-        passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-      }`}
+      className={`p-3 rounded border ${passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+        }`}
     >
       <div className="flex items-center gap-2">
         {passed ? (
@@ -576,3 +570,15 @@ function ValidationCheck({ label, passed }: { label: string; passed: boolean }) 
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

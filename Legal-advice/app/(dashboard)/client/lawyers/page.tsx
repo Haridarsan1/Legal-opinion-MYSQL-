@@ -18,8 +18,7 @@ export default async function LawyersListPage() {
   }
 
   // Fetch all lawyers with their stats
-  const { data: lawyers, error } = await supabase
-    .from('profiles')
+  const { data: lawyers, error } = await (await __getSupabaseClient()).from('profiles')
     .select(
       `
             id,
@@ -43,14 +42,13 @@ export default async function LawyersListPage() {
   }
 
   // Fetch case counts for each lawyer
-  const { data: caseCounts } = await supabase
-    .from('legal_requests')
+  const { data: caseCounts } = await (await __getSupabaseClient()).from('legal_requests')
     .select('assigned_lawyer_id, status')
     .not('assigned_lawyer_id', 'is', null);
 
   // Calculate stats for each lawyer
-  const lawyersWithStats = (lawyers || []).map((lawyer) => {
-    const lawyerCases = caseCounts?.filter((c) => c.assigned_lawyer_id === lawyer.id) || [];
+  const lawyersWithStats = (lawyers || []).map((lawyer: any) => {
+    const lawyerCases = caseCounts?.filter((c: any) => c.assigned_lawyer_id === lawyer.id) || [];
     return {
       ...lawyer,
       specialization: lawyer.specialization
@@ -64,17 +62,28 @@ export default async function LawyersListPage() {
       title: 'Legal Expert', // Default title since it's not in DB
       totalCases: lawyerCases.length,
       completedCases: lawyerCases.filter(
-        (c) => c.status === 'completed' || c.status === 'delivered'
+        (c: any) => c.status === 'completed' || c.status === 'delivered'
       ).length,
     };
   });
 
   // Fetch departments for filter options
-  const { data: departments } = await supabase
-    .from('departments')
+  const { data: departments } = await (await __getSupabaseClient()).from('departments')
     .select('id, name')
     .eq('active', true)
     .order('name');
 
   return <LawyersListContent lawyers={lawyersWithStats} departments={departments || []} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

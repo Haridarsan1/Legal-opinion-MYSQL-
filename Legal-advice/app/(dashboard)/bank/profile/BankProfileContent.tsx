@@ -23,8 +23,9 @@ interface BankProfileContentProps {
   profile: Profile;
 }
 
-export default function BankProfileContent({ profile }: BankProfileContentProps) {const router = useRouter();
-    const [activeTab, setActiveTab] = useState(1);
+export default function BankProfileContent({ profile }: BankProfileContentProps) {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
@@ -32,7 +33,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
   const [bankLogoUrl, setBankLogoUrl] = useState(profile.bank_logo_url || '');
   const [authLetterUrl, setAuthLetterUrl] = useState(profile.authorization_letter_url || '');
 
-  const [formData, setFormData] = useState({    bank_name: profile.bank_name || '',
+  const [formData, setFormData] = useState({
+    bank_name: profile.bank_name || '',
     bank_type: profile.bank_type || '',
     head_office_location: profile.head_office_location || '',
     registration_number: profile.registration_number || '',
@@ -71,7 +73,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!['image/png', 'image/jpeg'].includes(file.type)) {      setMessage({ type: 'error', text: 'Please upload PNG or JPEG only' });
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      setMessage({ type: 'error', text: 'Please upload PNG or JPEG only' });
       return;
     }
 
@@ -88,16 +91,16 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${profile.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await (await __getSupabaseClient()).storage
         .from('bank_logos')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const {        data: { publicUrl },
-      } = supabase.storage.from('bank_logos').getPublicUrl(filePath);
+      const { data: { publicUrl },
+      } = (await __getSupabaseClient()).storage.from('bank_logos').getPublicUrl(filePath);
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (await __getSupabaseClient())
         .from('profiles')
         .update({ bank_logo_url: publicUrl })
         .eq('id', profile.id);
@@ -137,7 +140,7 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
       const fileName = `auth_letter_${Date.now()}.pdf`;
       const filePath = `${profile.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await (await __getSupabaseClient()).storage
         .from('bank_documents')
         .upload(filePath, file);
 
@@ -145,9 +148,9 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from('bank_documents').getPublicUrl(filePath);
+      } = (await __getSupabaseClient()).storage.from('bank_documents').getPublicUrl(filePath);
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (await __getSupabaseClient())
         .from('profiles')
         .update({ authorization_letter_url: publicUrl })
         .eq('id', profile.id);
@@ -184,8 +187,8 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
           [name]: checkbox.checked
             ? [...((prev[name as keyof typeof prev] as string[]) || []), checkboxValue]
             : ((prev[name as keyof typeof prev] as string[]) || []).filter(
-                (v: string) => v !== checkboxValue
-              ),
+              (v: string) => v !== checkboxValue
+            ),
         }));
       } else if (name === 'document_sharing_consent') {
         setFormData((prev) => ({
@@ -207,7 +210,7 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
     setMessage(null);
 
     try {
-      const { error } = await supabase
+      const { error } = await (await __getSupabaseClient())
         .from('profiles')
         .update({
           bank_name: formData.bank_name || null,
@@ -253,11 +256,11 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
 
   const initials = formData.bank_name
     ? formData.bank_name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .substring(0, 2)
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2)
     : 'BK';
 
   const getStatusBadge = (status: string | null | undefined) => {
@@ -282,14 +285,14 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
 
       {/* Message */}
       {
-  message && (
-        <div
-          className={`p-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}
-        >
-          {message.type === 'success' && <Check className="w-5 h-5" />}
-          <span className="font-medium">{message.text}</span>
-        </div>
-      )}
+        message && (
+          <div
+            className={`p-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}
+          >
+            {message.type === 'success' && <Check className="w-5 h-5" />}
+            <span className="font-medium">{message.text}</span>
+          </div>
+        )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left: Profile Preview */}
@@ -309,11 +312,11 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
                   </div>
                 )}
                 {
-  isUploadingLogo && (
-                  <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                    <div className="w-5 h-5 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                )}
+                  isUploadingLogo && (
+                    <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                      <div className="w-5 h-5 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
               </div>
               <div className="text-center w-full">
                 <h3 className="font-bold text-slate-900">{formData.bank_name || 'Bank Name'}</h3>
@@ -369,11 +372,10 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                        activeTab === tab.id
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
                           ? 'border-blue-600 text-blue-600 bg-blue-50'
                           : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
                       <Icon className="w-4 h-4" />
                       <span className="hidden sm:inline">{tab.name}</span>
@@ -387,583 +389,583 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
             <div className="p-6">
               {/* Tab 1: Bank Identity */}
               {
-  activeTab === 1 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">Bank Identity</h3>
-                    <p className="text-sm text-slate-500">Institutional identification details</p>
-                  </div>
+                activeTab === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">Bank Identity</h3>
+                      <p className="text-sm text-slate-500">Institutional identification details</p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-2">Bank Logo</label>
-                    <label className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors text-sm cursor-pointer w-fit">
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                        disabled={isUploadingLogo}
-                      />
-                      <Upload className="w-4 h-4" />
-                      {isUploadingLogo
-                        ? 'Uploading...'
-                        : bankLogoUrl
-                          ? 'Change Logo'
-                          : 'Upload Logo'}
-                    </label>
-                    <p className="text-xs text-slate-500 mt-1">PNG or JPEG, max 2MB</p>
-                  </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-2">Bank Logo</label>
+                      <label className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors text-sm cursor-pointer w-fit">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                          disabled={isUploadingLogo}
+                        />
+                        <Upload className="w-4 h-4" />
+                        {isUploadingLogo
+                          ? 'Uploading...'
+                          : bankLogoUrl
+                            ? 'Change Logo'
+                            : 'Upload Logo'}
+                      </label>
+                      <p className="text-xs text-slate-500 mt-1">PNG or JPEG, max 2MB</p>
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="sm:col-span-2">
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Bank Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="bank_name"
-                        value={formData.bank_name}
-                        onChange={handleChange}
-                        required
-                        placeholder="State Bank of India"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Bank Type <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="bank_type"
-                        value={formData.bank_type}
-                        onChange={handleChange}
-                        required
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      >
-                        <option value="">Select Type</option>
-                        <option value="Public">Public</option>
-                        <option value="Private">Private</option>
-                        <option value="Cooperative">Cooperative</option>
-                        <option value="Foreign">Foreign</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Head Office Location <span className="text-red-500">*</span>
-                      </label>
-                      <LocationAutocomplete
-                        value={formData.head_office_location}
-                        onChange={(value) =>
-                          setFormData((prev) => ({ ...prev, head_office_location: value }))
-                        }
-                        required
-                        placeholder="Mumbai"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Registration Number
-                      </label>
-                      <input
-                        type="text"
-                        name="registration_number"
-                        value={formData.registration_number}
-                        onChange={handleChange}
-                        placeholder="REG/2024/12345"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Regulating Authority
-                      </label>
-                      <input
-                        type="text"
-                        name="regulating_authority"
-                        value={formData.regulating_authority}
-                        onChange={handleChange}
-                        placeholder="RBI"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Bank Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="bank_name"
+                          value={formData.bank_name}
+                          onChange={handleChange}
+                          required
+                          placeholder="State Bank of India"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Bank Type <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="bank_type"
+                          value={formData.bank_type}
+                          onChange={handleChange}
+                          required
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        >
+                          <option value="">Select Type</option>
+                          <option value="Public">Public</option>
+                          <option value="Private">Private</option>
+                          <option value="Cooperative">Cooperative</option>
+                          <option value="Foreign">Foreign</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Head Office Location <span className="text-red-500">*</span>
+                        </label>
+                        <LocationAutocomplete
+                          value={formData.head_office_location}
+                          onChange={(value) =>
+                            setFormData((prev) => ({ ...prev, head_office_location: value }))
+                          }
+                          required
+                          placeholder="Mumbai"
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Registration Number
+                        </label>
+                        <input
+                          type="text"
+                          name="registration_number"
+                          value={formData.registration_number}
+                          onChange={handleChange}
+                          placeholder="REG/2024/12345"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Regulating Authority
+                        </label>
+                        <input
+                          type="text"
+                          name="regulating_authority"
+                          value={formData.regulating_authority}
+                          onChange={handleChange}
+                          placeholder="RBI"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Tab 2: Authorized Contact */}
               {
-  activeTab === 2 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
-                      Authorized Contact Details
-                    </h3>
-                    <p className="text-sm text-slate-500">Legal communication & accountability</p>
-                  </div>
+                activeTab === 2 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        Authorized Contact Details
+                      </h3>
+                      <p className="text-sm text-slate-500">Legal communication & accountability</p>
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Authorized Person Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="authorized_person_name"
-                        value={formData.authorized_person_name}
-                        onChange={handleChange}
-                        required
-                        placeholder="John Doe"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Designation <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="authorized_person_designation"
-                        value={formData.authorized_person_designation}
-                        onChange={handleChange}
-                        required
-                        placeholder="Legal Head / Compliance Officer"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Official Email <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        name="official_email"
-                        value={formData.official_email}
-                        onChange={handleChange}
-                        required
-                        placeholder="legal@bankdomain.com"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Official Phone <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        name="official_phone"
-                        value={formData.official_phone}
-                        onChange={handleChange}
-                        required
-                        placeholder="+91 22 1234 5678"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        Secondary Contact
-                      </label>
-                      <input
-                        type="text"
-                        name="secondary_contact"
-                        value={formData.secondary_contact}
-                        onChange={handleChange}
-                        placeholder="Alternative contact person"
-                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Authorized Person Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="authorized_person_name"
+                          value={formData.authorized_person_name}
+                          onChange={handleChange}
+                          required
+                          placeholder="John Doe"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Designation <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="authorized_person_designation"
+                          value={formData.authorized_person_designation}
+                          onChange={handleChange}
+                          required
+                          placeholder="Legal Head / Compliance Officer"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Official Email <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          name="official_email"
+                          value={formData.official_email}
+                          onChange={handleChange}
+                          required
+                          placeholder="legal@bankdomain.com"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Official Phone <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          name="official_phone"
+                          value={formData.official_phone}
+                          onChange={handleChange}
+                          required
+                          placeholder="+91 22 1234 5678"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-bold text-slate-900 mb-2">
+                          Secondary Contact
+                        </label>
+                        <input
+                          type="text"
+                          name="secondary_contact"
+                          value={formData.secondary_contact}
+                          onChange={handleChange}
+                          placeholder="Alternative contact person"
+                          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Tab 3: Legal Engagement Preferences */}
               {
-  activeTab === 3 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
-                      Legal Engagement Preferences
-                    </h3>
-                    <p className="text-sm text-slate-500">Match with correct lawyers</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-3">
-                      Type of Legal Services Required <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      {[
-                        'Legal Opinions',
-                        'Loan Recovery',
-                        'Compliance & Regulatory',
-                        'Litigation Support',
-                        'Documentation & Contracts',
-                      ].map((service) => (
-                        <label key={service} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            name="legal_services_required"
-                            value={service}
-                            checked={formData.legal_services_required.includes(service)}
-                            onChange={handleChange}
-                            className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600"
-                          />
-                          <span className="text-sm text-slate-700">{service}</span>
-                        </label>
-                      ))}
+                activeTab === 3 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        Legal Engagement Preferences
+                      </h3>
+                      <p className="text-sm text-slate-500">Match with correct lawyers</p>
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-3">
-                      Engagement Model <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      {['Case-based', 'Retainer-based', 'Opinion-only'].map((model) => (
-                        <label key={model} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="engagement_model"
-                            value={model}
-                            checked={formData.engagement_model === model}
-                            onChange={handleChange}
-                            required
-                            className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
-                          />
-                          <span className="text-sm text-slate-700">{model}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 4: Jurisdiction & Court Coverage */}
-              {
-  activeTab === 4 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
-                      Jurisdiction & Court Coverage
-                    </h3>
-                    <p className="text-sm text-slate-500">Prevent assignment mismatch</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-2">
-                      Operating Jurisdictions (States/Countries){' '}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Comma-separated (e.g., Maharashtra, Karnataka, Delhi)"
-                      onBlur={(e) => {
-                        const jurisdictions = e.target.value
-                          .split(',')
-                          .map((s) => s.trim())
-                          .filter(Boolean);
-                        setFormData((prev) => ({
-                          ...prev,
-                          operating_jurisdictions: jurisdictions,
-                        }));
-                      }}
-                      defaultValue={formData.operating_jurisdictions.join(', ')}
-                      className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                    />
-                    <p className="text-xs text-slate-500 mt-1">
-                      Selected: {formData.operating_jurisdictions.join(', ') || 'None'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-3">
-                      Courts / Forums Involved <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      {['District Court', 'High Court', 'DRT', 'NCLT', 'Supreme Court'].map(
-                        (court) => (
-                          <label key={court} className="flex items-center gap-2 cursor-pointer">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-3">
+                        Type of Legal Services Required <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-2">
+                        {[
+                          'Legal Opinions',
+                          'Loan Recovery',
+                          'Compliance & Regulatory',
+                          'Litigation Support',
+                          'Documentation & Contracts',
+                        ].map((service) => (
+                          <label key={service} className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="checkbox"
-                              name="courts_involved"
-                              value={court}
-                              checked={formData.courts_involved.includes(court)}
+                              name="legal_services_required"
+                              value={service}
+                              checked={formData.legal_services_required.includes(service)}
                               onChange={handleChange}
                               className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600"
                             />
-                            <span className="text-sm text-slate-700">{court}</span>
+                            <span className="text-sm text-slate-700">{service}</span>
                           </label>
-                        )
-                      )}
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-3">
+                        Engagement Model <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-2">
+                        {['Case-based', 'Retainer-based', 'Opinion-only'].map((model) => (
+                          <label key={model} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="engagement_model"
+                              value={model}
+                              checked={formData.engagement_model === model}
+                              onChange={handleChange}
+                              required
+                              className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
+                            />
+                            <span className="text-sm text-slate-700">{model}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+
+              {/* Tab 4: Jurisdiction & Court Coverage */}
+              {
+                activeTab === 4 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        Jurisdiction & Court Coverage
+                      </h3>
+                      <p className="text-sm text-slate-500">Prevent assignment mismatch</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-2">
+                        Operating Jurisdictions (States/Countries){' '}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Comma-separated (e.g., Maharashtra, Karnataka, Delhi)"
+                        onBlur={(e) => {
+                          const jurisdictions = e.target.value
+                            .split(',')
+                            .map((s) => s.trim())
+                            .filter(Boolean);
+                          setFormData((prev) => ({
+                            ...prev,
+                            operating_jurisdictions: jurisdictions,
+                          }));
+                        }}
+                        defaultValue={formData.operating_jurisdictions.join(', ')}
+                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">
+                        Selected: {formData.operating_jurisdictions.join(', ') || 'None'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-3">
+                        Courts / Forums Involved <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-2">
+                        {['District Court', 'High Court', 'DRT', 'NCLT', 'Supreme Court'].map(
+                          (court) => (
+                            <label key={court} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                name="courts_involved"
+                                value={court}
+                                checked={formData.courts_involved.includes(court)}
+                                onChange={handleChange}
+                                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600"
+                              />
+                              <span className="text-sm text-slate-700">{court}</span>
+                            </label>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
               {/* Tab 5: Workflow & Communication Settings */}
               {
-  activeTab === 5 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
-                      Workflow & Communication Settings
-                    </h3>
-                    <p className="text-sm text-slate-500">Smooth operations</p>
-                  </div>
+                activeTab === 5 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        Workflow & Communication Settings
+                      </h3>
+                      <p className="text-sm text-slate-500">Smooth operations</p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-3">
-                      Preferred Communication Mode <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      {['Portal only', 'Email alerts'].map((mode) => (
-                        <label key={mode} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="preferred_communication_mode"
-                            value={mode}
-                            checked={formData.preferred_communication_mode === mode}
-                            onChange={handleChange}
-                            required
-                            className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
-                          />
-                          <span className="text-sm text-slate-700">{mode}</span>
-                        </label>
-                      ))}
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-3">
+                        Preferred Communication Mode <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-2">
+                        {['Portal only', 'Email alerts'].map((mode) => (
+                          <label key={mode} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="preferred_communication_mode"
+                              value={mode}
+                              checked={formData.preferred_communication_mode === mode}
+                              onChange={handleChange}
+                              required
+                              className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
+                            />
+                            <span className="text-sm text-slate-700">{mode}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-2">
+                        Expected Turnaround Time (SLA) <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        name="expected_turnaround_time"
+                        value={formData.expected_turnaround_time}
+                        onChange={handleChange}
+                        required
+                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                      >
+                        <option value="24h">24 hours</option>
+                        <option value="48h">48 hours</option>
+                        <option value="72h">72 hours</option>
+                        <option value="Custom">Custom</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-3">
+                        Case Assignment Preference <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-2">
+                        {['Auto-assign', 'Manual approval'].map((pref) => (
+                          <label key={pref} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="case_assignment_preference"
+                              value={pref}
+                              checked={formData.case_assignment_preference === pref}
+                              onChange={handleChange}
+                              required
+                              className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
+                            />
+                            <span className="text-sm text-slate-700">{pref}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-2">
-                      Expected Turnaround Time (SLA) <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="expected_turnaround_time"
-                      value={formData.expected_turnaround_time}
-                      onChange={handleChange}
-                      required
-                      className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                    >
-                      <option value="24h">24 hours</option>
-                      <option value="48h">48 hours</option>
-                      <option value="72h">72 hours</option>
-                      <option value="Custom">Custom</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-3">
-                      Case Assignment Preference <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      {['Auto-assign', 'Manual approval'].map((pref) => (
-                        <label key={pref} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="case_assignment_preference"
-                            value={pref}
-                            checked={formData.case_assignment_preference === pref}
-                            onChange={handleChange}
-                            required
-                            className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
-                          />
-                          <span className="text-sm text-slate-700">{pref}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+                )}
 
               {/* Tab 6: Compliance & Authorization */}
               {
-  activeTab === 6 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
-                      Compliance & Authorization
-                    </h3>
-                    <p className="text-sm text-slate-500">Legal validity</p>
-                  </div>
+                activeTab === 6 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        Compliance & Authorization
+                      </h3>
+                      <p className="text-sm text-slate-500">Legal validity</p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-2">
-                      Authorization Letter <span className="text-red-500">*</span>
-                    </label>
-                    <label className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors text-sm cursor-pointer w-fit">
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handleDocumentUpload}
-                        className="hidden"
-                        disabled={isUploadingDocument}
-                      />
-                      <Upload className="w-4 h-4" />
-                      {isUploadingDocument
-                        ? 'Uploading...'
-                        : authLetterUrl
-                          ? 'Change Document'
-                          : 'Upload PDF'}
-                    </label>
-                    <p className="text-xs text-slate-500 mt-1">PDF only, max 10MB</p>
-                    {authLetterUrl && (
-                      <a
-                        href={authLetterUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline mt-2 inline-block"
-                      >
-                        View uploaded document
-                      </a>
-                    )}
-                  </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-2">
+                        Authorization Letter <span className="text-red-500">*</span>
+                      </label>
+                      <label className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors text-sm cursor-pointer w-fit">
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          onChange={handleDocumentUpload}
+                          className="hidden"
+                          disabled={isUploadingDocument}
+                        />
+                        <Upload className="w-4 h-4" />
+                        {isUploadingDocument
+                          ? 'Uploading...'
+                          : authLetterUrl
+                            ? 'Change Document'
+                            : 'Upload PDF'}
+                      </label>
+                      <p className="text-xs text-slate-500 mt-1">PDF only, max 10MB</p>
+                      {authLetterUrl && (
+                        <a
+                          href={authLetterUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline mt-2 inline-block"
+                        >
+                          View uploaded document
+                        </a>
+                      )}
+                    </div>
 
-                  <div>
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <div>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="document_sharing_consent"
+                          checked={formData.document_sharing_consent}
+                          onChange={handleChange}
+                          required
+                          className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600"
+                        />
+                        <span className="text-sm text-slate-700">
+                          I consent to share documents with empanelled lawyers{' '}
+                          <span className="text-red-500">*</span>
+                        </span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-2">
+                        Internal Approval Reference ID <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        type="checkbox"
-                        name="document_sharing_consent"
-                        checked={formData.document_sharing_consent}
+                        type="text"
+                        name="approval_reference_id"
+                        value={formData.approval_reference_id}
                         onChange={handleChange}
                         required
-                        className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600"
+                        placeholder="APPR/2024/12345"
+                        className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
                       />
-                      <span className="text-sm text-slate-700">
-                        I consent to share documents with empanelled lawyers{' '}
-                        <span className="text-red-500">*</span>
-                      </span>
-                    </label>
+                    </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-2">
-                      Internal Approval Reference ID <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="approval_reference_id"
-                      value={formData.approval_reference_id}
-                      onChange={handleChange}
-                      required
-                      placeholder="APPR/2024/12345"
-                      className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
-                    />
-                  </div>
-                </div>
-              )}
+                )}
 
               {/* Tab 7: Billing Preference */}
               {
-  activeTab === 7 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">Billing Preference</h3>
-                    <p className="text-sm text-slate-500">Commercial clarity</p>
-                  </div>
+                activeTab === 7 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">Billing Preference</h3>
+                      <p className="text-sm text-slate-500">Commercial clarity</p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-3">
-                      Payment Model <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      {['Per opinion', 'Per case', 'Retainer'].map((model) => (
-                        <label key={model} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="payment_model"
-                            value={model}
-                            checked={formData.payment_model === model}
-                            onChange={handleChange}
-                            required
-                            className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
-                          />
-                          <span className="text-sm text-slate-700">{model}</span>
-                        </label>
-                      ))}
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-3">
+                        Payment Model <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-2">
+                        {['Per opinion', 'Per case', 'Retainer'].map((model) => (
+                          <label key={model} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="payment_model"
+                              value={model}
+                              checked={formData.payment_model === model}
+                              onChange={handleChange}
+                              required
+                              className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
+                            />
+                            <span className="text-sm text-slate-700">{model}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 mb-3">
+                        Billing Cycle <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-2">
+                        {['Monthly', 'Per engagement'].map((cycle) => (
+                          <label key={cycle} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="billing_cycle"
+                              value={cycle}
+                              checked={formData.billing_cycle === cycle}
+                              onChange={handleChange}
+                              required
+                              className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
+                            />
+                            <span className="text-sm text-slate-700">{cycle}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-3">
-                      Billing Cycle <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      {['Monthly', 'Per engagement'].map((cycle) => (
-                        <label key={cycle} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="billing_cycle"
-                            value={cycle}
-                            checked={formData.billing_cycle === cycle}
-                            onChange={handleChange}
-                            required
-                            className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
-                          />
-                          <span className="text-sm text-slate-700">{cycle}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+                )}
 
               {/* Tab 8: Profile Status (Read-only) */}
               {
-  activeTab === 8 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">Profile Status</h3>
-                    <p className="text-sm text-slate-500">System-controlled information</p>
-                  </div>
+                activeTab === 8 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">Profile Status</h3>
+                      <p className="text-sm text-slate-500">System-controlled information</p>
+                    </div>
 
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-semibold text-slate-700">Current Status</span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-bold ${getStatusBadge(profile.profile_status)}`}
-                      >
-                        {profile.profile_status || 'Draft'}
-                      </span>
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-slate-700">Current Status</span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-bold ${getStatusBadge(profile.profile_status)}`}
+                        >
+                          {profile.profile_status || 'Draft'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-slate-700">
+                          Verified by Admin
+                        </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-bold ${profile.verified_by_admin ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
+                        >
+                          {profile.verified_by_admin ? 'Yes' : 'No'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-slate-700">Last Updated</span>
+                        <span className="text-sm text-slate-600">
+                          {profile.updated_at
+                            ? new Date(profile.updated_at).toLocaleString()
+                            : 'Never'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-semibold text-slate-700">
-                        Verified by Admin
-                      </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-bold ${profile.verified_by_admin ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
-                      >
-                        {profile.verified_by_admin ? 'Yes' : 'No'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-semibold text-slate-700">Last Updated</span>
-                      <span className="text-sm text-slate-600">
-                        {profile.updated_at
-                          ? new Date(profile.updated_at).toLocaleString()
-                          : 'Never'}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-900 text-sm mb-2">Status Information</h4>
-                    <ul className="text-xs text-blue-700 space-y-1">
-                      <li>
-                        • <strong>Draft:</strong> Profile not yet submitted
-                      </li>
-                      <li>
-                        • <strong>Submitted:</strong> Awaiting admin verification
-                      </li>
-                      <li>
-                        • <strong>Verified:</strong> Profile approved by admin
-                      </li>
-                      <li>
-                        • <strong>Suspended:</strong> Profile access restricted
-                      </li>
-                    </ul>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-blue-900 text-sm mb-2">Status Information</h4>
+                      <ul className="text-xs text-blue-700 space-y-1">
+                        <li>
+                          • <strong>Draft:</strong> Profile not yet submitted
+                        </li>
+                        <li>
+                          • <strong>Submitted:</strong> Awaiting admin verification
+                        </li>
+                        <li>
+                          • <strong>Verified:</strong> Profile approved by admin
+                        </li>
+                        <li>
+                          • <strong>Suspended:</strong> Profile access restricted
+                        </li>
+                      </ul>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
 
@@ -993,3 +995,15 @@ export default function BankProfileContent({ profile }: BankProfileContentProps)
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

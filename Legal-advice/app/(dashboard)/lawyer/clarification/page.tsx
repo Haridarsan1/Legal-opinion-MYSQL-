@@ -72,7 +72,7 @@ export default function ClarificationPage() {
                   required
                 >
                   <option value="">Choose a case...</option>
-                  {cases.map((c) => (
+                  {cases.map((c: any) => (
                     <option key={c.id} value={c.id}>
                       {c.id} - {c.title} ({c.client})
                     </option>

@@ -130,7 +130,7 @@ function detectBlockedState(
   documentRequests: any[]
 ): { isBlocked: boolean; blockReason?: string } {
   // Check for pending clarifications needing client response
-  const pendingClarifications = clarifications.filter((c) => !c.is_resolved && !c.response);
+  const pendingClarifications = clarifications.filter((c: any) => !c.is_resolved && !c.response);
   if (pendingClarifications.length > 0) {
     return {
       isBlocked: true,
@@ -309,11 +309,10 @@ export async function resolveCaseWorkflow(
     includeMetrics?: boolean;
   }
 ): Promise<WorkflowSummary> {
-  
+
 
   // Fetch request with all related data
-  const { data: request, error } = await supabase
-    .from('legal_requests')
+  const { data: request, error } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
       *,
@@ -331,14 +330,12 @@ export async function resolveCaseWorkflow(
   }
 
   // Fetch clarifications
-  const { data: clarifications = [] } = await supabase
-    .from('clarifications')
+  const { data: clarifications = [] } = await (await __getSupabaseClient()).from('clarifications')
     .select('*')
     .eq('request_id', requestId);
 
   // Fetch document requests
-  const { data: documentRequests = [] } = await supabase
-    .from('document_requests')
+  const { data: documentRequests = [] } = await (await __getSupabaseClient()).from('document_requests')
     .select('*')
     .eq('request_id', requestId);
 
@@ -349,8 +346,7 @@ export async function resolveCaseWorkflow(
   // We must fetch legal_opinions to accurately resolve lifecycle (e.g. opinion_status).
 
   // Fetch opinions separately or update query above. Let's fetch separately to be safe/easy.
-  const { data: opinions } = await supabase
-    .from('legal_opinions')
+  const { data: opinions } = await (await __getSupabaseClient()).from('legal_opinions')
     .select('*, opinion_versions(*)')
     .eq('request_id', requestId);
 
@@ -429,8 +425,8 @@ export async function resolveCaseWorkflow(
     blockReason: blockedState.blockReason,
     documentsCount: request.documents?.length || 0,
     clarificationsCount: clarifications?.length || 0,
-    pendingDocumentsCount: documentRequests?.filter((dr) => dr.status === 'pending').length || 0,
-    pendingClarificationsCount: clarifications?.filter((c) => !c.is_resolved).length || 0,
+    pendingDocumentsCount: documentRequests?.filter((dr: any) => dr.status === 'pending').length || 0,
+    pendingClarificationsCount: clarifications?.filter((c: any) => !c.is_resolved).length || 0,
   };
 
   // Calculate metrics if requested
@@ -452,3 +448,15 @@ export async function resolveCaseWorkflow(
     metrics,
   };
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -23,7 +23,7 @@ export default function CaseGridView({ requests }: Props) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      {requests.map((req) => (
+      {requests.map((req: any) => (
         <CaseCard key={req.id} request={req} />
       ))}
     </div>

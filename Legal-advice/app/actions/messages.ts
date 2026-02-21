@@ -14,7 +14,7 @@ export async function sendMessage(
   messageText: string,
   attachments?: any[]
 ) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -29,8 +29,7 @@ export async function sendMessage(
 
   try {
     // Verify user is part of the request (client or assigned lawyer)
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .select('id, client_id, assigned_lawyer_id, request_number')
       .eq('id', requestId)
       .single();
@@ -53,8 +52,7 @@ export async function sendMessage(
     }
 
     // Insert message
-    const { data: message, error: messageError } = await supabase
-      .from('request_messages')
+    const { data: message, error: messageError } = await (await __getSupabaseClient()).from('request_messages')
       .insert({
         request_id: requestId,
         sender_id: user.id,
@@ -68,7 +66,7 @@ export async function sendMessage(
     if (messageError) throw messageError;
 
     // Create notification for recipient
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: recipientId,
       type: 'new_message',
       title: 'New Message',
@@ -77,7 +75,7 @@ export async function sendMessage(
     });
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'message_sent',
@@ -98,7 +96,7 @@ export async function sendMessage(
  * Get all messages for a request
  */
 export async function getRequestMessages(requestId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -109,8 +107,7 @@ export async function getRequestMessages(requestId: string) {
 
   try {
     // Verify user is part of the request
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .select('id, client_id, assigned_lawyer_id')
       .eq('id', requestId)
       .single();
@@ -127,8 +124,7 @@ export async function getRequestMessages(requestId: string) {
     }
 
     // Fetch messages with sender details
-    const { data: messages, error: messagesError } = await supabase
-      .from('request_messages')
+    const { data: messages, error: messagesError } = await (await __getSupabaseClient()).from('request_messages')
       .select(
         `
                 id,
@@ -158,7 +154,7 @@ export async function getRequestMessages(requestId: string) {
  * Mark messages as read for the current user
  */
 export async function markMessagesAsRead(requestId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -169,8 +165,7 @@ export async function markMessagesAsRead(requestId: string) {
 
   try {
     // Mark all unread messages sent to this user as read
-    const { error: updateError } = await supabase
-      .from('request_messages')
+    const { error: updateError } = await (await __getSupabaseClient()).from('request_messages')
       .update({ is_read: true })
       .eq('request_id', requestId)
       .eq('recipient_id', user.id)
@@ -192,7 +187,7 @@ export async function markMessagesAsRead(requestId: string) {
  * Get all requests with messages for the current user (client or lawyer)
  */
 export async function getRequestsWithMessages() {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -203,8 +198,7 @@ export async function getRequestsWithMessages() {
 
   try {
     // Get user profile to determine role
-    const { data: profile } = await supabase
-      .from('profiles')
+    const { data: profile } = await (await __getSupabaseClient()).from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
@@ -213,7 +207,7 @@ export async function getRequestsWithMessages() {
       return { success: false, error: 'Profile not found' };
     }
 
-    let query = supabase.from('legal_requests').select(`
+    let query = (await __getSupabaseClient()).from('legal_requests').select(`
                 id,
                 request_number,
                 title,
@@ -240,9 +234,8 @@ export async function getRequestsWithMessages() {
 
     // Get unread message counts for each request
     const requestsWithCounts = await Promise.all(
-      (requests || []).map(async (request) => {
-        const { count } = await supabase
-          .from('request_messages')
+      (requests || []).map(async (request: any) => {
+        const { count } = await (await __getSupabaseClient()).from('request_messages')
           .select('*', { count: 'exact', head: true })
           .eq('request_id', request.id)
           .eq('recipient_id', user.id)
@@ -266,7 +259,7 @@ export async function getRequestsWithMessages() {
  * List all available lawyers for assignment
  */
 export async function listAvailableLawyers() {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -276,8 +269,7 @@ export async function listAvailableLawyers() {
   }
 
   try {
-    const { data: lawyers, error } = await supabase
-      .from('profiles')
+    const { data: lawyers, error } = await (await __getSupabaseClient()).from('profiles')
       .select(
         'id, full_name, email, specialization, years_of_experience, avatar_url, bio, location, average_rating, total_reviews, availability_status'
       )
@@ -302,3 +294,15 @@ export async function listAvailableLawyers() {
     return { success: false, error: error.message };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -136,8 +136,8 @@ export default function LawyerReviewContent({
   const [reviewNotes, setReviewNotes] = useState(secondOpinionRequest?.reviewer_notes || '');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  const pendingClarifications = clarifications.filter((c) => !c.is_resolved);
-  const pendingDocuments = documentRequests.filter((d) => d.status === 'pending');
+  const pendingClarifications = clarifications.filter((c: any) => !c.is_resolved);
+  const pendingDocuments = documentRequests.filter((d: any) => d.status === 'pending');
 
   const isReviewer = !!secondOpinionRequest;
 

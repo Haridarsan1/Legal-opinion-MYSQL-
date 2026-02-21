@@ -111,7 +111,7 @@ export default function NewRequestForm({ departments }: Props) {
       formData.append('complexity', complexity);
       if (experience) formData.append('experience', experience);
       formData.append('confidentiality', confidentiality);
-      formData.append('deliverables', JSON.stringify(deliverables.filter((d) => d.trim() !== '')));
+      formData.append('deliverables', JSON.stringify(deliverables.filter((d: any) => d.trim() !== '')));
       if (jurisdiction) formData.append('jurisdiction', jurisdiction);
 
       if (visibility === 'private') {
@@ -655,7 +655,7 @@ export default function NewRequestForm({ departments }: Props) {
                     Complexity Level
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {['low', 'medium', 'high'].map((c) => (
+                    {['low', 'medium', 'high'].map((c: any) => (
                       <button
                         key={c}
                         type="button"

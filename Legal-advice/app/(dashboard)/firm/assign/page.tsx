@@ -29,8 +29,7 @@ export default async function FirmAssignPage() {
   let ratings: any[] = [];
   if (lawyers.length > 0) {
     const lawyerIds = lawyers.map((l: any) => l.id);
-    const { data: reviews } = await supabase
-      .from('lawyer_reviews')
+    const { data: reviews } = await (await __getSupabaseClient()).from('lawyer_reviews')
       .select(
         `
                 *,
@@ -46,3 +45,15 @@ export default async function FirmAssignPage() {
 
   return <FirmAssignContent cases={cases} lawyers={lawyers} ratings={ratings} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

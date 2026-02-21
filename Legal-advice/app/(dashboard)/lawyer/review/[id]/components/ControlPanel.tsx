@@ -52,8 +52,8 @@ export default function ControlPanel({
 
   // Calculate case health factors
   const totalDocs = documents.length;
-  const reviewedDocs = documents.filter((d) => d.review_status === 'reviewed').length;
-  const unresolvedClarifications = clarifications.filter((c) => !c.is_resolved).length;
+  const reviewedDocs = documents.filter((d: any) => d.review_status === 'reviewed').length;
+  const unresolvedClarifications = clarifications.filter((c: any) => !c.is_resolved).length;
   const hasRiskFlags = (caseData.risk_flags?.length || 0) > 0;
 
   const slaHealth = caseData.sla_deadline

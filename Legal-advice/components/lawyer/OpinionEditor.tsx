@@ -15,7 +15,8 @@ interface OpinionSections {
   references: string;
 }
 
-interface OpinionVersion {  id: string;
+interface OpinionVersion {
+  id: string;
   version_number: number;
   content_sections: OpinionSections;
   status: 'draft' | 'peer_review' | 'approved' | 'signed' | 'published';
@@ -36,8 +37,10 @@ export default function OpinionEditor({
   opinionSubmissionId,
   onSave,
   onPublish,
-}: OpinionEditorProps) {    // State
-  const [sections, setSections] = useState<OpinionSections>({    facts: '',
+}: OpinionEditorProps) {
+  const { data: session } = useSession();
+  const [sections, setSections] = useState<OpinionSections>({
+    facts: '',
     issues: '',
     analysis: '',
     conclusion: '',
@@ -54,21 +57,20 @@ export default function OpinionEditor({
   // Load existing autosave or latest version
   useEffect(() => {
     const loadOpinion = async () => {      // Try loading autosave first
-      const { data: autosave } = await supabase
-        .from('opinion_autosaves')
+      const { data: autosave } = (await __getSupabaseClient()).from('opinion_autosaves')
         .select('content_sections')
         .eq('opinion_submission_id', opinionSubmissionId)
-        .eq('lawyer_id', (await auth())?.user?.id)
+        .eq('lawyer_id', session?.user?.id)
         .single();
 
-      if (autosave) {        setSections(autosave.content_sections as OpinionSections);
+      if (autosave) {
+        setSections(autosave.content_sections as OpinionSections);
         setLastSaved(new Date());
         return;
       }
 
       // Load latest version
-      const { data: latestVersion } = await supabase
-        .from('opinion_versions')
+      const { data: latestVersion } = (await __getSupabaseClient()).from('opinion_versions')
         .select('*')
         .eq('opinion_submission_id', opinionSubmissionId)
         .order('version_number', { ascending: false })
@@ -88,8 +90,7 @@ export default function OpinionEditor({
   // Load all versions for version history
   useEffect(() => {
     const loadVersions = async () => {
-      const { data } = await supabase
-        .from('opinion_versions')
+      const { data } = (await __getSupabaseClient()).from('opinion_versions')
         .select('id, version_number, status, created_at, is_locked')
         .eq('opinion_submission_id', opinionSubmissionId)
         .order('version_number', { ascending: false });
@@ -106,10 +107,10 @@ export default function OpinionEditor({
 
     setIsAutosaving(true);
 
-    const user = (await auth())?.user;
+    const user = session?.user;
     if (!user) return;
 
-    const { error } = await supabase.from('opinion_autosaves').upsert(
+    const { error } = (await __getSupabaseClient()).from('opinion_autosaves').upsert(
       {
         opinion_submission_id: opinionSubmissionId,
         lawyer_id: user.id,
@@ -150,14 +151,13 @@ export default function OpinionEditor({
   const saveVersion = async () => {
     if (isLocked) return;
 
-    const user = (await auth())?.user;
+    const user = session?.user;
     if (!user) return;
 
     // Get next version number
     const nextVersionNumber = (currentVersion?.version_number || 0) + 1;
 
-    const { data, error } = await supabase
-      .from('opinion_versions')
+    const { data, error } = (await __getSupabaseClient()).from('opinion_versions')
       .insert({
         opinion_submission_id: opinionSubmissionId,
         request_id: requestId,
@@ -173,8 +173,7 @@ export default function OpinionEditor({
       setCurrentVersion(data as OpinionVersion);
 
       // Delete autosave after creating version
-      await supabase
-        .from('opinion_autosaves')
+      (await __getSupabaseClient()).from('opinion_autosaves')
         .delete()
         .eq('opinion_submission_id', opinionSubmissionId)
         .eq('lawyer_id', user.id);
@@ -194,8 +193,7 @@ export default function OpinionEditor({
       return;
     }
 
-    const { error } = await supabase
-      .from('opinion_versions')
+    const { error } = (await __getSupabaseClient()).from('opinion_versions')
       .update({ status: 'approved' })
       .eq('id', currentVersion.id);
 
@@ -207,8 +205,7 @@ export default function OpinionEditor({
 
   // Load specific version
   const loadVersion = async (versionId: string) => {
-    const { data } = await supabase
-      .from('opinion_versions')
+    const { data } = (await __getSupabaseClient()).from('opinion_versions')
       .select('*')
       .eq('id', versionId)
       .single();
@@ -243,18 +240,18 @@ export default function OpinionEditor({
                     <span className="font-medium">Version {currentVersion.version_number}</span>
                   )}
                   {
-  lastSaved && <span>Last saved: {lastSaved.toLocaleTimeString()}</span>}
+                    lastSaved && <span>Last saved: {lastSaved.toLocaleTimeString()}</span>}
                   {
-  isAutosaving && (
-                    <span className="text-blue-600 flex items-center gap-2">
-                      <LoadingSpinner size="sm" />
-                      Autosaving...
-                    </span>
-                  )}
+                    isAutosaving && (
+                      <span className="text-blue-600 flex items-center gap-2">
+                        <LoadingSpinner size="sm" />
+                        Autosaving...
+                      </span>
+                    )}
                   {
-  isLocked && (
-                    <span className="text-red-600 font-semibold">🔒 Locked (Signed)</span>
-                  )}
+                    isLocked && (
+                      <span className="text-red-600 font-semibold">🔒 Locked (Signed)</span>
+                    )}
                 </div>
               </div>
 
@@ -282,15 +279,14 @@ export default function OpinionEditor({
                 <button
                   key={section}
                   onClick={() => setActiveSection(section)}
-                  className={`px-4 py-2 font-medium transition-colors ${
-                    activeSection === section
+                  className={`px-4 py-2 font-medium transition-colors ${activeSection === section
                       ? 'border-b-2 border-blue-600 text-blue-600'
                       : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   {sectionLabels[section]}
                   {
-  sections[section] && <span className="ml-2 text-green-600">✓</span>}
+                    sections[section] && <span className="ml-2 text-green-600">✓</span>}
                 </button>
               ))}
             </div>
@@ -335,24 +331,22 @@ export default function OpinionEditor({
                 <button
                   key={version.id}
                   onClick={() => loadVersion(version.id)}
-                  className={`w-full text-left p-3 rounded border transition-colors ${
-                    currentVersion?.id === version.id
+                  className={`w-full text-left p-3 rounded border transition-colors ${currentVersion?.id === version.id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">v{version.version_number}</span>
                     <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        version.status === 'signed'
+                      className={`text-xs px-2 py-1 rounded ${version.status === 'signed'
                           ? 'bg-green-100 text-green-800'
                           : version.status === 'approved'
                             ? 'bg-blue-100 text-blue-800'
                             : version.status === 'peer_review'
                               ? 'bg-yellow-100 text-yellow-800'
                               : 'bg-gray-100 text-gray-800'
-                      }`}
+                        }`}
                     >
                       {version.status}
                     </span>
@@ -365,9 +359,9 @@ export default function OpinionEditor({
               ))}
 
               {
-  versions.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No versions yet</p>
-              )}
+                versions.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">No versions yet</p>
+                )}
             </div>
           </div>
         </Card>
@@ -375,3 +369,15 @@ export default function OpinionEditor({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

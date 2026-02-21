@@ -17,5 +17,5 @@ export default async function LawyerMessagesPage() {
     redirect('/login');
   }
 
-  return <MessagesContent userId={user.id} />;
+  return <MessagesContent userId={user.id!} />;
 }

@@ -11,9 +11,8 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function testSupabaseConnection() {
   try {
-        // Test 1: Get test user profiles
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+    // Test 1: Get test user profiles
+    const { data: profiles, error: profilesError } = (await __getSupabaseClient()).from('profiles')
       .select('id, email, role, full_name')
       .limit(5);
 
@@ -23,11 +22,10 @@ export async function testSupabaseConnection() {
     }
 
     console.log('✅ Found', profiles?.length || 0, 'test users');
-    profiles?.forEach((p) => console.log(`   - ${p.full_name} (${p.email}) - Role: ${p.role}`));
+    profiles?.forEach((p: any) => console.log(`   - ${p.full_name} (${p.email}) - Role: ${p.role}`));
 
     // Test 2: Get legal departments
-    const { data: departments, error: deptError } = await supabase
-      .from('departments')
+    const { data: departments, error: deptError } = (await __getSupabaseClient()).from('departments')
       .select('name, sla_hours');
 
     if (deptError) {
@@ -36,11 +34,10 @@ export async function testSupabaseConnection() {
     }
 
     console.log('✅ Found', departments?.length || 0, 'legal departments');
-    departments?.forEach((d) => console.log(`   - ${d.name} (SLA: ${d.sla_hours}h)`));
+    departments?.forEach((d: any) => console.log(`   - ${d.name} (SLA: ${d.sla_hours}h)`));
 
     // Test 3: Check legal_requests table
-    const { data: requests, error: reqError } = await supabase
-      .from('legal_requests')
+    const { data: requests, error: reqError } = (await __getSupabaseClient()).from('legal_requests')
       .select('request_number, status')
       .limit(3);
 
@@ -50,6 +47,7 @@ export async function testSupabaseConnection() {
     }
 
     console.log('✅ Found', requests?.length || 0, 'legal requests');
+    requests?.forEach((r: any) => console.log(`   - Req #${r.request_number} (${r.status})`));
 
     return {
       success: true,
@@ -64,3 +62,15 @@ export async function testSupabaseConnection() {
     return { success: false, error: error.message };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

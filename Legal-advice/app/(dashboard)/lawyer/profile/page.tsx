@@ -13,8 +13,7 @@ export default async function LawyerProfilePage() {
   }
 
   // Fetch lawyer profile data + role-specific lawyer record
-  const { data } = await supabase
-    .from('profiles')
+  const { data } = await (await __getSupabaseClient()).from('profiles')
     .select(
       `
       *,
@@ -31,8 +30,7 @@ export default async function LawyerProfilePage() {
     redirect('/auth/login');
   }
 
-  const { data: reviews } = await supabase
-    .from('lawyer_reviews')
+  const { data: reviews } = await (await __getSupabaseClient()).from('lawyer_reviews')
     .select(
       `
             id,
@@ -52,3 +50,15 @@ export default async function LawyerProfilePage() {
 
   return <LawyerProfileContent profile={profile} lawyerProfile={lawyerProfile} reviews={reviews || []} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -6,10 +6,10 @@ interface Props {
 
 export default function SummaryDashboard({ requests }: Props) {
   const stats = {
-    active: requests.filter((r) => r.dashboardBucket === 'ACTIVE').length,
-    actionNeeded: requests.filter((r) => r.dashboardBucket === 'ACTION_NEEDED').length,
-    atRisk: requests.filter((r) => r.dashboardBucket === 'SLA_RISK').length,
-    completed: requests.filter((r) => r.dashboardBucket === 'COMPLETED').length,
+    active: requests.filter((r: any) => r.dashboardBucket === 'ACTIVE').length,
+    actionNeeded: requests.filter((r: any) => r.dashboardBucket === 'ACTION_NEEDED').length,
+    atRisk: requests.filter((r: any) => r.dashboardBucket === 'SLA_RISK').length,
+    completed: requests.filter((r: any) => r.dashboardBucket === 'COMPLETED').length,
   };
 
   return (

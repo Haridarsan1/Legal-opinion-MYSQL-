@@ -63,8 +63,7 @@ export default async function EnhancedReviewCasePage({
   // Fetch request details with expanded fields
   const supabase = await getSupabaseClient();
 
-  const { data: request, error } = await supabase
-    .from('legal_requests')
+  const { data: request, error } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -94,8 +93,7 @@ export default async function EnhancedReviewCasePage({
   }
 
   // Fetch documents with review status
-  const { data: documents } = await supabase
-    .from('documents')
+  const { data: documents } = await (await __getSupabaseClient()).from('documents')
     .select(
       `
             *,
@@ -221,3 +219,15 @@ export default async function EnhancedReviewCasePage({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

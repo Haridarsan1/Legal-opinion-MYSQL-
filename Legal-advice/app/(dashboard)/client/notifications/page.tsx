@@ -15,8 +15,7 @@ export default async function ClientNotificationsPage() {
   if (!user) redirect('/auth/login');
 
   // Fetch notifications
-  const { data: notifications, error } = await supabase
-    .from('notifications')
+  const { data: notifications, error } = await (await __getSupabaseClient()).from('notifications')
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
@@ -32,7 +31,19 @@ export default async function ClientNotificationsPage() {
     <NotificationsPageContent
       initialNotifications={notificationsList}
       role="client"
-      userId={user.id}
+      userId={user.id!}
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

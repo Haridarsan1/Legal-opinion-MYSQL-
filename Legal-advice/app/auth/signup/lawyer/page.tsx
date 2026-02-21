@@ -1,13 +1,8 @@
 'use client';
-import { useSession } from 'next-auth/react';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import {
-
-const supabase = createClient();
   Shield,
   CheckCircle2,
   User,
@@ -20,7 +15,8 @@ const supabase = createClient();
   X,
 } from 'lucide-react';
 
-export default function LawyerSignupPage() {const [formData, setFormData] = useState({
+export default function LawyerSignupPage() {
+  const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
@@ -37,7 +33,7 @@ export default function LawyerSignupPage() {const [formData, setFormData] = useS
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-    const practiceAreaOptions = [
+  const practiceAreaOptions = [
     'Civil',
     'Family',
     'Intellectual Property',
@@ -82,57 +78,52 @@ export default function LawyerSignupPage() {const [formData, setFormData] = useS
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            phone: formData.phone,
-            role: 'lawyer',
-            bar_council_id: formData.barCouncilNumber,
-            year_of_enrollment: formData.yearOfEnrollment,
-            years_of_experience: formData.experienceYears,
-            practice_areas: formData.primaryPracticeAreas,
-            jurisdiction: formData.jurisdiction,
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              phone: formData.phone,
+              role: 'lawyer',
+              bar_council_id: formData.barCouncilNumber,
+              year_of_enrollment: formData.yearOfEnrollment,
+              years_of_experience: formData.experienceYears,
+              practice_areas: formData.primaryPracticeAreas,
+              jurisdiction: formData.jurisdiction,
+            },
           },
-        },
-      })
+        })
       });
       const signUpData = await signUpRes.json();
-      const { error } = signUpData;
+      const { error, user } = signUpData;
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error('Failed to create user account');
+      if (error) throw new Error(error);
+      if (!user) throw new Error('Failed to create user account');
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const { data: profileCheck } = await supabase
-        .from('profiles')
+      const { data: profileCheck } = (await __getSupabaseClient()).from('profiles')
         .select('role, full_name, email')
-        .eq('id', authData.user.id)
+        .eq('id', user.id)
         .single();
 
       console.log('✅ Profile created:', profileCheck);
       console.log('📋 Assigned role:', profileCheck?.role);
 
       if (selectedFile) {
-        const session = await auth();
-  const user = session?.user;
-
-        if (sessionData.session) {
+        if (user) {
           const sanitizedName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const filePath = `lawyers/${authData.user.id}/bar-certificate/${Date.now()}_${sanitizedName}`;
+          const filePath = `lawyers/${user.id}/bar-certificate/${Date.now()}_${sanitizedName}`;
 
-          const { error: uploadError } = await supabase.storage
+          const { error: uploadError } = await (await __getSupabaseClient()).storage
             .from('legal-documents')
             .upload(filePath, selectedFile, { cacheControl: '3600', upsert: false });
 
           if (uploadError) {
             console.warn('Certificate upload warning:', uploadError);
           } else {
-            const { error: certUpdateError } = await supabase
-              .from('lawyers')
-              .upsert({ id: authData.user.id, bar_certificate_url: filePath }, { onConflict: 'id' });
+            const { error: certUpdateError } = (await __getSupabaseClient()).from('lawyers')
+              .upsert({ id: user.id, bar_certificate_url: filePath }, { onConflict: 'id' });
 
             if (certUpdateError) {
               console.warn('Certificate link warning:', certUpdateError);
@@ -450,11 +441,10 @@ export default function LawyerSignupPage() {const [formData, setFormData] = useS
                             formData.primaryPracticeAreas.length >= 3 &&
                             !formData.primaryPracticeAreas.includes(area)
                           }
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                            formData.primaryPracticeAreas.includes(area)
-                              ? 'bg-[#003d82] text-white'
-                              : 'bg-[#f3f4f6] text-[#374151] hover:bg-[#e5e7eb] disabled:opacity-50'
-                          }`}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${formData.primaryPracticeAreas.includes(area)
+                            ? 'bg-[#003d82] text-white'
+                            : 'bg-[#f3f4f6] text-[#374151] hover:bg-[#e5e7eb] disabled:opacity-50'
+                            }`}
                         >
                           {area}
                         </button>
@@ -555,3 +545,15 @@ export default function LawyerSignupPage() {const [formData, setFormData] = useS
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

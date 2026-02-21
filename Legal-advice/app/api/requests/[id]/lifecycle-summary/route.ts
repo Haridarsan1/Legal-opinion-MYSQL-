@@ -35,8 +35,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
 
     // 1. Fetch Request with all necessary relations
     // Using .maybeSingle() to prevent exceptions on "No rows found"
-    const { data: requestData, error } = await supabase
-      .from('legal_requests')
+    const { data: requestData, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 *,
@@ -203,3 +202,15 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
     );
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

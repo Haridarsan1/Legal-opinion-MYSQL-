@@ -16,8 +16,7 @@ export default async function LawyerProfilePage({ params }: { params: Promise<{ 
   const user = session?.user;
 
   // Fetch lawyer profile
-  const { data: lawyer, error } = await supabase
-    .from('profiles')
+  const { data: lawyer, error } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', id)
     .eq('role', 'lawyer')
@@ -28,15 +27,13 @@ export default async function LawyerProfilePage({ params }: { params: Promise<{ 
   }
 
   // Fetch departments for consultation form
-  const { data: departments } = await supabase
-    .from('departments')
+  const { data: departments } = await (await __getSupabaseClient()).from('departments')
     .select('id, name')
     .eq('active', true)
     .order('name');
 
   // Fetch reviews
-  const { data: reviews } = await supabase
-    .from('lawyer_reviews')
+  const { data: reviews } = await (await __getSupabaseClient()).from('lawyer_reviews')
     .select(
       `
             id,
@@ -74,3 +71,15 @@ export default async function LawyerProfilePage({ params }: { params: Promise<{ 
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -18,8 +18,7 @@ export default async function AuditLogsPage() {
   }
 
   // Fetch audit logs for the user
-  const { data: logs } = await supabase
-    .from('audit_logs')
+  const { data: logs } = await (await __getSupabaseClient()).from('audit_logs')
     .select(
       `
             *,
@@ -32,3 +31,15 @@ export default async function AuditLogsPage() {
 
   return <AuditLogsContent logs={logs || []} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

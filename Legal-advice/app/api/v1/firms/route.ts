@@ -5,13 +5,11 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    
-    const {
-      data: { session },
-      error: authError,
-    } = { data: { user: (await auth())?.user }, error: null };
 
-    if (authError || !session) {
+    const session = await auth();
+    const user = session?.user;
+
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -22,11 +20,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { user } = session;
-
     // 1. Create Firm
-    const { data: firm, error: firmError } = await supabase
-      .from('firms')
+    const { data: firm, error: firmError } = await (await __getSupabaseClient()).from('firms')
       .insert({
         name: firm_name,
         official_email: official_email,
@@ -43,8 +38,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Update User Profile
-    const { error: profileError } = await supabase
-      .from('profiles')
+    const { error: profileError } = await (await __getSupabaseClient()).from('profiles')
       .update({
         firm_id: firm.id,
         role: 'firm', // Ensure role is updated to firm owner
@@ -65,3 +59,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

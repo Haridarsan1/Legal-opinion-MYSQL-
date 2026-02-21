@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TrackStatusPage() {
-  
+
 
   // Get authenticated user
   const session = await auth();
@@ -22,8 +22,7 @@ export default async function TrackStatusPage() {
   }
 
   // Fetch all user requests with related data
-  const { data: requests, error } = await supabase
-    .from('legal_requests')
+  const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -66,7 +65,19 @@ export default async function TrackStatusPage() {
     };
   });
 
-  const lifecycleSummaries = aggregateCaseData(mappedRequests, user.id);
+  const lifecycleSummaries = aggregateCaseData(mappedRequests, user.id!);
 
   return <TrackStatusContent requests={lifecycleSummaries} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

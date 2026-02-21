@@ -36,7 +36,7 @@ export default function PostOpinionQueries({
   isCaseClosed,
   isClientConfirmed,
 }: PostOpinionQueriesProps) {
-    const [queries, setQueries] = useState<Query[]>([]);
+  const [queries, setQueries] = useState<Query[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newQuery, setNewQuery] = useState('');
   const [responseMap, setResponseMap] = useState<Record<string, string>>({}); // queryId -> responseText
@@ -44,19 +44,12 @@ export default function PostOpinionQueries({
 
   useEffect(() => {
     fetchQueries();
-
-    // Subscribe to changes
-    const 
-
-    return () => {
-      
-    };
+    // Real-time subscription removed (Supabase to MySQL migration)
   }, [requestId]);
 
   const fetchQueries = async () => {
     try {
-      const { data, error } = await supabase
-        .from('post_opinion_queries')
+      const { data, error } = await (await __getSupabaseClient()).from('post_opinion_queries')
         .select(
           `
                     *,
@@ -156,53 +149,53 @@ export default function PostOpinionQueries({
 
               {/* Response */}
               {
-  query.status === 'resolved' ? (
-                <div className="flex gap-3 pl-8 relative">
-                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200 -z-10" />
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                    <CheckCircle className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-slate-900">
-                        {query.responder?.full_name || 'Lawyer'}
-                      </span>
-                      <span className="text-xs text-slate-500" suppressHydrationWarning>
-                        {query.responded_at &&
-                          formatDistanceToNow(new Date(query.responded_at), { addSuffix: true })}
-                      </span>
+                query.status === 'resolved' ? (
+                  <div className="flex gap-3 pl-8 relative">
+                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200 -z-10" />
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                      <CheckCircle className="w-4 h-4 text-blue-600" />
                     </div>
-                    <p className="text-slate-700 bg-blue-50/50 p-3 rounded-lg text-sm border border-blue-100">
-                      {query.response_text}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                /* Lawyer Response Input */
-                userRole === 'lawyer' &&
-                !isCaseClosed && (
-                  <div className="pl-11 mt-3">
-                    <div className="flex gap-2">
-                      <textarea
-                        value={responseMap[query.id] || ''}
-                        onChange={(e) =>
-                          setResponseMap((prev) => ({ ...prev, [query.id]: e.target.value }))
-                        }
-                        placeholder="Write your response..."
-                        className="flex-1 p-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        rows={2}
-                      />
-                      <button
-                        onClick={() => handleResolveQuery(query.id)}
-                        disabled={isSubmitting || !responseMap[query.id]?.trim()}
-                        className="px-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-slate-900">
+                          {query.responder?.full_name || 'Lawyer'}
+                        </span>
+                        <span className="text-xs text-slate-500" suppressHydrationWarning>
+                          {query.responded_at &&
+                            formatDistanceToNow(new Date(query.responded_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <p className="text-slate-700 bg-blue-50/50 p-3 rounded-lg text-sm border border-blue-100">
+                        {query.response_text}
+                      </p>
                     </div>
                   </div>
-                )
-              )}
+                ) : (
+                  /* Lawyer Response Input */
+                  userRole === 'lawyer' &&
+                  !isCaseClosed && (
+                    <div className="pl-11 mt-3">
+                      <div className="flex gap-2">
+                        <textarea
+                          value={responseMap[query.id] || ''}
+                          onChange={(e) =>
+                            setResponseMap((prev) => ({ ...prev, [query.id]: e.target.value }))
+                          }
+                          placeholder="Write your response..."
+                          className="flex-1 p-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows={2}
+                        />
+                        <button
+                          onClick={() => handleResolveQuery(query.id)}
+                          disabled={isSubmitting || !responseMap[query.id]?.trim()}
+                          className="px-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                )}
             </div>
           ))}
         </div>
@@ -210,41 +203,53 @@ export default function PostOpinionQueries({
 
       {/* Client New Query Input */}
       {
-  userRole === 'client' && !isCaseClosed && !isClientConfirmed && (
-        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-6">
-          <h4 className="font-semibold text-slate-900 mb-2">Ask a follow-up question</h4>
-          <p className="text-xs text-slate-500 mb-3">
-            You can ask questions related to the delivered opinion.
-          </p>
-          <div className="flex gap-2">
-            <textarea
-              value={newQuery}
-              onChange={(e) => setNewQuery(e.target.value)}
-              placeholder="Type your question here..."
-              className="flex-1 p-3 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
-            />
+        userRole === 'client' && !isCaseClosed && !isClientConfirmed && (
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-6">
+            <h4 className="font-semibold text-slate-900 mb-2">Ask a follow-up question</h4>
+            <p className="text-xs text-slate-500 mb-3">
+              You can ask questions related to the delivered opinion.
+            </p>
+            <div className="flex gap-2">
+              <textarea
+                value={newQuery}
+                onChange={(e) => setNewQuery(e.target.value)}
+                placeholder="Type your question here..."
+                className="flex-1 p-3 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end mt-2">
+              <button
+                onClick={handleSubmitQuery}
+                disabled={isSubmitting || !newQuery.trim()}
+                className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Query'}
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-          <div className="flex justify-end mt-2">
-            <button
-              onClick={handleSubmitQuery}
-              disabled={isSubmitting || !newQuery.trim()}
-              className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSubmitting ? 'Sending...' : 'Send Query'}
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
       {
-  isCaseClosed && (
-        <div className="flex items-center gap-2 p-3 bg-slate-100 text-slate-500 rounded-lg text-sm justify-center">
-          <AlertCircle className="w-4 h-4" />
-          Case is closed. No further queries allowed.
-        </div>
-      )}
+        isCaseClosed && (
+          <div className="flex items-center gap-2 p-3 bg-slate-100 text-slate-500 rounded-lg text-sm justify-center">
+            <AlertCircle className="w-4 h-4" />
+            Case is closed. No further queries allowed.
+          </div>
+        )}
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

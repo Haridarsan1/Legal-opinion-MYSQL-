@@ -1,12 +1,10 @@
 'use client';
-import { useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { Eye, EyeOff, Scale } from 'lucide-react';
-import { addAccount } from '@/lib/multi-account';
+import { signIn } from 'next-auth/react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,7 +14,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-    useEffect(() => {
+
+  useEffect(() => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     if (rememberedEmail) {
       setEmail(rememberedEmail);
@@ -30,49 +29,26 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const session = await auth();
-  const user = session?.user;
-
-      if (signInError) {
-        throw signInError;
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
       }
 
-      if (data.user && data.session) {
-        // Handle Remember Me
-        if (rememberMe) {
-          localStorage.setItem('rememberedEmail', email);
-        } else {
-          localStorage.removeItem('rememberedEmail');
-        }
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
 
-        // Fetch FULL user profile (not just role)
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('[Login] Profile fetch error:', profileError);
-          throw new Error('Failed to fetch user profile');
-        }
-
-        if (!profile) {
-          console.error('[Login] Profile is null');
-          throw new Error('User profile not found');
-        }
-
-        // Store account in multi-account storage
-        try {
-          addAccount(data.session, profile);
-        } catch (accountError) {
-          console.error('[Login] Error storing account:', accountError);
-        }
-
-        // Redirect to role-specific dashboard
-        router.push(`/${profile.role}`);
-        router.refresh();
+      if (result?.error) {
+        setError('Invalid email or password. Please try again.');
+        return;
       }
+
+      // Refresh to let the proxy redirect to the correct role dashboard
+      router.refresh();
+      router.push('/');
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Invalid email or password. Please try again.');
@@ -84,14 +60,8 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
-      const session = await auth();
-  const user = session?.user;
-
-      if (error) {
-        throw error;
-      }
+      await signIn('google', { callbackUrl: '/' });
     } catch (err: any) {
       console.error('Google sign-in error:', err);
       setError(err.message || 'Failed to sign in with Google');
@@ -123,7 +93,6 @@ export default function LoginPage() {
 
             {/* Header Section */}
             <div className="flex flex-col items-center gap-2">
-              {/* Logo / Brand */}
               <div className="flex items-center justify-center w-16 h-16 rounded-lg overflow-hidden mb-2">
                 <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
               </div>
@@ -139,8 +108,7 @@ export default function LoginPage() {
             </div>
 
             {/* Error Message */}
-            {
-  error && (
+            {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
@@ -241,28 +209,11 @@ export default function LoginPage() {
               disabled={isLoading}
               className="flex w-full items-center justify-center gap-3 rounded-lg border border-[#cddbea] dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 h-12 px-5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M23.766 12.2764C23.766 11.4607 23.6999 10.6406 23.5588 9.83807H12.24V14.4591H18.7217C18.4528 15.9494 17.5885 17.2678 16.323 18.1056V21.1039H20.19C22.4608 19.0139 23.766 15.9274 23.766 12.2764Z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12.2401 24.0008C15.4766 24.0008 18.2059 22.9382 20.1901 21.1039L16.3231 18.1055C15.2517 18.8375 13.8627 19.252 12.2445 19.252C9.11388 19.252 6.45946 17.1399 5.50705 14.3003H1.5166V17.3912C3.55371 21.4434 7.7029 24.0008 12.2401 24.0008Z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.50253 14.3003C5.00236 12.8099 5.00236 11.1961 5.50253 9.70575V6.61481H1.51649C-0.18551 10.0056 -0.18551 14.0004 1.51649 17.3912L5.50253 14.3003Z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12.2401 4.74966C13.9509 4.7232 15.6044 5.36697 16.8434 6.54867L20.2695 3.12262C18.1001 1.0855 15.2208 -0.034466 12.2401 0.000808666C7.7029 0.000808666 3.55371 2.55822 1.5166 6.61481L5.50264 9.70575C6.45064 6.86173 9.10947 4.74966 12.2401 4.74966Z"
-                  fill="#EA4335"
-                />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23.766 12.2764C23.766 11.4607 23.6999 10.6406 23.5588 9.83807H12.24V14.4591H18.7217C18.4528 15.9494 17.5885 17.2678 16.323 18.1056V21.1039H20.19C22.4608 19.0139 23.766 15.9274 23.766 12.2764Z" fill="#4285F4" />
+                <path d="M12.2401 24.0008C15.4766 24.0008 18.2059 22.9382 20.1901 21.1039L16.3231 18.1055C15.2517 18.8375 13.8627 19.252 12.2445 19.252C9.11388 19.252 6.45946 17.1399 5.50705 14.3003H1.5166V17.3912C3.55371 21.4434 7.7029 24.0008 12.2401 24.0008Z" fill="#34A853" />
+                <path d="M5.50253 14.3003C5.00236 12.8099 5.00236 11.1961 5.50253 9.70575V6.61481H1.51649C-0.18551 10.0056 -0.18551 14.0004 1.51649 17.3912L5.50253 14.3003Z" fill="#FBBC05" />
+                <path d="M12.2401 4.74966C13.9509 4.7232 15.6044 5.36697 16.8434 6.54867L20.2695 3.12262C18.1001 1.0855 15.2208 -0.034466 12.2401 0.000808666C7.7029 0.000808666 3.55371 2.55822 1.5166 6.61481L5.50264 9.70575C6.45064 6.86173 9.10947 4.74966 12.2401 4.74966Z" fill="#EA4335" />
               </svg>
               <span className="text-[#0c141d] dark:text-white text-base font-bold leading-normal">
                 Sign in with Google
@@ -272,7 +223,7 @@ export default function LoginPage() {
             {/* Footer Link */}
             <div className="text-center pt-2">
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                Don't have an account?
+                Don&apos;t have an account?
                 <Link
                   href="/auth/signup"
                   className="text-primary dark:text-blue-400 font-bold hover:underline ml-1"

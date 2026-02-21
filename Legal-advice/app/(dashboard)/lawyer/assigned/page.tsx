@@ -17,8 +17,7 @@ export default async function AssignedRequestsPage() {
   }
 
   // Fetch assigned cases
-  const { data: assignedCases } = await supabase
-    .from('legal_requests')
+  const { data: assignedCases } = (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -32,12 +31,12 @@ export default async function AssignedRequestsPage() {
   // Calculate stats
   const totalRequests = assignedCases?.length || 0;
   const acceptedRequests =
-    assignedCases?.filter((c) => c.lawyer_acceptance_status === 'accepted' || c.accepted_by_lawyer)
+    assignedCases?.filter((c: any) => c.lawyer_acceptance_status === 'accepted' || c.accepted_by_lawyer)
       .length || 0;
   const rejectedRequests =
-    assignedCases?.filter((c) => c.lawyer_acceptance_status === 'rejected').length || 0;
+    assignedCases?.filter((c: any) => c.lawyer_acceptance_status === 'rejected').length || 0;
   const urgent =
-    assignedCases?.filter((c) => {
+    assignedCases?.filter((c: any) => {
       if (!c.deadline) return false;
       const daysUntilDeadline = Math.ceil(
         (new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -46,7 +45,7 @@ export default async function AssignedRequestsPage() {
     }).length || 0;
 
   // Fetch departments for filter
-  const { data: departments } = await supabase.from('departments').select('id, name').order('name');
+  const { data: departments } = await (await __getSupabaseClient()).from('departments').select('id, name').order('name');
 
   return (
     <AssignedRequestsContent
@@ -61,3 +60,15 @@ export default async function AssignedRequestsPage() {
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

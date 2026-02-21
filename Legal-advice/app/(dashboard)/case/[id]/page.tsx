@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
-  
+
   const { id } = await params;
 
   const session = await auth();
@@ -22,8 +22,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   }
 
   // Fetch user profile to determine role
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('role, full_name, avatar_url')
     .eq('id', user.id)
     .single();
@@ -33,8 +32,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   }
 
   // Fetch request with all related data
-  const { data: request, error: requestError } = await supabase
-    .from('legal_requests')
+  const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -91,15 +89,13 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   const userRole: 'client' | 'lawyer' = isClient ? 'client' : 'lawyer';
 
   // Fetch clarifications
-  const { data: clarifications } = await supabase
-    .from('clarifications')
+  const { data: clarifications } = await (await __getSupabaseClient()).from('clarifications')
     .select('*')
     .eq('request_id', id)
     .order('created_at', { ascending: true });
 
   // Fetch messages with sender info
-  const { data: messages } = await supabase
-    .from('case_messages')
+  const { data: messages } = await (await __getSupabaseClient()).from('case_messages')
     .select(
       `
             *,
@@ -110,22 +106,19 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
     .order('created_at', { ascending: true });
 
   // Fetch rating if exists
-  const { data: rating } = await supabase
-    .from('ratings')
+  const { data: rating } = await (await __getSupabaseClient()).from('ratings')
     .select('overall_rating, feedback, created_at')
     .eq('request_id', id)
     .maybeSingle();
 
   // Fetch document requests
-  const { data: documentRequests } = await supabase
-    .from('document_requests')
+  const { data: documentRequests } = await (await __getSupabaseClient()).from('document_requests')
     .select('*')
     .eq('request_id', id)
     .order('created_at', { ascending: false });
 
   // Check for draft opinion with saved versions
-  const { data: legalOpinion } = await supabase
-    .from('legal_opinions')
+  const { data: legalOpinion } = await (await __getSupabaseClient()).from('legal_opinions')
     .select(
       `
             id, 
@@ -154,8 +147,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   });
 
   // Fetch existing second opinion requests
-  const { data: secondOpinionRequests } = await supabase
-    .from('second_opinion_requests')
+  const { data: secondOpinionRequests } = await (await __getSupabaseClient()).from('second_opinion_requests')
     .select(
       `
             *,
@@ -187,7 +179,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           }
           : undefined
       }
-      userId={user.id}
+      userId={user.id!}
       userRole={userRole}
       userProfile={{
         full_name: profile.full_name,
@@ -199,3 +191,15 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -15,26 +15,25 @@ export default async function LawyerAnalyticsPage() {
   const session = await auth();
   const user = session?.user;
 
-  if (!user) {redirect('/login');
+  if (!user) {
+    redirect('/login');
   }
 
   // Fetch lawyer profile
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles').select('*').eq('id', user.id).single();
 
   if (!profile || profile.role !== 'lawyer') {
     redirect('/login');
   }
 
   // Fetch all assigned cases
-  const { data: cases } = await supabase
-    .from('legal_requests')
+  const { data: cases } = (await __getSupabaseClient()).from('legal_requests')
     .select('*')
     .eq('assigned_lawyer_id', user.id)
     .order('created_at', { ascending: false });
 
   // Fetch ratings
-  const { data: ratings } = await supabase
-    .from('ratings')
+  const { data: ratings } = (await __getSupabaseClient()).from('ratings')
     .select('*')
     .eq('lawyer_id', user.id)
     .order('created_at', { ascending: false });
@@ -45,10 +44,10 @@ export default async function LawyerAnalyticsPage() {
   const previousMonthStart = startOfMonth(subMonths(now, 1));
   const previousMonthEnd = endOfMonth(subMonths(now, 1));
 
-  const currentMonthCases = cases?.filter((c) => new Date(c.created_at) >= currentMonthStart) || [];
+  const currentMonthCases = cases?.filter((c: any) => new Date(c.created_at) >= currentMonthStart) || [];
 
   const previousMonthCases =
-    cases?.filter((c) => {
+    cases?.filter((c: any) => {
       const date = new Date(c.created_at);
       return date >= previousMonthStart && date <= previousMonthEnd;
     }) || [];
@@ -60,21 +59,18 @@ export default async function LawyerAnalyticsPage() {
   const profileViewsPrevious30Days = 0;
 
   // Fetch messages data
-  const { data: conversations } = await supabase
-    .from('conversations')
+  const { data: conversations } = (await __getSupabaseClient()).from('conversations')
     .select('id')
     .or(`participant_1_id.eq.${user.id},participant_2_id.eq.${user.id}`);
 
-  const conversationIds = conversations?.map((c) => c.id) || [];
+  const conversationIds = conversations?.map((c: any) => c.id) || [];
 
-  const { data: messages } = await supabase
-    .from('messages')
+  const { data: messages } = (await __getSupabaseClient()).from('messages')
     .select('*')
     .in('conversation_id', conversationIds)
-    .order('created_at', { ascending: false });
-
-  const messagesSent = messages?.filter((m) => m.sender_id === user.id) || [];
-  const messagesReceived = messages?.filter((m) => m.sender_id !== user.id) || [];
+    .then((res: any) => res.data?.filter((m: any) => m.sender_id === user.id) || []);
+  const messagesSent = messages?.filter((m: any) => m.sender_id === user.id) || [];
+  const messagesReceived = messages?.filter((m: any) => m.sender_id !== user.id) || [];
 
   return (
     <LawyerAnalyticsContent
@@ -90,3 +86,15 @@ export default async function LawyerAnalyticsPage() {
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

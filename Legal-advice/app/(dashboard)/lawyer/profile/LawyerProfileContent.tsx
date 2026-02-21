@@ -144,7 +144,7 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
       if (profile.avatar_url) {
         const oldPath = profile.avatar_url.split('/').pop();
         if (oldPath) {
-          await supabase.storage.from('avatars').remove([`${profile.id}/${oldPath}`]);
+          await (await __getSupabaseClient()).storage.from('avatars').remove([`${profile.id}/${oldPath}`]);
         }
       }
 
@@ -152,16 +152,15 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${profile.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      const { error: uploadError } = await (await __getSupabaseClient()).storage.from('avatars').upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      } = (await __getSupabaseClient()).storage.from('avatars').getPublicUrl(filePath);
 
-      const { error: updateError } = await supabase
-        .from('profiles')
+      const { error: updateError } = await (await __getSupabaseClient()).from('profiles')
         .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
         .eq('id', profile.id);
 
@@ -220,8 +219,7 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
         updated_at: new Date().toISOString(),
       };
 
-      const { error: profileError } = await supabase
-        .from('profiles')
+      const { error: profileError } = await (await __getSupabaseClient()).from('profiles')
         .update(profileUpdatePayload)
         .eq('id', profile.id);
 
@@ -242,8 +240,7 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
         updated_at: new Date().toISOString(),
       };
 
-      const { error: lawyerError } = await supabase
-        .from('lawyers')
+      const { error: lawyerError } = await (await __getSupabaseClient()).from('lawyers')
         .upsert(lawyerUpdatePayload, { onConflict: 'id' });
 
       if (lawyerError) throw lawyerError;
@@ -1059,3 +1056,15 @@ export default function LawyerProfileContent({ profile, lawyerProfile, reviews }
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

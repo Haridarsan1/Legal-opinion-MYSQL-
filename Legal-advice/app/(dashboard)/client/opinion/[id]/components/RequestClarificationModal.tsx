@@ -29,7 +29,7 @@ export default function RequestClarificationModal({ requestId, onClose, currentU
 
     try {
       // Insert clarification
-      const { error: insertError } = await supabase.from('clarifications').insert({
+      const { error: insertError } = await (await __getSupabaseClient()).from('clarifications').insert({
         request_id: requestId,
         subject: subject.trim(),
         message: message.trim(),
@@ -41,7 +41,7 @@ export default function RequestClarificationModal({ requestId, onClose, currentU
       if (insertError) throw insertError;
 
       // Create audit log
-      await supabase.from('audit_logs').insert({
+      await (await __getSupabaseClient()).from('audit_logs').insert({
         user_id: currentUserId,
         action: 'clarification_requested',
         entity_type: 'legal_request',
@@ -180,3 +180,15 @@ export default function RequestClarificationModal({ requestId, onClose, currentU
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

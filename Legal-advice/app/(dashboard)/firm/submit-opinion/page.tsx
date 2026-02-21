@@ -45,7 +45,7 @@ export default function FirmSubmitOpinionPage() {
                   required
                 >
                   <option value="">Choose an approved opinion...</option>
-                  {cases.map((c) => (
+                  {cases.map((c: any) => (
                     <option key={c.id} value={c.id}>
                       {c.id} - {c.title} ({c.client})
                     </option>

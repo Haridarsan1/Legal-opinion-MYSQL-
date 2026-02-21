@@ -36,8 +36,7 @@ export default function AcceptOpinionAction({
 
     try {
       // Update request to mark opinion as accepted
-      const { error: updateError } = await supabase
-        .from('legal_requests')
+      const { error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
         .update({
           opinion_accepted: true,
           opinion_accepted_at: new Date().toISOString(),
@@ -49,7 +48,7 @@ export default function AcceptOpinionAction({
       if (updateError) throw updateError;
 
       // Create audit log
-      await supabase.from('audit_logs').insert({
+      await (await __getSupabaseClient()).from('audit_logs').insert({
         user_id: currentUserId,
         action: 'opinion_accepted',
         entity_type: 'legal_request',
@@ -237,3 +236,15 @@ export default function AcceptOpinionAction({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

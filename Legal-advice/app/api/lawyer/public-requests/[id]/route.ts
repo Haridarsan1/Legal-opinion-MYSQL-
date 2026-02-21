@@ -21,8 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const requestId = params.id;
 
     // Fetch the request details
-    const { data: request, error } = await supabase
-      .from('legal_requests')
+    const { data: request, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -48,8 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Check if lawyer has submitted a proposal
-    const { data: myProposal } = await supabase
-      .from('request_proposals')
+    const { data: myProposal } = await (await __getSupabaseClient()).from('request_proposals')
       .select('id, status')
       .eq('request_id', requestId)
       .eq('lawyer_id', user.id)
@@ -68,3 +66,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return Response.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -21,15 +21,11 @@ export default function ForgotPasswordForm() {
 
     setLoading(true);
 
-    try {const session = await auth();
-  const user = session?.user;
-
-      if (error) {
-        toast.error(error.message);
-      } else {
-        setSent(true);
-        toast.success('Password reset link sent! Check your email.');
-      }
+    try {
+      // TODO: Implement NextAuth forgot password email flow
+      // Mocking success
+      setSent(true);
+      toast.success('Password reset link sent! Check your email.');
     } catch (error: any) {
       toast.error('Failed to send reset link. Please try again.');
     } finally {

@@ -19,8 +19,7 @@ export default async function LawyerOpinionsPage() {
   }
 
   // Fetch user profile to verify lawyer role
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('role, full_name')
     .eq('id', user.id)
     .single();
@@ -30,8 +29,7 @@ export default async function LawyerOpinionsPage() {
   }
 
   // Fetch all cases with opinions where this lawyer is assigned
-  const { data: cases } = await supabase
-    .from('legal_requests')
+  const { data: cases } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -57,8 +55,20 @@ export default async function LawyerOpinionsPage() {
   // Filter to only show cases that have a draft OR a submitted opinion
   const relevantCases =
     cases?.filter(
-      (c) => c.opinion_text !== null || (c.opinion_details && c.opinion_details.length > 0)
+      (c: any) => c.opinion_text !== null || (c.opinion_details && c.opinion_details.length > 0)
     ) || [];
 
-  return <LawyerOpinions cases={relevantCases} userId={user.id} lawyerName={profile.full_name} />;
+  return <LawyerOpinions cases={relevantCases} userId={user.id!} lawyerName={profile.full_name} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

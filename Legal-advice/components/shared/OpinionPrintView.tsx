@@ -52,8 +52,7 @@ export default function OpinionPrintView({ opinionVersionId, requestId }: Opinio
   useEffect(() => {
     const loadData = async () => {
       // Load opinion version
-      const { data: opinionData } = await supabase
-        .from('opinion_versions')
+      const { data: opinionData } = (await __getSupabaseClient()).from('opinion_versions')
         .select('version_number, content_sections, created_at, status')
         .eq('id', opinionVersionId)
         .single();
@@ -61,8 +60,7 @@ export default function OpinionPrintView({ opinionVersionId, requestId }: Opinio
       if (opinionData) setOpinion(opinionData as OpinionData);
 
       // Load signature
-      const { data: sigData } = await supabase
-        .from('digital_signatures')
+      const { data: sigData } = (await __getSupabaseClient()).from('digital_signatures')
         .select(
           'signer_name, signer_designation, signer_bar_council_id, signature_timestamp, signature_hash'
         )
@@ -73,8 +71,7 @@ export default function OpinionPrintView({ opinionVersionId, requestId }: Opinio
       if (sigData) setSignature(sigData as SignatureData);
 
       // Load request details
-      const { data: reqData } = await supabase
-        .from('legal_requests')
+      const { data: reqData } = (await __getSupabaseClient()).from('legal_requests')
         .select(
           `
           request_number,
@@ -358,3 +355,15 @@ export default function OpinionPrintView({ opinionVersionId, requestId }: Opinio
     </>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

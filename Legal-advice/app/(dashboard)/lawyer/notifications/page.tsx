@@ -21,8 +21,7 @@ export default async function NotificationsPage() {
   }
 
   // Fetch real notifications from database
-  const { data: notifications, error } = await supabase
-    .from('notifications')
+  const { data: notifications, error } = await (await __getSupabaseClient()).from('notifications')
     .select(
       `
             *,
@@ -49,7 +48,19 @@ export default async function NotificationsPage() {
     <NotificationsPageContent
       initialNotifications={notificationsList}
       role="lawyer"
-      userId={user.id}
+      userId={user.id!}
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

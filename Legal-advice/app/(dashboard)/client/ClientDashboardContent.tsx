@@ -35,11 +35,11 @@ import { getClientDashboardSummaries } from '@/app/actions/client';
 interface Activity {
   id: string;
   type:
-    | 'request_created'
-    | 'message_received'
-    | 'opinion_submitted'
-    | 'clarification_requested'
-    | 'status_updated';
+  | 'request_created'
+  | 'message_received'
+  | 'opinion_submitted'
+  | 'clarification_requested'
+  | 'status_updated';
   title: string;
   description: string;
   timestamp: string;
@@ -189,52 +189,14 @@ export default function ClientDashboardContent({
   marketplaceMetrics,
 }: Props) {
   const router = useRouter();
-    const [requests, setRequests] = useState<LifecycleSummary[]>(initialData);
+  const [requests, setRequests] = useState<LifecycleSummary[]>(initialData);
   const [unreadMessages, setUnreadMessages] = useState(initialUnreadMessages);
   const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
-    // Set up real-time subscription for requests
-    const requestsChannel = supabase
-      .channel('legal_requests_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'legal_requests',
-          filter: `client_id=eq.${profile?.id}`,
-        },
-        () => {
-          // Refresh requests when changes occur
-          fetchRequests();
-        }
-      )
-      .subscribe();
-
-    // Set up real-time subscription for messages
-    const messagesChannel = supabase
-      .channel('messages_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        () => {
-          // Refresh unread count
-          fetchUnreadCount();
-        }
-      )
-      .subscribe();
-
+    // Real-time subscriptions disabled during MySQL/Prisma migration
+    // TODO: Implement alternative real-time solution
     fetchActivities();
-
-    return () => {
-      requestsChannel.unsubscribe();
-      messagesChannel.unsubscribe();
-    };
   }, [profile?.id]);
 
   const fetchRequests = async () => {
@@ -245,20 +207,18 @@ export default function ClientDashboardContent({
   };
 
   const fetchUnreadCount = async () => {
-    const { data: conversations } = await supabase
-      .from('conversations')
+    const { data: conversations } = await (await __getSupabaseClient()).from('conversations')
       .select('id')
       .or(`participant_1_id.eq.${profile?.id},participant_2_id.eq.${profile?.id}`);
 
     if (conversations) {
-      const { count } = await supabase
-        .from('messages')
+      const { count } = await (await __getSupabaseClient()).from('messages')
         .select('*', { count: 'exact', head: true })
         .eq('read', false)
         .neq('sender_id', profile?.id)
         .in(
           'conversation_id',
-          conversations.map((c) => c.id)
+          conversations.map((c: any) => c.id)
         );
 
       setUnreadMessages(count || 0);
@@ -285,19 +245,19 @@ export default function ClientDashboardContent({
 
   // Calculate status summaries
   const statusSummary = {
-    submitted: requests.filter((r) => r.lifecycleState === 'submitted').length,
-    assigned: requests.filter((r) => r.lifecycleState === 'assigned').length,
-    awaiting_action: requests.filter((r) => r.lifecycleState === 'clarification_pending').length,
-    in_review: requests.filter((r) => r.lifecycleState === 'in_review').length,
-    opinion_ready: requests.filter((r) => ['opinion_ready', 'delivered'].includes(r.lifecycleState))
+    submitted: requests.filter((r: any) => r.lifecycleState === 'submitted').length,
+    assigned: requests.filter((r: any) => r.lifecycleState === 'assigned').length,
+    awaiting_action: requests.filter((r: any) => r.lifecycleState === 'clarification_pending').length,
+    in_review: requests.filter((r: any) => r.lifecycleState === 'in_review').length,
+    opinion_ready: requests.filter((r: any) => ['opinion_ready', 'delivered'].includes(r.lifecycleState))
       .length,
-    completed: requests.filter((r) =>
+    completed: requests.filter((r: any) =>
       ['completed', 'archived', 'cancelled'].includes(r.lifecycleState)
     ).length,
   };
 
   // Get active requests (not terminal)
-  const activeRequests = requests.filter((r) => !r.meta?.isTerminal).slice(0, 3);
+  const activeRequests = requests.filter((r: any) => !r.meta?.isTerminal).slice(0, 3);
 
   // Get first name
   const firstName = profile?.full_name?.split(' ')[0] || 'there';
@@ -400,296 +360,308 @@ export default function ClientDashboardContent({
       )}
 
       {
-  hasRequests ? (
-        <>
-          {/* Live Status Overview */}
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Live Status Overview</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-              {Object.entries({
-                submitted: { count: statusSummary.submitted, key: 'submitted' },
-                assigned: { count: statusSummary.assigned, key: 'assigned' },
-                awaiting_action: {
-                  count: statusSummary.awaiting_action,
-                  key: 'clarification_pending',
-                },
-                in_review: { count: statusSummary.in_review, key: 'in_review' },
-                opinion_ready: { count: statusSummary.opinion_ready, key: 'opinion_ready' },
-                completed: { count: statusSummary.completed, key: 'completed' },
-              }).map(([statusKey, { count, key }]) => {
-                const config =
-                  STATUS_CONFIG[key as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.submitted;
-                const Icon = config ? config.icon : FileText;
-
-                return (
-                  <Link
-                    key={statusKey}
-                    href={`/client/track?status=${key}`}
-                    className={`${config?.bgColor} border ${config?.borderColor} rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer group`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className={`p-2 ${config?.bgColor} rounded-lg`}>
-                        <Icon className={`w-5 h-5 ${config?.textColor}`} />
-                      </div>
-                      {count > 0 && (
-                        <span className={`text-2xl font-bold ${config?.textColor}`}>{count}</span>
-                      )}
-                    </div>
-                    <h3 className={`font-semibold ${config?.textColor} mb-1`}>{config?.label}</h3>
-                    <p className="text-xs text-slate-600 line-clamp-2">
-                      {count === 0 ? 'No cases' : config?.description}
-                    </p>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active Requests */}
-          {
-  activeRequests.length > 0 && (
+        hasRequests ? (
+          <>
+            {/* Live Status Overview */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-slate-900">Active Requests</h2>
-                <Link
-                  href="/client/track"
-                  className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1"
-                >
-                  View all
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-              <div className="grid gap-4">
-                {activeRequests.map((request) => {
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Live Status Overview</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+                {Object.entries({
+                  submitted: { count: statusSummary.submitted, key: 'submitted' },
+                  assigned: { count: statusSummary.assigned, key: 'assigned' },
+                  awaiting_action: {
+                    count: statusSummary.awaiting_action,
+                    key: 'clarification_pending',
+                  },
+                  in_review: { count: statusSummary.in_review, key: 'in_review' },
+                  opinion_ready: { count: statusSummary.opinion_ready, key: 'opinion_ready' },
+                  completed: { count: statusSummary.completed, key: 'completed' },
+                }).map(([statusKey, { count, key }]) => {
                   const config =
-                    STATUS_CONFIG[request.lifecycleState as keyof typeof STATUS_CONFIG] ||
-                    STATUS_CONFIG.submitted;
-                  const StatusIcon = config?.icon || FileText;
+                    STATUS_CONFIG[key as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.submitted;
+                  const Icon = config ? config.icon : FileText;
 
                   return (
-                    <div
-                      key={request.id}
-                      className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all"
+                    <Link
+                      key={statusKey}
+                      href={`/client/track?status=${key}`}
+                      className={`${config?.bgColor} border ${config?.borderColor} rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer group`}
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-start gap-3 mb-3">
-                            <div className={`p-2 ${config?.bgColor} rounded-lg mt-1`}>
-                              <StatusIcon className={`w-5 h-5 ${config?.textColor}`} />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-slate-900 mb-1">
-                                {request.title || request.request_number}
-                              </h3>
-                              <p className="text-sm text-slate-600">
-                                {request.request_number} •{' '}
-                                {
-  request.department?.name || 'Legal Request'}
-                              </p>
-                            </div>
-                          </div>
-
-                          {request.lawyer && (
-                            <div className="flex items-center gap-2 mb-3">
-                              {request.lawyer.avatar_url ? (
-                                <Image
-                                  src={request.lawyer.avatar_url}
-                                  alt={request.lawyer.full_name}
-                                  width={24}
-                                  height={24}
-                                  className="w-6 h-6 rounded-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                                  {request.lawyer.full_name?.charAt(0)}
-                                </div>
-                              )}
-                              <span className="text-sm text-slate-600">
-                                Assigned to {request.lawyer.full_name}
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span
-                              className={`inline-flex items-center gap-1.5 px-3 py-1 ${config?.bgColor} ${config?.textColor} text-xs font-semibold rounded-lg`}
-                            >
-                              {config?.label}
-                            </span>
-                            <span className="text-xs text-slate-500" suppressHydrationWarning>
-                              {formatDistanceToNow(new Date(request.created_at), {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          </div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className={`p-2 ${config?.bgColor} rounded-lg`}>
+                          <Icon className={`w-5 h-5 ${config?.textColor}`} />
                         </div>
-
-                        <Link
-                          href={`/client/track/${request.id}`}
-                          className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors whitespace-nowrap flex items-center gap-2"
-                        >
-                          {request.lifecycleState === 'clarification_pending' && 'Respond Now'}
-                          {
-  request.lifecycleState === 'opinion_ready' && 'Download Opinion'}
-                          {!['clarification_pending', 'opinion_ready'].includes(
-                            request.lifecycleState
-                          ) && 'View Details'}
-                          <ArrowRight className="w-4 h-4" />
-                        </Link>
+                        {count > 0 && (
+                          <span className={`text-2xl font-bold ${config?.textColor}`}>{count}</span>
+                        )}
                       </div>
-                    </div>
+                      <h3 className={`font-semibold ${config?.textColor} mb-1`}>{config?.label}</h3>
+                      <p className="text-xs text-slate-600 line-clamp-2">
+                        {count === 0 ? 'No cases' : config?.description}
+                      </p>
+                    </Link>
                   );
                 })}
               </div>
             </div>
-          )}
 
-          {/* Activity & Updates */}
-          {
-  activities.length > 0 && (
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Activity</h2>
-                <div className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
-                  {activities.slice(0, 5).map((activity, index) => {
-                    const ActivityIcon = activity.icon;
+            {/* Active Requests */}
+            {
+              activeRequests.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-slate-900">Active Requests</h2>
+                    <Link
+                      href="/client/track"
+                      className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1"
+                    >
+                      View all
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                  <div className="grid gap-4">
+                    {activeRequests.map((request) => {
+                      const config =
+                        STATUS_CONFIG[request.lifecycleState as keyof typeof STATUS_CONFIG] ||
+                        STATUS_CONFIG.submitted;
+                      const StatusIcon = config?.icon || FileText;
 
-                    return (
+                      return (
+                        <div
+                          key={request.id}
+                          className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-start gap-3 mb-3">
+                                <div className={`p-2 ${config?.bgColor} rounded-lg mt-1`}>
+                                  <StatusIcon className={`w-5 h-5 ${config?.textColor}`} />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-bold text-slate-900 mb-1">
+                                    {request.title || request.request_number}
+                                  </h3>
+                                  <p className="text-sm text-slate-600">
+                                    {request.request_number} •{' '}
+                                    {
+                                      request.department?.name || 'Legal Request'}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {request.lawyer && (
+                                <div className="flex items-center gap-2 mb-3">
+                                  {request.lawyer.avatar_url ? (
+                                    <Image
+                                      src={request.lawyer.avatar_url}
+                                      alt={request.lawyer.full_name}
+                                      width={24}
+                                      height={24}
+                                      className="w-6 h-6 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                                      {request.lawyer.full_name?.charAt(0)}
+                                    </div>
+                                  )}
+                                  <span className="text-sm text-slate-600">
+                                    Assigned to {request.lawyer.full_name}
+                                  </span>
+                                </div>
+                              )}
+
+                              <div className="flex flex-wrap items-center gap-3">
+                                <span
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1 ${config?.bgColor} ${config?.textColor} text-xs font-semibold rounded-lg`}
+                                >
+                                  {config?.label}
+                                </span>
+                                <span className="text-xs text-slate-500" suppressHydrationWarning>
+                                  {formatDistanceToNow(new Date(request.created_at), {
+                                    addSuffix: true,
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+
+                            <Link
+                              href={`/client/track/${request.id}`}
+                              className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors whitespace-nowrap flex items-center gap-2"
+                            >
+                              {request.lifecycleState === 'clarification_pending' && 'Respond Now'}
+                              {
+                                request.lifecycleState === 'opinion_ready' && 'Download Opinion'}
+                              {!['clarification_pending', 'opinion_ready'].includes(
+                                request.lifecycleState
+                              ) && 'View Details'}
+                              <ArrowRight className="w-4 h-4" />
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+            {/* Activity & Updates */}
+            {
+              activities.length > 0 && (
+                <div className="grid lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Activity</h2>
+                    <div className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
+                      {activities.slice(0, 5).map((activity, index) => {
+                        const ActivityIcon = activity.icon;
+
+                        return (
+                          <Link
+                            key={`${activity.id}-${index}`}
+                            href={activity.link || '/client/track'}
+                            className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors"
+                          >
+                            <div className="p-2 bg-slate-100 rounded-lg">
+                              <ActivityIcon className="w-5 h-5 text-slate-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-slate-900 mb-1">{activity.title}</p>
+                              <p className="text-sm text-slate-600 mb-1">{activity.description}</p>
+                              <p className="text-xs text-slate-500" suppressHydrationWarning>
+                                {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                              </p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400 flex-shrink-0 mt-1" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Quick Navigation */}
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
+                    <div className="grid gap-3">
                       <Link
-                        key={`${activity.id}-${index}`}
-                        href={activity.link || '/client/track'}
-                        className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors"
+                        href="/client/lawyers"
+                        className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition-all group"
                       >
-                        <div className="p-2 bg-slate-100 rounded-lg">
-                          <ActivityIcon className="w-5 h-5 text-slate-600" />
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 bg-blue-50 rounded-lg">
+                            <Users className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <h3 className="font-semibold text-slate-900">Find a Lawyer</h3>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-slate-900 mb-1">{activity.title}</p>
-                          <p className="text-sm text-slate-600 mb-1">{activity.description}</p>
-                          <p className="text-xs text-slate-500" suppressHydrationWarning>
-                            {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-slate-400 flex-shrink-0 mt-1" />
+                        <p className="text-sm text-slate-600">Browse verified legal professionals</p>
                       </Link>
-                    );
-                  })}
+
+                      <Link
+                        href="/client/departments"
+                        className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition-all group"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 bg-purple-50 rounded-lg">
+                            <Building2 className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <h3 className="font-semibold text-slate-900">Legal Departments</h3>
+                        </div>
+                        <p className="text-sm text-slate-600">Explore practice areas</p>
+                      </Link>
+
+                      <Link
+                        href="/client/ratings"
+                        className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition-all group"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 bg-amber-50 rounded-lg">
+                            <Star className="w-5 h-5 text-amber-600" />
+                          </div>
+                          <h3 className="font-semibold text-slate-900">Rate & Review</h3>
+                        </div>
+                        <p className="text-sm text-slate-600">Share your experience</p>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
+              )}
+          </>
+        ) : (
+          /* Empty / First-Time User State */
+          <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+            <div className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-12 max-w-2xl text-center">
+              <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <FileText className="w-10 h-10 text-primary" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">
+                You haven't created a legal request yet
+              </h2>
+              <p className="text-slate-600 mb-8 text-lg">
+                Start by choosing a legal department or browsing lawyers to get expert legal opinions
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/client/new-request"
+                  className="inline-flex items-center justify-center gap-8 py-4 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-lg"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create New Request
+                </Link>
+                <Link
+                  href="/client/departments"
+                  className="inline-flex items-center justify-center gap-8 py-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all"
+                >
+                  <Building2 className="w-5 h-5" />
+                  Browse Departments
+                </Link>
               </div>
 
-              {/* Quick Navigation */}
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
-                <div className="grid gap-3">
-                  <Link
-                    href="/client/lawyers"
-                    className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition-all group"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-blue-50 rounded-lg">
-                        <Users className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <h3 className="font-semibold text-slate-900">Find a Lawyer</h3>
+              {/* Quick Guide */}
+              <div className="mt-12 pt-8 border-t border-slate-200">
+                <h3 className="font-semibold text-slate-900 mb-4">How it works</h3>
+                <div className="grid sm:grid-cols-3 gap-6 text-left">
+                  <div>
+                    <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold mb-3">
+                      1
                     </div>
-                    <p className="text-sm text-slate-600">Browse verified legal professionals</p>
-                  </Link>
-
-                  <Link
-                    href="/client/departments"
-                    className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition-all group"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-purple-50 rounded-lg">
-                        <Building2 className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <h3 className="font-semibold text-slate-900">Legal Departments</h3>
+                    <h4 className="font-semibold text-slate-900 mb-1">Submit Request</h4>
+                    <p className="text-sm text-slate-600">
+                      Choose a department and describe your legal query
+                    </p>
+                  </div>
+                  <div>
+                    <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center font-bold mb-3">
+                      2
                     </div>
-                    <p className="text-sm text-slate-600">Explore practice areas</p>
-                  </Link>
-
-                  <Link
-                    href="/client/ratings"
-                    className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition-all group"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-amber-50 rounded-lg">
-                        <Star className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <h3 className="font-semibold text-slate-900">Rate & Review</h3>
+                    <h4 className="font-semibold text-slate-900 mb-1">Get Matched</h4>
+                    <p className="text-sm text-slate-600">
+                      We assign a qualified lawyer to review your case
+                    </p>
+                  </div>
+                  <div>
+                    <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center font-bold mb-3">
+                      3
                     </div>
-                    <p className="text-sm text-slate-600">Share your experience</p>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        /* Empty / First-Time User State */
-        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
-          <div className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-12 max-w-2xl text-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <FileText className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-3">
-              You haven't created a legal request yet
-            </h2>
-            <p className="text-slate-600 mb-8 text-lg">
-              Start by choosing a legal department or browsing lawyers to get expert legal opinions
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/client/new-request"
-                className="inline-flex items-center justify-center gap-8 py-4 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-lg"
-              >
-                <Plus className="w-5 h-5" />
-                Create New Request
-              </Link>
-              <Link
-                href="/client/departments"
-                className="inline-flex items-center justify-center gap-8 py-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all"
-              >
-                <Building2 className="w-5 h-5" />
-                Browse Departments
-              </Link>
-            </div>
-
-            {/* Quick Guide */}
-            <div className="mt-12 pt-8 border-t border-slate-200">
-              <h3 className="font-semibold text-slate-900 mb-4">How it works</h3>
-              <div className="grid sm:grid-cols-3 gap-6 text-left">
-                <div>
-                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold mb-3">
-                    1
+                    <h4 className="font-semibold text-slate-900 mb-1">Receive Opinion</h4>
+                    <p className="text-sm text-slate-600">
+                      Download your expert legal opinion within days
+                    </p>
                   </div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Submit Request</h4>
-                  <p className="text-sm text-slate-600">
-                    Choose a department and describe your legal query
-                  </p>
-                </div>
-                <div>
-                  <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center font-bold mb-3">
-                    2
-                  </div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Get Matched</h4>
-                  <p className="text-sm text-slate-600">
-                    We assign a qualified lawyer to review your case
-                  </p>
-                </div>
-                <div>
-                  <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center font-bold mb-3">
-                    3
-                  </div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Receive Opinion</h4>
-                  <p className="text-sm text-slate-600">
-                    Download your expert legal opinion within days
-                  </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

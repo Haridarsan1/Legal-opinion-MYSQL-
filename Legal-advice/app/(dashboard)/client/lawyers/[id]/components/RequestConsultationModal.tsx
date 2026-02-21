@@ -114,8 +114,7 @@ export default function RequestConsultationModal({
 
     try {
       // Create legal request
-      const { data: request, error: requestError } = await supabase
-        .from('legal_requests')
+      const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
         .insert({
           client_id: clientId,
           department_id: departmentId,
@@ -133,7 +132,7 @@ export default function RequestConsultationModal({
       if (files.length > 0 && request) {
         for (const file of files) {
           const fileName = `${request.id}/${Date.now()}_${file.name}`;
-          const { error: uploadError } = await supabase.storage
+          const { error: uploadError } = await (await __getSupabaseClient()).storage
             .from('documents')
             .upload(fileName, file);
 
@@ -143,7 +142,7 @@ export default function RequestConsultationModal({
           }
 
           // Create document record
-          await supabase.from('documents').insert({
+          await (await __getSupabaseClient()).from('documents').insert({
             request_id: request.id,
             uploaded_by: clientId,
             file_name: file.name,
@@ -156,7 +155,7 @@ export default function RequestConsultationModal({
       }
 
       // Create notification for lawyer
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: lawyer.id,
         type: 'consultation_request',
         title: 'New Consultation Request',
@@ -567,3 +566,15 @@ export default function RequestConsultationModal({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

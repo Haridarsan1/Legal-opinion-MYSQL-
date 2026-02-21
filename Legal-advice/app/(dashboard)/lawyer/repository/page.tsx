@@ -18,8 +18,7 @@ export default async function DocumentRepositoryPage() {
   }
 
   // Fetch all lawyer's documents across categories
-  const { data: documents, error } = await supabase
-    .from('documents')
+  const { data: documents, error } = await (await __getSupabaseClient()).from('documents')
     .select(
       `
             *,
@@ -41,12 +40,12 @@ export default async function DocumentRepositoryPage() {
 
   // Categorize documents
   const categorizedDocs = {
-    opinions: documents?.filter((d) => d.category === 'legal_opinion') || [],
-    drafts: documents?.filter((d) => d.category === 'draft') || [],
-    templates: documents?.filter((d) => d.category === 'template') || [],
-    research: documents?.filter((d) => d.category === 'research') || [],
-    compliance: documents?.filter((d) => d.category === 'compliance') || [],
-    caseDocuments: documents?.filter((d) => d.category === 'case_document') || [],
+    opinions: documents?.filter((d: any) => d.category === 'legal_opinion') || [],
+    drafts: documents?.filter((d: any) => d.category === 'draft') || [],
+    templates: documents?.filter((d: any) => d.category === 'template') || [],
+    research: documents?.filter((d: any) => d.category === 'research') || [],
+    compliance: documents?.filter((d: any) => d.category === 'compliance') || [],
+    caseDocuments: documents?.filter((d: any) => d.category === 'case_document') || [],
   };
 
   // Get statistics
@@ -59,5 +58,17 @@ export default async function DocumentRepositoryPage() {
     totalCaseDocuments: categorizedDocs.caseDocuments.length,
   };
 
-  return <RepositoryContent documents={categorizedDocs} stats={stats} userId={user.id} />;
+  return <RepositoryContent documents={categorizedDocs} stats={stats} userId={user.id!} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

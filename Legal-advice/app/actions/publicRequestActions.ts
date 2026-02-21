@@ -10,13 +10,13 @@ import { hasPermission } from '@/lib/permissions';
  * Get public open requests for lawyers to browse
  */
 export async function getPublicOpenRequests(filters?: {
-  const supabase = await createClient();
   departmentId?: string;
   priority?: string;
   search?: string;
   limit?: number;
   offset?: number;
-}) {const {
+}) {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -26,8 +26,7 @@ export async function getPublicOpenRequests(filters?: {
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -37,7 +36,7 @@ export async function getPublicOpenRequests(filters?: {
   }
 
   try {
-    let query = (supabase.from('legal_requests') as any)
+    let query = ((await __getSupabaseClient()).from('legal_requests') as any)
       .select(
         `
                 id,
@@ -94,8 +93,7 @@ export async function getPublicOpenRequests(filters?: {
     // For each request, check if current lawyer has submitted a proposal
     const requestsWithProposalStatus = await Promise.all(
       (requests || []).map(async (request: any) => {
-        const { data: myProposal } = await supabase
-          .from('request_proposals')
+        const { data: myProposal } = (await __getSupabaseClient()).from('request_proposals')
           .select('id, status')
           .eq('request_id', request.id)
           .eq('lawyer_id', user.id)
@@ -121,7 +119,7 @@ export async function getPublicOpenRequests(filters?: {
  * Get lawyer's own public claims
  */
 export async function getMyPublicClaims() {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -131,8 +129,7 @@ export async function getMyPublicClaims() {
   }
 
   try {
-    const { data: claims, error } = await supabase
-      .from('public_case_claims')
+    const { data: claims, error } = (await __getSupabaseClient()).from('public_case_claims')
       .select(
         `
                 id,
@@ -174,7 +171,7 @@ export async function getMyPublicClaims() {
  * Get interested lawyers for a client's public case
  */
 export async function getInterestedLawyers(caseId: string) {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -185,8 +182,7 @@ export async function getInterestedLawyers(caseId: string) {
 
   try {
     // Verify case belongs to user
-    const { data: caseData } = await supabase
-      .from('legal_requests')
+    const { data: caseData } = (await __getSupabaseClient()).from('legal_requests')
       .select('client_id, request_type, public_status')
       .eq('id', caseId)
       .single();
@@ -195,8 +191,7 @@ export async function getInterestedLawyers(caseId: string) {
       return { success: false, error: 'Case not found or not authorized' };
     }
 
-    const { data: claims, error } = await supabase
-      .from('public_case_claims')
+    const { data: claims, error } = (await __getSupabaseClient()).from('public_case_claims')
       .select(
         `
                 id,
@@ -237,7 +232,7 @@ export async function getInterestedLawyers(caseId: string) {
  * Lawyer expresses interest in a public case
  */
 export async function createPublicClaim(formData: FormData) {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -258,7 +253,7 @@ export async function createPublicClaim(formData: FormData) {
     }
 
     // Call the database function
-    const { data, error } = await supabase.rpc('create_public_claim', {
+    const { data, error } = await (await __getSupabaseClient()).rpc('create_public_claim', {
       p_case_id: caseId,
       p_lawyer_id: user.id,
       p_interest_message: interestMessage,
@@ -295,7 +290,7 @@ export async function createPublicClaim(formData: FormData) {
  * Client selects a lawyer for public request
  */
 export async function selectLawyerForPublicRequest(caseId: string, claimId: string) {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -306,7 +301,7 @@ export async function selectLawyerForPublicRequest(caseId: string, claimId: stri
 
   try {
     // Call the database function
-    const { data, error } = await supabase.rpc('select_lawyer_for_public_request', {
+    const { data, error } = await (await __getSupabaseClient()).rpc('select_lawyer_for_public_request', {
       p_case_id: caseId,
       p_claim_id: claimId,
       p_client_id: user.id,
@@ -339,7 +334,7 @@ export async function selectLawyerForPublicRequest(caseId: string, claimId: stri
  * Lawyer withdraws a public claim
  */
 export async function withdrawPublicClaim(claimId: string) {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -350,7 +345,7 @@ export async function withdrawPublicClaim(claimId: string) {
 
   try {
     // Call the database function
-    const { data, error } = await supabase.rpc('withdraw_public_claim', {
+    const { data, error } = await (await __getSupabaseClient()).rpc('withdraw_public_claim', {
       p_claim_id: claimId,
       p_lawyer_id: user.id,
     });
@@ -380,7 +375,7 @@ export async function withdrawPublicClaim(claimId: string) {
  * Get public request notifications
  */
 export async function getPublicRequestNotifications() {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -390,8 +385,7 @@ export async function getPublicRequestNotifications() {
   }
 
   try {
-    const { data: notifications, error } = await supabase
-      .from('public_request_notifications')
+    const { data: notifications, error } = (await __getSupabaseClient()).from('public_request_notifications')
       .select(
         `
                 id,
@@ -421,7 +415,7 @@ export async function getPublicRequestNotifications() {
  * Mark public request notification as read
  */
 export async function markNotificationAsRead(notificationId: string) {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -431,8 +425,7 @@ export async function markNotificationAsRead(notificationId: string) {
   }
 
   try {
-    const { error } = await supabase
-      .from('public_request_notifications')
+    const { error } = (await __getSupabaseClient()).from('public_request_notifications')
       .update({ is_read: true })
       .eq('id', notificationId)
       .eq('user_id', user.id);
@@ -454,7 +447,7 @@ export async function markNotificationAsRead(notificationId: string) {
  * Returns aggregated data: total proposals, average fee, fee range, average timeline
  */
 export async function getProposalStats(requestId: string) {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -465,8 +458,7 @@ export async function getProposalStats(requestId: string) {
 
   try {
     // Get all non-withdrawn proposals for this request
-    const { data: proposals, error } = await supabase
-      .from('request_proposals')
+    const { data: proposals, error } = (await __getSupabaseClient()).from('request_proposals')
       .select('proposed_fee, timeline_days')
       .eq('request_id', requestId)
       .not('status', 'eq', 'withdrawn');
@@ -487,15 +479,15 @@ export async function getProposalStats(requestId: string) {
     }
 
     // Calculate statistics
-    const fees = proposals.map((p) => p.proposed_fee);
-    const timelines = proposals.map((p) => p.timeline_days);
+    const fees = proposals.map((p: any) => p.proposed_fee);
+    const timelines = proposals.map((p: any) => p.timeline_days);
 
     const stats = {
       total_proposals: proposals.length,
-      average_fee: Math.round(fees.reduce((a, b) => a + b, 0) / fees.length),
+      average_fee: Math.round(fees.reduce((a: any, b: any) => a + b, 0) / fees.length),
       lowest_fee: Math.min(...fees),
       highest_fee: Math.max(...fees),
-      average_timeline: Math.round(timelines.reduce((a, b) => a + b, 0) / timelines.length),
+      average_timeline: Math.round(timelines.reduce((a: any, b: any) => a + b, 0) / timelines.length),
     };
 
     return { success: true, data: stats };
@@ -509,7 +501,7 @@ export async function getProposalStats(requestId: string) {
  * Get a single public request with full details for the lawyer view
  */
 export async function getPublicRequestDetails(requestId: string) {
-  const supabase = await createClient();const {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -519,8 +511,7 @@ export async function getPublicRequestDetails(requestId: string) {
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -531,7 +522,7 @@ export async function getPublicRequestDetails(requestId: string) {
 
   try {
     // Fetch request details
-    const { data: request, error } = await (supabase.from('legal_requests') as any)
+    const { data: request, error } = await ((await __getSupabaseClient()).from('legal_requests') as any)
       .select(
         `
                 id,
@@ -567,8 +558,7 @@ export async function getPublicRequestDetails(requestId: string) {
     }
 
     // Check if I have a proposal
-    const { data: myProposal } = await supabase
-      .from('request_proposals')
+    const { data: myProposal } = (await __getSupabaseClient()).from('request_proposals')
       .select('id, status, proposed_fee, timeline_days, proposal_message, created_at')
       .eq('request_id', requestId)
       .eq('lawyer_id', user.id)
@@ -576,8 +566,7 @@ export async function getPublicRequestDetails(requestId: string) {
       .maybeSingle();
 
     // Check if bookmarked
-    const { count: bookmarkCount } = await supabase
-      .from('saved_requests')
+    const { count: bookmarkCount } = (await __getSupabaseClient()).from('saved_requests')
       .select('*', { count: 'exact', head: true })
       .eq('request_id', requestId)
       .eq('lawyer_id', user.id);
@@ -602,3 +591,15 @@ export async function getPublicRequestDetails(requestId: string) {
     return { success: false, error: error.message || 'Failed to fetch request details' };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

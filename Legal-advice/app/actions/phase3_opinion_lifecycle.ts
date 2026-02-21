@@ -28,7 +28,6 @@ import { Profile } from '@/lib/types';
 export async function saveOpinionAutosave(
   opinionSubmissionId: string,
   sections: {
-  const supabase = await createClient();
     facts: string;
     issues: string;
     analysis: string;
@@ -45,7 +44,7 @@ export async function saveOpinionAutosave(
   }
 
   try {
-    const { error } = await supabase.from('opinion_autosaves').upsert(
+    const { error } = await (await __getSupabaseClient()).from('opinion_autosaves').upsert(
       {
         opinion_submission_id: opinionSubmissionId,
         lawyer_id: user.id,
@@ -71,7 +70,6 @@ export async function publishOpinionVersion(
   opinionSubmissionId: string,
   requestId: string,
   sections: {
-  const supabase = await createClient();
     facts: string;
     issues: string;
     analysis: string;
@@ -89,7 +87,7 @@ export async function publishOpinionVersion(
   }
 
   // Fetch profile for permissions
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles').select('*').eq('id', user.id).single();
   
   // Permission Logic:
   // If user has 'bypass_review', they can skip peer review.
@@ -107,8 +105,7 @@ export async function publishOpinionVersion(
     }
 
     // Get next version number
-    const { data: latestVersion } = await supabase
-      .from('opinion_versions')
+    const { data: latestVersion } = await (await __getSupabaseClient()).from('opinion_versions')
       .select('version_number')
       .eq('opinion_submission_id', opinionSubmissionId)
       .order('version_number', { ascending: false })
@@ -118,8 +115,7 @@ export async function publishOpinionVersion(
     const nextVersionNumber = (latestVersion?.version_number || 0) + 1;
 
     // Create version
-    const { data: version, error: versionError } = await supabase
-      .from('opinion_versions')
+    const { data: version, error: versionError } = await (await __getSupabaseClient()).from('opinion_versions')
       .insert({
         opinion_submission_id: opinionSubmissionId,
         request_id: requestId,
@@ -134,20 +130,18 @@ export async function publishOpinionVersion(
     if (versionError) throw versionError;
 
     // Update opinion_submissions with current version
-    await supabase
-      .from('opinion_submissions')
+    await (await __getSupabaseClient()).from('opinion_submissions')
       .update({ current_version_id: version.id })
       .eq('id', opinionSubmissionId);
 
     // Delete autosave
-    await supabase
-      .from('opinion_autosaves')
+    await (await __getSupabaseClient()).from('opinion_autosaves')
       .delete()
       .eq('opinion_submission_id', opinionSubmissionId)
       .eq('lawyer_id', user.id);
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'opinion_version_published',
@@ -166,7 +160,7 @@ export async function publishOpinionVersion(
  * Lock opinion version (after digital signature)
  */
 export async function lockOpinionVersion(versionId: string) {
-  const supabase = await createClient();const {
+const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -176,8 +170,7 @@ export async function lockOpinionVersion(versionId: string) {
   }
 
   try {
-    const { error } = await supabase
-      .from('opinion_versions')
+    const { error } = await (await __getSupabaseClient()).from('opinion_versions')
       .update({
         is_locked: true,
         locked_at: new Date().toISOString(),
@@ -202,7 +195,7 @@ export async function lockOpinionVersion(versionId: string) {
  * Validate opinion readiness for signature
  */
 export async function validateOpinionForSignature(opinionVersionId: string, requestId: string) {
-  const supabase = await createClient();const {
+const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -213,8 +206,7 @@ export async function validateOpinionForSignature(opinionVersionId: string, requ
 
   try {
     // Check 1: No open clarifications
-    const { data: openClarifications } = await supabase
-      .from('clarifications')
+    const { data: openClarifications } = await (await __getSupabaseClient()).from('clarifications')
       .select('id')
       .eq('request_id', requestId)
       .eq('status', 'open');
@@ -222,8 +214,7 @@ export async function validateOpinionForSignature(opinionVersionId: string, requ
     const noOpenClarifications = (openClarifications?.length || 0) === 0;
 
     // Check 2: No pending peer reviews
-    const { data: pendingReviews } = await supabase
-      .from('peer_reviews')
+    const { data: pendingReviews } = await (await __getSupabaseClient()).from('peer_reviews')
       .select('id')
       .eq('request_id', requestId)
       .in('status', ['requested', 'in_progress']);
@@ -231,8 +222,7 @@ export async function validateOpinionForSignature(opinionVersionId: string, requ
     const noPendingPeerReviews = (pendingReviews?.length || 0) === 0;
 
     // Check 3: All sections complete
-    const { data: version } = await supabase
-      .from('opinion_versions')
+    const { data: version } = await (await __getSupabaseClient()).from('opinion_versions')
       .select('content_sections')
       .eq('id', opinionVersionId)
       .single();
@@ -252,7 +242,7 @@ export async function validateOpinionForSignature(opinionVersionId: string, requ
       noOpenClarifications && noPendingPeerReviews && allSectionsComplete && clientNotified;
 
     // Save validation record
-    await supabase.from('opinion_signature_validations').insert({
+    await (await __getSupabaseClient()).from('opinion_signature_validations').insert({
       opinion_version_id: opinionVersionId,
       no_open_clarifications: noOpenClarifications,
       no_pending_peer_reviews: noPendingPeerReviews,
@@ -289,7 +279,7 @@ export async function requestOpinionClarification(
   sectionReference: string,
   question: string
 ) {
-  const supabase = await createClient();const {
+const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -300,8 +290,7 @@ export async function requestOpinionClarification(
 
   try {
     // Verify user is the client
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('client_id, assigned_lawyer_id')
       .eq('id', requestId)
       .single();
@@ -311,8 +300,7 @@ export async function requestOpinionClarification(
     }
 
     // Create clarification request
-    const { data: clarification, error: clarError } = await supabase
-      .from('opinion_clarification_requests')
+    const { data: clarification, error: clarError } = await (await __getSupabaseClient()).from('opinion_clarification_requests')
       .insert({
         opinion_submission_id: opinionSubmissionId,
         request_id: requestId,
@@ -326,7 +314,7 @@ export async function requestOpinionClarification(
     if (clarError) throw clarError;
 
     // Notify lawyer
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: request.assigned_lawyer_id,
       type: 'opinion_clarification',
       title: 'Opinion Clarification Requested',
@@ -335,7 +323,7 @@ export async function requestOpinionClarification(
     });
 
     // Audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'opinion_clarification_requested',
@@ -354,7 +342,7 @@ export async function requestOpinionClarification(
  * Lawyer responds to opinion clarification
  */
 export async function respondToOpinionClarification(clarificationId: string, response: string) {
-  const supabase = await createClient();const {
+const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -365,8 +353,7 @@ export async function respondToOpinionClarification(clarificationId: string, res
 
   try {
     // Update clarification with response
-    const { data: clarification, error: updateError } = await supabase
-      .from('opinion_clarification_requests')
+    const { data: clarification, error: updateError } = await (await __getSupabaseClient()).from('opinion_clarification_requests')
       .update({
         lawyer_response: response,
         responded_at: new Date().toISOString(),
@@ -380,15 +367,14 @@ export async function respondToOpinionClarification(clarificationId: string, res
     if (updateError) throw updateError;
 
     // Get client ID for notification
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('client_id')
       .eq('id', clarification.request_id)
       .single();
 
     if (request) {
       // Notify client
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: request.client_id,
         type: 'clarification_answered',
         title: 'Opinion Clarification Answered',
@@ -418,7 +404,7 @@ export async function closeRequest(
   closureReason: string,
   satisfactionRating?: number
 ) {
-  const supabase = await createClient();const {
+const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -429,8 +415,7 @@ export async function closeRequest(
 
   try {
     // Verify user is client or admin
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('client_id, is_closed')
       .eq('id', requestId)
       .single();
@@ -443,8 +428,7 @@ export async function closeRequest(
       return { success: false, error: 'Request already closed' };
     }
 
-    const { data: userProfile } = await supabase
-      .from('profiles')
+    const { data: userProfile } = await (await __getSupabaseClient()).from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
@@ -457,24 +441,21 @@ export async function closeRequest(
     }
 
     // Validate closure requirements
-    const { data: opinion } = await supabase
-      .from('opinion_submissions')
+    const { data: opinion } = await (await __getSupabaseClient()).from('opinion_submissions')
       .select('is_final')
       .eq('request_id', requestId)
       .single();
 
     const opinionDelivered = opinion?.is_final || false;
 
-    const { data: openClarifications } = await supabase
-      .from('opinion_clarification_requests')
+    const { data: openClarifications } = await (await __getSupabaseClient()).from('opinion_clarification_requests')
       .select('id')
       .eq('request_id', requestId)
       .eq('status', 'open');
 
     const allClarificationsResolved = (openClarifications?.length || 0) === 0;
 
-    const { data: signature } = await supabase
-      .from('digital_signatures')
+    const { data: signature } = await (await __getSupabaseClient()).from('digital_signatures')
       .select('id')
       .eq('request_id', requestId)
       .eq('status', 'signed')
@@ -483,7 +464,7 @@ export async function closeRequest(
     const signatureVerified = !!signature;
 
     // Create closure record
-    const { error: closureError } = await supabase.from('request_closures').insert({
+    const { error: closureError } = await (await __getSupabaseClient()).from('request_closures').insert({
       request_id: requestId,
       closed_by: user.id,
       closure_reason: closureReason,
@@ -497,7 +478,7 @@ export async function closeRequest(
     if (closureError) throw closureError;
 
     // Audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'request_closed',
@@ -526,7 +507,7 @@ export async function logVersionAccess(
   accessSource?: string,
   durationSeconds?: number
 ) {
-  const supabase = await createClient();const {
+const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -536,7 +517,7 @@ export async function logVersionAccess(
   }
 
   try {
-    await supabase.from('version_access_logs').insert({
+    await (await __getSupabaseClient()).from('version_access_logs').insert({
       opinion_version_id: versionId,
       accessed_by: user.id,
       access_type: accessType,
@@ -554,7 +535,7 @@ export async function logVersionAccess(
  * Get opinion access history (admin/lawyer only)
  */
 export async function getOpinionAccessHistory(opinionSubmissionId: string) {
-  const supabase = await createClient();const {
+const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -564,8 +545,7 @@ export async function getOpinionAccessHistory(opinionSubmissionId: string) {
   }
 
   try {
-    const { data: logs, error } = await supabase
-      .from('version_access_logs')
+    const { data: logs, error } = await (await __getSupabaseClient()).from('version_access_logs')
       .select(
         `
         *,
@@ -584,3 +564,15 @@ export async function getOpinionAccessHistory(opinionSubmissionId: string) {
     return { success: false, error: error.message };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

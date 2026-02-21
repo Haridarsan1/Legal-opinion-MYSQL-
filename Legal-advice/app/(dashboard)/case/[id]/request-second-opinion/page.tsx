@@ -41,8 +41,7 @@ export default function RequestSecondOpinionPage() {
 
   const fetchOpinion = async () => {
     try {
-      const { data, error } = await supabase
-        .from('legal_opinions')
+      const { data, error } = await (await __getSupabaseClient()).from('legal_opinions')
         .select(
           `
                     *,
@@ -294,3 +293,15 @@ export default function RequestSecondOpinionPage() {
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

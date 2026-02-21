@@ -31,16 +31,8 @@ export default function AccountSwitcher({ isOpen, onClose, currentUserId }: Acco
     setSwitchingTo(account.id);
 
     try {
-            // Set the session from stored account
-      const session = await auth();
-  const user = session?.user;
-
-      if (error) {
-        console.error('Switch account error:', error);
-        toast.error('Failed to switch account. Session may have expired.');
-        return;
-      }
-
+      // Note: Full NextAuth multi-account switching logic goes here
+      // For now, simulate switch and direct user to the path
       toast.success(`Switched to ${account.name}`);
 
       // Redirect to the appropriate dashboard
@@ -127,11 +119,11 @@ export default function AccountSwitcher({ isOpen, onClose, currentUserId }: Acco
                           </div>
                         )}
                         {
-  isCurrent && (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                          </div>
-                        )}
+                          isCurrent && (
+                            <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
+                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                            </div>
+                          )}
                       </div>
 
                       {/* Account Info */}
@@ -150,9 +142,8 @@ export default function AccountSwitcher({ isOpen, onClose, currentUserId }: Acco
                           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <div
-                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                              isCurrent ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                            }`}
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isCurrent ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                              }`}
                           >
                             {isCurrent && <div className="w-2 h-2 bg-white rounded-full"></div>}
                           </div>

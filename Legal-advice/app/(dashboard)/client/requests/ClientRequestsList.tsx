@@ -58,7 +58,7 @@ export default function ClientRequestsList({ initialRequests }: ClientRequestsLi
                 >
                   {tab.id === 'all'
                     ? safeRequests.length
-                    : safeRequests.filter((r) => r.visibility === tab.id).length}
+                    : safeRequests.filter((r: any) => r.visibility === tab.id).length}
                 </span>
               </button>
             );

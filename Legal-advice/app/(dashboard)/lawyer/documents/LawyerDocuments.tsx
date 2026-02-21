@@ -45,9 +45,9 @@ export default function LawyerDocuments({ documents, userId, lawyerProfile }: Pr
   // Calculate stats
   const stats = {
     total: documents.length,
-    pending: documents.filter((d) => !d.review_status || d.review_status === 'pending').length,
-    reviewed: documents.filter((d) => d.review_status === 'reviewed').length,
-    needsClarification: documents.filter((d) => d.review_status === 'needs_clarification').length,
+    pending: documents.filter((d: any) => !d.review_status || d.review_status === 'pending').length,
+    reviewed: documents.filter((d: any) => d.review_status === 'reviewed').length,
+    needsClarification: documents.filter((d: any) => d.review_status === 'needs_clarification').length,
   };
 
   if (documents.length === 0) {

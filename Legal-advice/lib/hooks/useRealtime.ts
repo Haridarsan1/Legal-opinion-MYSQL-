@@ -14,8 +14,7 @@ export function useRequestUpdates(requestId: string | null) {
     if (!requestId) { setLoading(false); return; }
 
     const fetchData = async () => {
-      const { data } = await supabase
-        .from('legal_requests')
+      const { data } = (await __getSupabaseClient()).from('legal_requests')
         .select('*')
         .eq('id', requestId)
         .single();
@@ -39,12 +38,11 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);useEffect(() => {
     const fetchData = async () => {
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = (await __getSupabaseClient()).auth.getUser();
       const user = userData?.user;
       if (!user) { setLoading(false); return; }
 
-      const { data } = await supabase
-        .from('notifications')
+      const { data } = (await __getSupabaseClient()).from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -74,8 +72,7 @@ export function useAssignedRequests(userId: string | null) {
     if (!userId) { setLoading(false); return; }
 
     const fetchData = async () => {
-      const { data } = await supabase
-        .from('legal_requests')
+      const { data } = (await __getSupabaseClient()).from('legal_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -105,8 +102,7 @@ export function useDocuments(requestId: string | null) {
     if (!requestId) { setLoading(false); return; }
 
     const fetchData = async () => {
-      const { data } = await supabase
-        .from('documents')
+      const { data } = (await __getSupabaseClient()).from('documents')
         .select('*')
         .eq('request_id', requestId)
         .order('uploaded_at', { ascending: false });
@@ -122,3 +118,15 @@ export function useDocuments(requestId: string | null) {
 
   return { documents, loading };
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

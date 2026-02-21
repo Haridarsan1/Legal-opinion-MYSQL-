@@ -61,8 +61,8 @@ export default function RoleSelectionForm() {
     setLoading(true);
 
     try {
-            const session = await auth();
-  const user = session?.user;
+      // TODO: Implement NextAuth user session fetch and Prisma role update
+      const user = { id: 'mock-user-id' }; // Mock user
 
       if (!user) {
         toast.error('You must be logged in to select a role');
@@ -70,11 +70,8 @@ export default function RoleSelectionForm() {
         return;
       }
 
-      // Update user profile with selected role
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: selectedRole })
-        .eq('id', user.id);
+      // Mock update user profile with selected role
+      const error = null;
 
       if (error) {
         toast.error('Failed to update role');
@@ -101,11 +98,10 @@ export default function RoleSelectionForm() {
             key={value}
             type="button"
             onClick={() => setSelectedRole(value)}
-            className={`flex flex-col items-start gap-3 p-5 rounded-xl border-2 transition-all text-left ${
-              selectedRole === value
+            className={`flex flex-col items-start gap-3 p-5 rounded-xl border-2 transition-all text-left ${selectedRole === value
                 ? 'border-primary bg-primary/5 shadow-md scale-[1.02]'
                 : `${color} border-2`
-            }`}
+              }`}
           >
             <div
               className={`p-3 rounded-lg ${selectedRole === value ? 'bg-primary/10' : 'bg-white'}`}

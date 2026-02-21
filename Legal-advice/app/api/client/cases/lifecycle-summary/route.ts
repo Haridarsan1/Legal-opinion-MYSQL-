@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { aggregateCaseData } from '@/app/domain/lifecycle/LifecycleResolver';
 
 export async function GET() {
-  
+
 
   // 1. Authenticate User
   const session = await auth();
@@ -15,8 +15,7 @@ export async function GET() {
   }
 
   // 2. Fetch All Requests with Relations
-  const { data: requests, error } = await supabase
-    .from('legal_requests')
+  const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -57,7 +56,19 @@ export async function GET() {
     };
   });
 
-  const lifecycleSummaries = aggregateCaseData(mappedRequests, user.id);
+  const lifecycleSummaries = aggregateCaseData(mappedRequests, user.id!);
 
   return NextResponse.json(lifecycleSummaries);
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

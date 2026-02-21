@@ -10,16 +10,15 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/';
 
   if (code) {
-    
-    const session = await auth();
-  const user = session?.user;
 
-    if (!error && data.user) {
+    const session = await auth();
+    const user = session?.user;
+
+    if (user) {
       // Fetch user profile to get role
-      const { data: profile } = await supabase
-        .from('profiles')
+      const { data: profile } = await (await __getSupabaseClient()).from('profiles')
         .select('role')
-        .eq('id', data.user.id)
+        .eq('id', user.id)
         .single();
 
       if (profile) {
@@ -35,3 +34,15 @@ export async function GET(request: Request) {
   // URL to redirect to after sign in process completes
   return NextResponse.redirect(`${origin}${next}`);
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

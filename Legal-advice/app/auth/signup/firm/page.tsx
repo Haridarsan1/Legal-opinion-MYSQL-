@@ -23,7 +23,7 @@ import Link from 'next/link';
 
 export default function FirmSignupPage() {
   const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Form State
@@ -36,18 +36,14 @@ export default function FirmSignupPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const { data: session } = useSession();
+
   useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = { data: { user: (await auth())?.user }, error: null };
-      if (session) {
-        setIsAuthenticated(true);
-        if (session.user.email) setEmail(session.user.email);
-      }
-    };
-    checkAuth();
-  }, [supabase]);
+    if (session) {
+      setIsAuthenticated(true);
+      if (session.user?.email) setEmail(session.user.email);
+    }
+  }, [session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,27 +65,25 @@ export default function FirmSignupPage() {
       // 1. Authenticate if needed
       if (!isAuthenticated) {
         const signUpRes = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: ownerName,
-              role: 'firm',
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: ownerName,
+                role: 'firm',
+              },
             },
-          },
-        })
-      });
-      const signUpData = await signUpRes.json();
-      const { error } = signUpData;
+          })
+        });
+        const signUpData = await signUpRes.json();
+        const { error, user } = signUpData;
 
-        if (authError) throw authError;
+        if (error) throw new Error(error);
 
-        if (authData.session) {
-          setIsAuthenticated(true);
-        } else if (authData.user && !authData.session) {
+        if (user) {
           toast.success('Verification email sent. Please check your inbox.');
           setIsLoading(false);
           return;
@@ -97,9 +91,6 @@ export default function FirmSignupPage() {
       }
 
       // 2. Create Firm
-      const {
-        data: { session },
-      } = { data: { user: (await auth())?.user }, error: null };
       if (isAuthenticated && !session) {
         // Session might be missing if just signed up with email confirmation flow
         // But we usually need session to create firm.
@@ -306,20 +297,20 @@ export default function FirmSignupPage() {
                       </div>
                       {/* Strength Meter Mockup */}
                       {
-  password.length > 0 && (
-                        <div className="flex gap-1 mt-2">
-                          <div
-                            className={`h-1 flex-1 rounded-full ${password.length > 0 ? 'bg-green-500' : 'bg-slate-100'}`}
-                          />
-                          <div
-                            className={`h-1 flex-1 rounded-full ${password.length > 5 ? 'bg-green-500' : 'bg-slate-100'}`}
-                          />
-                          <div
-                            className={`h-1 flex-1 rounded-full ${password.length > 8 ? 'bg-green-500' : 'bg-slate-100'}`}
-                          />
-                          <div className="h-1 flex-1 rounded-full bg-slate-100" />
-                        </div>
-                      )}
+                        password.length > 0 && (
+                          <div className="flex gap-1 mt-2">
+                            <div
+                              className={`h-1 flex-1 rounded-full ${password.length > 0 ? 'bg-green-500' : 'bg-slate-100'}`}
+                            />
+                            <div
+                              className={`h-1 flex-1 rounded-full ${password.length > 5 ? 'bg-green-500' : 'bg-slate-100'}`}
+                            />
+                            <div
+                              className={`h-1 flex-1 rounded-full ${password.length > 8 ? 'bg-green-500' : 'bg-slate-100'}`}
+                            />
+                            <div className="h-1 flex-1 rounded-full bg-slate-100" />
+                          </div>
+                        )}
                       <p className="text-[10px] text-slate-400">Strong password</p>
                     </div>
 

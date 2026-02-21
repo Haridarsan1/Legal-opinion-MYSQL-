@@ -21,7 +21,7 @@ export default function DocumentFilters({
 }: Props) {
   // Get unique cases
   const uniqueCases = Array.from(
-    new Map(documents.filter((d) => d.request).map((d) => [d.request.id, d.request])).values()
+    new Map(documents.filter((d: any) => d.request).map((d: any) => [d.request.id, d.request])).values()
   );
 
   const hasActiveFilters = statusFilter !== 'all' || caseFilter !== 'all' || dateFilter !== 'all';

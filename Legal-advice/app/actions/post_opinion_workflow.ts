@@ -17,8 +17,7 @@ export async function acknowledgeOpinion(requestId: string) {
     if (!user) return { success: false, error: 'Unauthorized' };
 
     // Fetch request to verify ownership and status
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('status, client_id')
       .eq('id', requestId)
       .single();
@@ -33,8 +32,7 @@ export async function acknowledgeOpinion(requestId: string) {
     }
 
     // Update status
-    const { error } = await supabase
-      .from('legal_requests')
+    const { error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         status: 'client_acknowledged',
         updated_at: new Date().toISOString(),
@@ -44,7 +42,7 @@ export async function acknowledgeOpinion(requestId: string) {
     if (error) throw error;
 
     // Audit Log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'client_acknowledged_opinion',
       entity_type: 'legal_request',
@@ -75,8 +73,7 @@ export async function confirmNoFurtherQuestions(requestId: string) {
     if (!user) return { success: false, error: 'Unauthorized' };
 
     // Fetch request
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('status, client_id, assigned_lawyer_id, request_number')
       .eq('id', requestId)
       .single();
@@ -90,8 +87,7 @@ export async function confirmNoFurtherQuestions(requestId: string) {
     }
 
     // Check for unresolved queries
-    const { count, error: countError } = await supabase
-      .from('post_opinion_queries')
+    const { count, error: countError } = await (await __getSupabaseClient()).from('post_opinion_queries')
       .select('*', { count: 'exact', head: true })
       .eq('request_id', requestId)
       .eq('status', 'open');
@@ -106,8 +102,7 @@ export async function confirmNoFurtherQuestions(requestId: string) {
     }
 
     // Update status
-    const { error } = await supabase
-      .from('legal_requests')
+    const { error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         status: 'no_further_queries_confirmed',
         client_confirmed_at: new Date().toISOString(),
@@ -118,7 +113,7 @@ export async function confirmNoFurtherQuestions(requestId: string) {
     if (error) throw error;
 
     // Audit Log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'client_confirmed_no_questions',
       entity_type: 'legal_request',
@@ -128,7 +123,7 @@ export async function confirmNoFurtherQuestions(requestId: string) {
 
     // Notify Assigned Lawyer
     if (request.assigned_lawyer_id) {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: request.assigned_lawyer_id,
         type: 'client_update',
         title: 'Client Satisfaction Confirmed',
@@ -159,8 +154,7 @@ export async function submitPostOpinionQuery(requestId: string, queryText: strin
     if (!user) return { success: false, error: 'Unauthorized' };
 
     // Fetch request
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('status, client_id')
       .eq('id', requestId)
       .single();
@@ -182,7 +176,7 @@ export async function submitPostOpinionQuery(requestId: string, queryText: strin
     }
 
     // Insert Query
-    const { error } = await supabase.from('post_opinion_queries').insert({
+    const { error } = await (await __getSupabaseClient()).from('post_opinion_queries').insert({
       request_id: requestId,
       query_text: queryText,
       raised_by: user.id,
@@ -192,7 +186,7 @@ export async function submitPostOpinionQuery(requestId: string, queryText: strin
     if (error) throw error;
 
     // Audit Log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'post_opinion_query_raised',
       entity_type: 'legal_request',
@@ -222,8 +216,7 @@ export async function resolvePostOpinionQuery(queryId: string, responseText: str
     if (!user) return { success: false, error: 'Unauthorized' };
 
     // Fetch query and linked request to verify lawyer assignment
-    const { data: query } = await supabase
-      .from('post_opinion_queries')
+    const { data: query } = await (await __getSupabaseClient()).from('post_opinion_queries')
       .select(
         `
                 *,
@@ -246,8 +239,7 @@ export async function resolvePostOpinionQuery(queryId: string, responseText: str
     }
 
     // Update Query
-    const { error } = await supabase
-      .from('post_opinion_queries')
+    const { error } = await (await __getSupabaseClient()).from('post_opinion_queries')
       .update({
         response_text: responseText,
         responded_by: user.id,
@@ -259,7 +251,7 @@ export async function resolvePostOpinionQuery(queryId: string, responseText: str
     if (error) throw error;
 
     // Audit Log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'post_opinion_query_resolved',
       entity_type: 'legal_request', // Linking to request for timeline visibility
@@ -289,8 +281,7 @@ export async function closeCase(requestId: string) {
     if (!user) return { success: false, error: 'Unauthorized' };
 
     // Fetch request details
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('status, assigned_lawyer_id')
       .eq('id', requestId)
       .single();
@@ -307,8 +298,7 @@ export async function closeCase(requestId: string) {
     }
 
     // Check for open queries (Redundant safety check)
-    const { count, error: countError } = await supabase
-      .from('post_opinion_queries')
+    const { count, error: countError } = await (await __getSupabaseClient()).from('post_opinion_queries')
       .select('*', { count: 'exact', head: true })
       .eq('request_id', requestId)
       .eq('status', 'open');
@@ -323,8 +313,7 @@ export async function closeCase(requestId: string) {
     }
 
     // Close Case
-    const { error } = await supabase
-      .from('legal_requests')
+    const { error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         status: 'case_closed',
         updated_at: new Date().toISOString(),
@@ -335,7 +324,7 @@ export async function closeCase(requestId: string) {
     if (error) throw error;
 
     // Audit Log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       action: 'case_closed',
       entity_type: 'legal_request',
@@ -352,3 +341,15 @@ export async function closeCase(requestId: string) {
     return { success: false, error: error.message || 'Failed to close case' };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

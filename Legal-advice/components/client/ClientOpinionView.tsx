@@ -81,8 +81,7 @@ export default function ClientOpinionView({
       setIsLoading(true);
 
       // Get signed version
-      const { data: version } = await supabase
-        .from('opinion_versions')
+      const { data: version } = (await __getSupabaseClient()).from('opinion_versions')
         .select('*')
         .eq('opinion_submission_id', opinionSubmissionId)
         .in('status', ['signed', 'published'])
@@ -93,8 +92,7 @@ export default function ClientOpinionView({
       if (version) setOpinion(version as OpinionVersion);
 
       // Get signature
-      const { data: sig } = await supabase
-        .from('digital_signatures')
+      const { data: sig } = (await __getSupabaseClient()).from('digital_signatures')
         .select('*')
         .eq('opinion_submission_id', opinionSubmissionId)
         .eq('status', 'signed')
@@ -105,8 +103,7 @@ export default function ClientOpinionView({
       if (sig) setSignature(sig as DigitalSignature);
 
       // Check if request is closed
-      const { data: closure } = await supabase
-        .from('request_closures')
+      const { data: closure } = (await __getSupabaseClient()).from('request_closures')
         .select('id')
         .eq('request_id', requestId)
         .maybeSingle();
@@ -122,8 +119,7 @@ export default function ClientOpinionView({
   // Load clarifications
   useEffect(() => {
     const loadClarifications = async () => {
-      const { data } = await supabase
-        .from('opinion_clarification_requests')
+      const { data } = (await __getSupabaseClient()).from('opinion_clarification_requests')
         .select('*')
         .eq('request_id', requestId)
         .order('created_at', { ascending: false });
@@ -154,8 +150,7 @@ export default function ClientOpinionView({
 
     if (result.success) {
       // Reload clarifications
-      const { data } = await supabase
-        .from('opinion_clarification_requests')
+      const { data } = (await __getSupabaseClient()).from('opinion_clarification_requests')
         .select('*')
         .eq('request_id', requestId)
         .order('created_at', { ascending: false });
@@ -537,3 +532,15 @@ export default function ClientOpinionView({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

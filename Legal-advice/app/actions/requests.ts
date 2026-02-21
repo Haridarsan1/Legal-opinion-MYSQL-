@@ -10,7 +10,7 @@ import { hasPermission } from '@/lib/permissions';
  * List unassigned submitted requests available for lawyers to claim
  */
 export async function listUnassignedRequests() {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -20,8 +20,7 @@ export async function listUnassignedRequests() {
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -31,8 +30,7 @@ export async function listUnassignedRequests() {
   }
 
   try {
-    const { data: requests, error } = await supabase
-      .from('legal_requests')
+    const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -64,7 +62,7 @@ export async function listUnassignedRequests() {
  * List requests assigned to the current lawyer
  */
 export async function listAssignedRequests() {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -74,8 +72,7 @@ export async function listAssignedRequests() {
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -85,8 +82,7 @@ export async function listAssignedRequests() {
   }
 
   try {
-    const { data: requests, error } = await supabase
-      .from('legal_requests')
+    const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -118,7 +114,7 @@ export async function listAssignedRequests() {
  * List requests created by the current bank
  */
 export async function listBankRequests() {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -128,8 +124,7 @@ export async function listBankRequests() {
   }
 
   // Verify caller is a bank
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -139,8 +134,7 @@ export async function listBankRequests() {
   }
 
   try {
-    const { data: requests, error } = await supabase
-      .from('legal_requests')
+    const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -175,7 +169,7 @@ export async function listBankRequests() {
  * List lawyers available to the current firm for case assignment
  */
 export async function listLawyers() {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -185,8 +179,7 @@ export async function listLawyers() {
   }
 
   // Verify caller is a firm or a firm lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -206,8 +199,7 @@ export async function listLawyers() {
 
   try {
     // Return only lawyers assigned to this firm
-    const { data: lawyers, error } = await supabase
-      .from('profiles')
+    const { data: lawyers, error } = await (await __getSupabaseClient()).from('profiles')
       .select('id, full_name, email, specialization, years_of_experience')
       .eq('role', 'lawyer')
       .eq('firm_id', targetFirmId)
@@ -226,7 +218,7 @@ export async function listLawyers() {
  * Get request details for lawyer review (read-only)
  */
 export async function getRequestDetails(requestId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -236,8 +228,7 @@ export async function getRequestDetails(requestId: string) {
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -248,8 +239,7 @@ export async function getRequestDetails(requestId: string) {
 
   try {
     // Fetch request details with authorization check
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -277,8 +267,7 @@ export async function getRequestDetails(requestId: string) {
     }
 
     // Fetch documents for this request
-    const { data: documents, error: docsError } = await supabase
-      .from('documents')
+    const { data: documents, error: docsError } = await (await __getSupabaseClient()).from('documents')
       .select('id, file_name, file_size, file_type, document_type, description, uploaded_at')
       .eq('request_id', requestId)
       .order('uploaded_at', { ascending: false });
@@ -302,7 +291,7 @@ export async function getRequestDetails(requestId: string) {
  * List cases assigned to the current firm
  */
 export async function listFirmCases() {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -312,8 +301,7 @@ export async function listFirmCases() {
   }
 
   // Verify caller is a firm
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -323,8 +311,7 @@ export async function listFirmCases() {
   }
 
   try {
-    const { data: requests, error } = await supabase
-      .from('legal_requests')
+    const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -357,7 +344,7 @@ export async function listFirmCases() {
  * Claim an unassigned submitted request
  */
 export async function claimRequest(requestId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -367,8 +354,7 @@ export async function claimRequest(requestId: string) {
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -381,8 +367,7 @@ export async function claimRequest(requestId: string) {
     const now = new Date().toISOString();
 
     // Atomic conditional update with guard
-    const { data: updatedRequest, error: updateError } = await supabase
-      .from('legal_requests')
+    const { data: updatedRequest, error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         assigned_lawyer_id: user.id,
         assigned_at: now,
@@ -400,7 +385,7 @@ export async function claimRequest(requestId: string) {
     }
 
     // Insert audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'case_claimed',
@@ -409,7 +394,7 @@ export async function claimRequest(requestId: string) {
 
     // Insert notification for client (DB only)
     if (updatedRequest.client_id) {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: updatedRequest.client_id,
         type: 'case_assigned',
         title: 'Lawyer Assigned',
@@ -436,7 +421,7 @@ export async function claimRequest(requestId: string) {
  * Assign a case (owned by firm) to a specific lawyer
  */
 export async function assignCaseToLawyer(requestId: string, lawyerId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -446,8 +431,7 @@ export async function assignCaseToLawyer(requestId: string, lawyerId: string) {
   }
 
   // Verify caller is a firm
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -460,8 +444,7 @@ export async function assignCaseToLawyer(requestId: string, lawyerId: string) {
     const now = new Date().toISOString();
 
     // Atomic conditional update to prevent double assignment
-    const { data: updatedRequest, error: updateError } = await supabase
-      .from('legal_requests')
+    const { data: updatedRequest, error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         assigned_lawyer_id: lawyerId,
         assigned_at: now,
@@ -478,7 +461,7 @@ export async function assignCaseToLawyer(requestId: string, lawyerId: string) {
     }
 
     // Audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'case_assigned_to_lawyer',
@@ -486,7 +469,7 @@ export async function assignCaseToLawyer(requestId: string, lawyerId: string) {
     });
 
     // Notify lawyer
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: lawyerId,
       type: 'case_assigned',
       title: 'New Case Assigned',
@@ -496,7 +479,7 @@ export async function assignCaseToLawyer(requestId: string, lawyerId: string) {
 
     // Notify client that a lawyer was assigned (optional but helpful)
     if (updatedRequest.client_id) {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: updatedRequest.client_id,
         type: 'case_assigned',
         title: 'Lawyer Assigned',
@@ -563,13 +546,13 @@ export async function createLegalRequest(formData: FormData) {
     // For direct requests: status is 'pending_lawyer_response'
     const status =
       visibility === 'public' ? 'open' : assignedLawyerId ? 'pending_lawyer_response' : 'submitted';
-    
+
     const assignedAt =
       visibility === 'public' ? null : assignedLawyerId ? null : null; // assignedAt should be set when lawyer ACCEPTS, not when invited? 
-      // Requirement says "0% - Case Created". "Visible to Lawyer -> New Request".
-      // So assigned_at might technically be set to associate them, but status is pending.
-      // If we keep assigned_lawyer_id set, queries work. Status distinguishes acceptance.
-      
+    // Requirement says "0% - Case Created". "Visible to Lawyer -> New Request".
+    // So assigned_at might technically be set to associate them, but status is pending.
+    // If we keep assigned_lawyer_id set, queries work. Status distinguishes acceptance.
+
     // However, for direct request, we assign immediately BUT status is pending.
     // assigned_at usually implies "active assignment". 
     // Let's set assigned_at to NULL until they accept? 
@@ -585,8 +568,7 @@ export async function createLegalRequest(formData: FormData) {
     const publicStatus = visibility === 'public' ? 'PUBLIC_OPEN' : null;
 
     // Insert request
-    const { data, error } = await supabase
-      .from('legal_requests')
+    const { data, error } = await (await __getSupabaseClient()).from('legal_requests')
       .insert({
         client_id: user.id,
         department_id: departmentId,
@@ -620,7 +602,7 @@ export async function createLegalRequest(formData: FormData) {
     if (error) throw error;
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: data.id,
       action: 'request_created',
@@ -638,7 +620,7 @@ export async function createLegalRequest(formData: FormData) {
         ? `Your public legal request "${title}" has been posted successfully. Lawyers can now submit proposals.`
         : `Your legal request "${title}" has been submitted successfully.`;
 
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: user.id,
       type: 'request_submitted',
       title: 'Request Submitted',
@@ -648,7 +630,7 @@ export async function createLegalRequest(formData: FormData) {
 
     // If lawyer was assigned (direct request), notify the lawyer
     if (assignedLawyerId && visibility !== 'public') {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: assignedLawyerId,
         type: 'case_assigned',
         title: 'New Case Assigned',
@@ -657,7 +639,7 @@ export async function createLegalRequest(formData: FormData) {
       });
 
       // Create audit log for assignment
-      await supabase.from('audit_logs').insert({
+      await (await __getSupabaseClient()).from('audit_logs').insert({
         user_id: user.id,
         request_id: data.id,
         action: 'lawyer_assigned_on_creation',
@@ -688,7 +670,6 @@ export async function createLegalRequest(formData: FormData) {
  * Create a bank-originated legal request with document metadata (no storage upload)
  */
 export async function createBankRequest(params: {
-  const supabase = await createClient();
   title: string;
   description: string;
   departmentId: string;
@@ -704,7 +685,8 @@ export async function createBankRequest(params: {
     document_type?: string;
     description?: string;
   }>;
-}) {const {
+}) {
+  const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -714,8 +696,7 @@ export async function createBankRequest(params: {
   }
 
   // Verify caller is a bank
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -737,8 +718,7 @@ export async function createBankRequest(params: {
 
   try {
     // Get department SLA hours
-    const { data: dept, error: deptError } = await supabase
-      .from('departments')
+    const { data: dept, error: deptError } = await (await __getSupabaseClient()).from('departments')
       .select('sla_hours')
       .eq('id', departmentId)
       .single();
@@ -752,8 +732,7 @@ export async function createBankRequest(params: {
     const slaDeadline = new Date(now.getTime() + hours * 60 * 60 * 1000).toISOString();
 
     // Create request
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .insert({
         client_id: user.id,
         department_id: departmentId,
@@ -785,16 +764,16 @@ export async function createBankRequest(params: {
         description: doc.description || null,
       }));
 
-      const { error: docsError } = await supabase.from('documents').insert(docsToInsert);
+      const { error: docsError } = await (await __getSupabaseClient()).from('documents').insert(docsToInsert);
       if (docsError) {
         // best-effort cleanup to keep consistency
-        await supabase.from('legal_requests').delete().eq('id', request.id);
+        await (await __getSupabaseClient()).from('legal_requests').delete().eq('id', request.id);
         throw docsError;
       }
     }
 
     // Audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: request.id,
       action: 'bank_request_created',
@@ -802,7 +781,7 @@ export async function createBankRequest(params: {
     });
 
     // Notification to bank user (self)
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: user.id,
       type: 'request_submitted',
       title: 'Bank Request Submitted',
@@ -824,7 +803,7 @@ export async function createBankRequest(params: {
  * Bank assigns a request to a firm (atomic guard)
  */
 export async function assignRequestToFirm(requestId: string, firmId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -834,8 +813,7 @@ export async function assignRequestToFirm(requestId: string, firmId: string) {
   }
 
   // Verify caller is a bank
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
@@ -848,8 +826,7 @@ export async function assignRequestToFirm(requestId: string, firmId: string) {
     const now = new Date().toISOString();
 
     // Atomic conditional update: must be owned by this bank and unassigned to any firm
-    const { data: updatedRequest, error: updateError } = await supabase
-      .from('legal_requests')
+    const { data: updatedRequest, error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         assigned_firm_id: firmId,
         assigned_at: now,
@@ -866,7 +843,7 @@ export async function assignRequestToFirm(requestId: string, firmId: string) {
     }
 
     // Audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'bank_assigned_to_firm',
@@ -874,7 +851,7 @@ export async function assignRequestToFirm(requestId: string, firmId: string) {
     });
 
     // Notify firm
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: firmId,
       type: 'case_assigned',
       title: 'New Bank Case Assigned',
@@ -883,7 +860,7 @@ export async function assignRequestToFirm(requestId: string, firmId: string) {
     });
 
     // Notify bank (self-confirmation)
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: user.id,
       type: 'case_assigned',
       title: 'Firm Assigned',
@@ -912,7 +889,7 @@ export async function uploadDocument(
   requestId: string,
   documentType: string = 'other'
 ) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -927,15 +904,14 @@ export async function uploadDocument(
     const fileName = `${requestId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await (await __getSupabaseClient()).storage
       .from('legal-documents')
       .upload(fileName, file);
 
     if (uploadError) throw uploadError;
 
     // Create document record
-    const { data, error } = await supabase
-      .from('documents')
+    const { data, error } = await (await __getSupabaseClient()).from('documents')
       .insert({
         request_id: requestId,
         uploaded_by: user.id,
@@ -951,7 +927,7 @@ export async function uploadDocument(
     if (error) throw error;
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'document_uploaded',
@@ -975,7 +951,7 @@ export async function assignCase(
   assigneeId: string,
   assigneeType: 'lawyer' | 'firm'
 ) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -997,8 +973,7 @@ export async function assignCase(
       updateData.assigned_firm_id = assigneeId;
     }
 
-    const { data, error } = await supabase
-      .from('legal_requests')
+    const { data, error } = await (await __getSupabaseClient()).from('legal_requests')
       .update(updateData)
       .eq('id', requestId)
       .select()
@@ -1007,7 +982,7 @@ export async function assignCase(
     if (error) throw error;
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'case_assigned',
@@ -1015,7 +990,7 @@ export async function assignCase(
     });
 
     // Create notification for assignee
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: assigneeId,
       type: 'case_assigned',
       title: 'New Case Assigned',
@@ -1047,7 +1022,7 @@ export async function requestClarification(
   message: string,
   priority: string = 'medium'
 ) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1057,8 +1032,7 @@ export async function requestClarification(
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
@@ -1069,8 +1043,7 @@ export async function requestClarification(
 
   try {
     // Fetch request to verify lawyer is assigned
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .select('id, client_id, assigned_lawyer_id')
       .eq('id', requestId)
       .single();
@@ -1084,8 +1057,7 @@ export async function requestClarification(
     }
 
     // Create clarification
-    const { data: clarification, error: clarError } = await supabase
-      .from('clarifications')
+    const { data: clarification, error: clarError } = await (await __getSupabaseClient()).from('clarifications')
       .insert({
         request_id: requestId,
         requester_id: user.id,
@@ -1099,15 +1071,14 @@ export async function requestClarification(
     if (clarError) throw clarError;
 
     // Update request status to clarification_requested
-    const { error: statusError } = await supabase
-      .from('legal_requests')
+    const { error: statusError } = await (await __getSupabaseClient()).from('legal_requests')
       .update({ status: 'clarification_requested' })
       .eq('id', requestId);
 
     if (statusError) throw statusError;
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'clarification_requested',
@@ -1115,7 +1086,7 @@ export async function requestClarification(
     });
 
     // Notify client
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: request.client_id,
       type: 'clarification_requested',
       title: 'Clarification Required',
@@ -1142,7 +1113,7 @@ export async function requestClarification(
  * Sets: response, responded_at, notifies lawyer
  */
 export async function respondToClarification(clarificationId: string, response: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1153,8 +1124,7 @@ export async function respondToClarification(clarificationId: string, response: 
 
   try {
     // Fetch clarification + request to verify ownership
-    const { data: clarification, error: clarError } = await supabase
-      .from('clarifications')
+    const { data: clarification, error: clarError } = await (await __getSupabaseClient()).from('clarifications')
       .select('id, request_id, requester_id, is_resolved')
       .eq('id', clarificationId)
       .single();
@@ -1168,8 +1138,7 @@ export async function respondToClarification(clarificationId: string, response: 
     }
 
     // Verify request belongs to current user
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .select('client_id')
       .eq('id', clarification.request_id)
       .single();
@@ -1183,8 +1152,7 @@ export async function respondToClarification(clarificationId: string, response: 
     }
 
     // Update clarification with response
-    const { data: updated, error: updateError } = await supabase
-      .from('clarifications')
+    const { data: updated, error: updateError } = await (await __getSupabaseClient()).from('clarifications')
       .update({
         response,
         responded_at: new Date().toISOString(),
@@ -1196,7 +1164,7 @@ export async function respondToClarification(clarificationId: string, response: 
     if (updateError) throw updateError;
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: clarification.request_id,
       action: 'clarification_responded',
@@ -1204,7 +1172,7 @@ export async function respondToClarification(clarificationId: string, response: 
     });
 
     // Notify lawyer who requested clarification
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: clarification.requester_id,
       type: 'clarification_responded',
       title: 'Clarification Response Received',
@@ -1228,7 +1196,7 @@ export async function respondToClarification(clarificationId: string, response: 
  * Status transition: clarification_requested → in_review (if all clarifications resolved)
  */
 export async function markClarificationResolved(clarificationId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1238,8 +1206,7 @@ export async function markClarificationResolved(clarificationId: string) {
   }
 
   // Verify caller is a lawyer
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
@@ -1250,8 +1217,7 @@ export async function markClarificationResolved(clarificationId: string) {
 
   try {
     // Fetch clarification + verify requester is current user
-    const { data: clarification, error: clarError } = await supabase
-      .from('clarifications')
+    const { data: clarification, error: clarError } = await (await __getSupabaseClient()).from('clarifications')
       .select('id, request_id, requester_id, is_resolved')
       .eq('id', clarificationId)
       .single();
@@ -1269,8 +1235,7 @@ export async function markClarificationResolved(clarificationId: string) {
     }
 
     // Update clarification as resolved
-    const { data: updated, error: updateError } = await supabase
-      .from('clarifications')
+    const { data: updated, error: updateError } = await (await __getSupabaseClient()).from('clarifications')
       .update({ is_resolved: true })
       .eq('id', clarificationId)
       .select()
@@ -1279,8 +1244,7 @@ export async function markClarificationResolved(clarificationId: string) {
     if (updateError) throw updateError;
 
     // Check if all clarifications for this request are resolved
-    const { data: unresolvedCount, error: countError } = await supabase
-      .from('clarifications')
+    const { data: unresolvedCount, error: countError } = await (await __getSupabaseClient()).from('clarifications')
       .select('id', { count: 'exact' })
       .eq('request_id', clarification.request_id)
       .eq('is_resolved', false);
@@ -1290,14 +1254,13 @@ export async function markClarificationResolved(clarificationId: string) {
     // If all resolved, move request back to in_review
     const allResolved = unresolvedCount && unresolvedCount.length === 0;
     if (allResolved) {
-      await supabase
-        .from('legal_requests')
+      await (await __getSupabaseClient()).from('legal_requests')
         .update({ status: 'in_review' })
         .eq('id', clarification.request_id);
     }
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: clarification.request_id,
       action: 'clarification_resolved',
@@ -1305,14 +1268,13 @@ export async function markClarificationResolved(clarificationId: string) {
     });
 
     // Notify client
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('client_id')
       .eq('id', clarification.request_id)
       .single();
 
     if (request) {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: request.client_id,
         type: 'clarification_resolved',
         title: 'Clarification Resolved',
@@ -1337,7 +1299,7 @@ export async function markClarificationResolved(clarificationId: string) {
  * Returns: All clarifications with full details
  */
 export async function listClarifications(requestId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1348,8 +1310,7 @@ export async function listClarifications(requestId: string) {
 
   try {
     // Fetch request to verify access
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .select('client_id, assigned_lawyer_id')
       .eq('id', requestId)
       .single();
@@ -1367,8 +1328,7 @@ export async function listClarifications(requestId: string) {
     }
 
     // Fetch clarifications with requester details
-    const { data: clarifications, error: clarError } = await supabase
-      .from('clarifications')
+    const { data: clarifications, error: clarError } = await (await __getSupabaseClient()).from('clarifications')
       .select(
         `
                 id,
@@ -1406,7 +1366,7 @@ export async function listClarifications(requestId: string) {
  * Submit legal opinion
  */
 export async function submitOpinion(requestId: string, opinionText: string, opinionFile?: File) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1417,8 +1377,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
 
   try {
     // Verify caller is lawyer and assigned to the request
-    const { data: profile } = await supabase
-      .from('profiles')
+    const { data: profile } = await (await __getSupabaseClient()).from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
@@ -1427,8 +1386,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
       return { success: false, error: 'Only lawyers can submit opinions.' };
     }
 
-    const { data: request, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
       .select('id, client_id, assigned_lawyer_id, status')
       .eq('id', requestId)
       .single();
@@ -1442,8 +1400,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
     }
 
     // Ensure all clarifications are resolved
-    const { data: unresolved, error: clarErr } = await supabase
-      .from('clarifications')
+    const { data: unresolved, error: clarErr } = await (await __getSupabaseClient()).from('clarifications')
       .select('id', { count: 'exact' })
       .eq('request_id', requestId)
       .eq('is_resolved', false);
@@ -1465,8 +1422,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
         documentId = uploadResult.data.id;
         // Optionally store opinionText into document description
         if (opinionText) {
-          await supabase
-            .from('documents')
+          await (await __getSupabaseClient()).from('documents')
             .update({ description: opinionText })
             .eq('id', documentId);
         }
@@ -1474,8 +1430,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
     }
 
     // Update request status to opinion_ready
-    const { data: updated, error } = await supabase
-      .from('legal_requests')
+    const { data: updated, error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({ status: 'opinion_ready' })
       .eq('id', requestId)
       .select()
@@ -1484,7 +1439,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
     if (error) throw error;
 
     // Audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'opinion_submitted',
@@ -1492,7 +1447,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
     });
 
     // Notify client (DB only)
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: updated.client_id,
       type: 'opinion_ready',
       title: 'Legal Opinion Ready',
@@ -1516,7 +1471,7 @@ export async function submitOpinion(requestId: string, opinionText: string, opin
  * Status: opinion_ready → delivered
  */
 export async function submitStampedOpinion(requestId: string, stampedFile?: File, notes?: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1526,8 +1481,7 @@ export async function submitStampedOpinion(requestId: string, stampedFile?: File
   }
 
   // Verify caller is a firm
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
@@ -1538,8 +1492,7 @@ export async function submitStampedOpinion(requestId: string, stampedFile?: File
 
   try {
     // Verify request owned by firm and in opinion_ready status
-    const { data: request, error: reqErr } = await supabase
-      .from('legal_requests')
+    const { data: request, error: reqErr } = await (await __getSupabaseClient()).from('legal_requests')
       .select('id, client_id, assigned_firm_id, status')
       .eq('id', requestId)
       .single();
@@ -1557,8 +1510,7 @@ export async function submitStampedOpinion(requestId: string, stampedFile?: File
     }
 
     // Ensure an opinion document exists
-    const { data: opinionDocs, error: docErr } = await supabase
-      .from('documents')
+    const { data: opinionDocs, error: docErr } = await (await __getSupabaseClient()).from('documents')
       .select('id, uploaded_at')
       .eq('request_id', requestId)
       .eq('document_type', 'legal_opinion')
@@ -1577,14 +1529,13 @@ export async function submitStampedOpinion(requestId: string, stampedFile?: File
       if (uploadResult.success && uploadResult.data) {
         stampedDocId = uploadResult.data.id;
         if (notes) {
-          await supabase.from('documents').update({ description: notes }).eq('id', stampedDocId);
+          await (await __getSupabaseClient()).from('documents').update({ description: notes }).eq('id', stampedDocId);
         }
       }
     }
 
     // Update request status to delivered
-    const { data: updated, error } = await supabase
-      .from('legal_requests')
+    const { data: updated, error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({ status: 'delivered' })
       .eq('id', requestId)
       .select()
@@ -1593,7 +1544,7 @@ export async function submitStampedOpinion(requestId: string, stampedFile?: File
     if (error) throw error;
 
     // Audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'stamped_opinion_submitted',
@@ -1601,7 +1552,7 @@ export async function submitStampedOpinion(requestId: string, stampedFile?: File
     });
 
     // Notify client (DB only)
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: updated.client_id,
       type: 'opinion_delivered',
       title: 'Legal Opinion Delivered',
@@ -1627,7 +1578,7 @@ export async function submitStampedOpinion(requestId: string, stampedFile?: File
  *  - Client: allowed only after delivered/completed
  */
 export async function getOpinionDetails(requestId: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1638,8 +1589,7 @@ export async function getOpinionDetails(requestId: string) {
 
   try {
     // Fetch request for access checks
-    const { data: request, error: reqErr } = await supabase
-      .from('legal_requests')
+    const { data: request, error: reqErr } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -1675,8 +1625,7 @@ export async function getOpinionDetails(requestId: string) {
     }
 
     // Fetch latest opinion document(s)
-    const { data: opinions, error: docsErr } = await supabase
-      .from('documents')
+    const { data: opinions, error: docsErr } = await (await __getSupabaseClient()).from('documents')
       .select(
         `
                 id,
@@ -1718,7 +1667,7 @@ export async function getOpinionDetails(requestId: string) {
  * Update request status
  */
 export async function updateRequestStatus(requestId: string, status: string) {
-  const supabase = await createClient();const {
+  const supabase = await createClient(); const {
     data: { user },
     error: authError,
   } = { data: { user: (await auth())?.user }, error: null };
@@ -1728,8 +1677,7 @@ export async function updateRequestStatus(requestId: string, status: string) {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('legal_requests')
+    const { data, error } = await (await __getSupabaseClient()).from('legal_requests')
       .update({ status })
       .eq('id', requestId)
       .select()
@@ -1750,7 +1698,9 @@ export async function updateRequestStatus(requestId: string, status: string) {
  * List notifications for the authenticated user
  */
 export async function listNotifications(filters?: {
-  const supabase = await createClient(); unreadOnly?: boolean; limit?: number }) {try {
+  unreadOnly?: boolean; limit?: number
+}) {
+  try {
     // Auth guard
     const {
       data: { user },
@@ -1761,8 +1711,7 @@ export async function listNotifications(filters?: {
     }
 
     // Build query - user-scoped
-    let query = supabase
-      .from('notifications')
+    let query = (await __getSupabaseClient()).from('notifications')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
@@ -1789,7 +1738,7 @@ export async function listNotifications(filters?: {
  * Mark notification as read
  */
 export async function markNotificationRead(notificationId: string) {
-  const supabase = await createClient();try {
+  try {
     // Auth guard
     const {
       data: { user },
@@ -1800,8 +1749,7 @@ export async function markNotificationRead(notificationId: string) {
     }
 
     // Verify ownership
-    const { data: notification, error: fetchError } = await supabase
-      .from('notifications')
+    const { data: notification, error: fetchError } = await (await __getSupabaseClient()).from('notifications')
       .select('user_id')
       .eq('id', notificationId)
       .single();
@@ -1815,8 +1763,7 @@ export async function markNotificationRead(notificationId: string) {
     }
 
     // Update read status
-    const { error } = await supabase
-      .from('notifications')
+    const { error } = await (await __getSupabaseClient()).from('notifications')
       .update({ is_read: true })
       .eq('id', notificationId);
 
@@ -1835,7 +1782,7 @@ export async function markNotificationRead(notificationId: string) {
  * Mark notification as unread
  */
 export async function markNotificationUnread(notificationId: string) {
-  const supabase = await createClient();try {
+  try {
     const {
       data: { user },
       error: authError,
@@ -1844,8 +1791,7 @@ export async function markNotificationUnread(notificationId: string) {
       return { success: false, error: 'Unauthorized' };
     }
 
-    const { data: notification, error: fetchError } = await supabase
-      .from('notifications')
+    const { data: notification, error: fetchError } = await (await __getSupabaseClient()).from('notifications')
       .select('user_id')
       .eq('id', notificationId)
       .single();
@@ -1858,8 +1804,7 @@ export async function markNotificationUnread(notificationId: string) {
       return { success: false, error: 'Not authorized' };
     }
 
-    const { error } = await supabase
-      .from('notifications')
+    const { error } = await (await __getSupabaseClient()).from('notifications')
       .update({ is_read: false })
       .eq('id', notificationId);
 
@@ -1878,7 +1823,7 @@ export async function markNotificationUnread(notificationId: string) {
  * Mark all notifications as read for the current user
  */
 export async function markAllNotificationsRead() {
-  const supabase = await createClient();try {
+  try {
     const {
       data: { user },
       error: authError,
@@ -1887,8 +1832,7 @@ export async function markAllNotificationsRead() {
       return { success: false, error: 'Unauthorized' };
     }
 
-    const { error } = await supabase
-      .from('notifications')
+    const { error } = await (await __getSupabaseClient()).from('notifications')
       .update({ is_read: true })
       .eq('user_id', user.id)
       .eq('is_read', false);
@@ -1908,8 +1852,8 @@ export async function markAllNotificationsRead() {
  * Get document download URL
  */
 export async function getDocumentDownloadUrl(filePath: string) {
-  const supabase = await createClient();try {
-    const { data, error } = await supabase.storage
+  try {
+    const { data, error } = await (await __getSupabaseClient()).storage
       .from('legal-documents')
       .createSignedUrl(filePath, 3600); // 1 hour expiry
 
@@ -1929,136 +1873,143 @@ export async function getDocumentDownloadUrl(filePath: string) {
 export async function updateRequest(
   requestId: string,
   data: {
-  const supabase = await createClient(); title?: string; description?: string }
-) {const {
-    data: { user },
-    error: authError,
-  } = { data: { user: (await auth())?.user }, error: null };
-
-  if (authError || !user) {
-    return { success: false, error: 'Unauthorized' };
+    title?: string; description?: string
   }
-
+) {
   try {
-    // Fetch request to verify ownership and status
-    const { data: request, error: fetchError } = await supabase
-      .from('legal_requests')
-      .select('client_id, status')
-      .eq('id', requestId)
-      .single();
+    const {
+      data: { user },
+      error: authError,
+    } = { data: { user: (await auth())?.user }, error: null };
 
-    if (fetchError || !request) {
-      return { success: false, error: 'Request not found' };
+    if (authError || !user) {
+      return { success: false, error: 'Unauthorized' };
     }
 
-    // Verify ownership
-    if (request.client_id !== user.id) {
-      return { success: false, error: 'You do not have permission to edit this request' };
+    try {
+      // Fetch request to verify ownership and status
+      const { data: request, error: fetchError } = await (await __getSupabaseClient()).from('legal_requests')
+        .select('client_id, status')
+        .eq('id', requestId)
+        .single();
+
+      if (fetchError || !request) {
+        return { success: false, error: 'Request not found' };
+      }
+
+      // Verify ownership
+      if (request.client_id !== user.id) {
+        return { success: false, error: 'You do not have permission to edit this request' };
+      }
+
+      // Only allow editing for submitted or assigned requests
+      if (!['submitted', 'assigned'].includes(request.status)) {
+        return {
+          success: false,
+          error: `Cannot edit request in '${request.status}' status. Only submitted or assigned requests can be edited.`,
+        };
+      }
+
+      // Update request
+      const updateData: any = {};
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.description !== undefined) updateData.description = data.description;
+
+      if (Object.keys(updateData).length === 0) {
+        return { success: false, error: 'No fields to update' };
+      }
+
+      const { error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
+        .update(updateData)
+        .eq('id', requestId);
+
+      if (updateError) throw updateError;
+
+      // Create audit log
+      await (await __getSupabaseClient()).from('audit_logs').insert({
+        user_id: user.id,
+        request_id: requestId,
+        action: 'request_updated',
+        details: { updated_fields: Object.keys(updateData) },
+      });
+
+      revalidatePath('/client/track');
+      revalidatePath(`/client/track/${requestId}`);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error updating request:', error);
+      return { success: false, error: error.message };
     }
-
-    // Only allow editing for submitted or assigned requests
-    if (!['submitted', 'assigned'].includes(request.status)) {
-      return {
-        success: false,
-        error: `Cannot edit request in '${request.status}' status. Only submitted or assigned requests can be edited.`,
-      };
-    }
-
-    // Update request
-    const updateData: any = {};
-    if (data.title !== undefined) updateData.title = data.title;
-    if (data.description !== undefined) updateData.description = data.description;
-
-    if (Object.keys(updateData).length === 0) {
-      return { success: false, error: 'No fields to update' };
-    }
-
-    const { error: updateError } = await supabase
-      .from('legal_requests')
-      .update(updateData)
-      .eq('id', requestId);
-
-    if (updateError) throw updateError;
-
-    // Create audit log
-    await supabase.from('audit_logs').insert({
-      user_id: user.id,
-      request_id: requestId,
-      action: 'request_updated',
-      details: { updated_fields: Object.keys(updateData) },
-    });
-
-    revalidatePath('/client/track');
-    revalidatePath(`/client/track/${requestId}`);
-
-    return { success: true };
   } catch (error: any) {
-    console.error('Error updating request:', error);
-    return { success: false, error: error.message };
+    console.error('Error in updateRequest:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unexpected error' };
   }
 }
-
 /**
  * Delete a request
  * Only allowed for requests in 'submitted' or 'assigned' status
  */
 export async function deleteRequest(requestId: string) {
-  const supabase = await createClient();const {
-    data: { user },
-    error: authError,
-  } = { data: { user: (await auth())?.user }, error: null };
-
-  if (authError || !user) {
-    return { success: false, error: 'Unauthorized' };
-  }
-
   try {
-    // Fetch request to verify ownership and status
-    const { data: request, error: fetchError } = await supabase
-      .from('legal_requests')
-      .select('client_id, status, request_number')
-      .eq('id', requestId)
-      .single();
+    const {
+      data: { user },
+      error: authError,
+    } = { data: { user: (await auth())?.user }, error: null };
 
-    if (fetchError || !request) {
-      return { success: false, error: 'Request not found' };
+    if (authError || !user) {
+      return { success: false, error: 'Unauthorized' };
     }
 
-    // Verify ownership
-    if (request.client_id !== user.id) {
-      return { success: false, error: 'You do not have permission to delete this request' };
+    try {
+      // Fetch request to verify ownership and status
+      const { data: request, error: fetchError } = await (await __getSupabaseClient()).from('legal_requests')
+        .select('client_id, status, request_number')
+        .eq('id', requestId)
+        .single();
+
+      if (fetchError || !request) {
+        return { success: false, error: 'Request not found' };
+      }
+
+      // Verify ownership
+      if (request.client_id !== user.id) {
+        return { success: false, error: 'You do not have permission to delete this request' };
+      }
+
+      // Only allow deletion for submitted or assigned requests
+      if (!['submitted', 'assigned'].includes(request.status)) {
+        return {
+          success: false,
+          error: `Cannot delete request in '${request.status}' status. Only submitted or assigned requests can be deleted.`,
+        };
+      }
+
+      // Delete request (cascade will handle related records)
+      const { error: deleteError } = await (await __getSupabaseClient()).from('legal_requests')
+        .delete()
+        .eq('id', requestId);
+
+      if (deleteError) throw deleteError;
+
+      // Create audit log
+      await (await __getSupabaseClient()).from('audit_logs').insert({
+        user_id: user.id,
+        request_id: requestId,
+        action: 'request_deleted',
+        details: { request_number: request.request_number, status: request.status },
+      });
+
+      revalidatePath('/client/track');
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error deleting request:', error);
+      return { success: false, error: error.message };
     }
-
-    // Only allow deletion for submitted or assigned requests
-    if (!['submitted', 'assigned'].includes(request.status)) {
-      return {
-        success: false,
-        error: `Cannot delete request in '${request.status}' status. Only submitted or assigned requests can be deleted.`,
-      };
-    }
-
-    // Delete request (cascade will handle related records)
-    const { error: deleteError } = await supabase
-      .from('legal_requests')
-      .delete()
-      .eq('id', requestId);
-
-    if (deleteError) throw deleteError;
-
-    // Create audit log
-    await supabase.from('audit_logs').insert({
-      user_id: user.id,
-      request_id: requestId,
-      action: 'request_deleted',
-      details: { request_number: request.request_number, status: request.status },
-    });
-
-    revalidatePath('/client/track');
-
-    return { success: true };
   } catch (error: any) {
-    console.error('Error deleting request:', error);
-    return { success: false, error: error.message };
+    console.error('Error in deleteRequest auth:', error);
+    return { success: false, error: 'Unexpected error' };
   }
 }
 
@@ -2067,61 +2018,65 @@ export async function deleteRequest(requestId: string) {
  * Only the uploader can delete documents
  */
 export async function deleteDocument(documentId: string) {
-  const supabase = await createClient();const {
-    data: { user },
-    error: authError,
-  } = { data: { user: (await auth())?.user }, error: null };
-
-  if (authError || !user) {
-    return { success: false, error: 'Unauthorized' };
-  }
-
   try {
-    // Fetch document to verify ownership
-    const { data: document, error: fetchError } = await supabase
-      .from('documents')
-      .select('uploaded_by, file_path, request_id')
-      .eq('id', documentId)
-      .single();
+    const {
+      data: { user },
+      error: authError,
+    } = { data: { user: (await auth())?.user }, error: null };
 
-    if (fetchError || !document) {
-      return { success: false, error: 'Document not found' };
+    if (authError || !user) {
+      return { success: false, error: 'Unauthorized' };
     }
 
-    // Verify ownership
-    if (document.uploaded_by !== user.id) {
-      return { success: false, error: 'You do not have permission to delete this document' };
+    try {
+      // Fetch document to verify ownership
+      const { data: document, error: fetchError } = await (await __getSupabaseClient()).from('documents')
+        .select('uploaded_by, file_path, request_id')
+        .eq('id', documentId)
+        .single();
+
+      if (fetchError || !document) {
+        return { success: false, error: 'Document not found' };
+      }
+
+      // Verify ownership
+      if (document.uploaded_by !== user.id) {
+        return { success: false, error: 'You do not have permission to delete this document' };
+      }
+
+      // Delete from storage
+      const { error: storageError } = await (await __getSupabaseClient()).storage
+        .from('legal-documents')
+        .remove([document.file_path]);
+
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+        // Continue with database deletion even if storage fails
+      }
+
+      // Delete from database
+      const { error: deleteError } = await (await __getSupabaseClient()).from('documents').delete().eq('id', documentId);
+
+      if (deleteError) throw deleteError;
+
+      // Create audit log
+      await (await __getSupabaseClient()).from('audit_logs').insert({
+        user_id: user.id,
+        request_id: document.request_id,
+        action: 'document_deleted',
+        details: { document_id: documentId },
+      });
+
+      revalidatePath(`/client/track/${document.request_id}`);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error deleting document:', error);
+      return { success: false, error: error.message };
     }
-
-    // Delete from storage
-    const { error: storageError } = await supabase.storage
-      .from('legal-documents')
-      .remove([document.file_path]);
-
-    if (storageError) {
-      console.error('Storage deletion error:', storageError);
-      // Continue with database deletion even if storage fails
-    }
-
-    // Delete from database
-    const { error: deleteError } = await supabase.from('documents').delete().eq('id', documentId);
-
-    if (deleteError) throw deleteError;
-
-    // Create audit log
-    await supabase.from('audit_logs').insert({
-      user_id: user.id,
-      request_id: document.request_id,
-      action: 'document_deleted',
-      details: { document_id: documentId },
-    });
-
-    revalidatePath(`/client/track/${document.request_id}`);
-
-    return { success: true };
   } catch (error: any) {
-    console.error('Error deleting document:', error);
-    return { success: false, error: error.message };
+    console.error('Error in deleteDocument:', error);
+    return { success: false, error: 'Unexpected error' };
   }
 }
 
@@ -2129,53 +2084,68 @@ export async function deleteDocument(documentId: string) {
  * Submit a rating for a completed case
  */
 export async function submitRating(requestId: string, rating: number, feedback: string) {
-  const supabase = await createClient();const {
-    data: { user },
-    error: authError,
-  } = { data: { user: (await auth())?.user }, error: null };
-
-  if (authError || !user) {
-    return { success: false, error: 'Unauthorized' };
-  }
-
   try {
-    // Verify request exists and belongs to user
-    const { data: request, error: fetchError } = await supabase
-      .from('legal_requests')
-      .select('id, assigned_lawyer_id, status')
-      .eq('id', requestId)
-      .eq('client_id', user.id)
-      .single();
+    const {
+      data: { user },
+      error: authError,
+    } = { data: { user: (await auth())?.user }, error: null };
 
-    if (fetchError || !request) {
-      return { success: false, error: 'Request not found' };
+    if (authError || !user) {
+      return { success: false, error: 'Unauthorized' };
     }
 
-    if (!request.assigned_lawyer_id) {
-      return { success: false, error: 'No lawyer assigned to rate' };
+    try {
+      // Verify request exists and belongs to user
+      const { data: request, error: fetchError } = await (await __getSupabaseClient()).from('legal_requests')
+        .select('id, assigned_lawyer_id, status')
+        .eq('id', requestId)
+        .eq('client_id', user.id)
+        .single();
+
+      if (fetchError || !request) {
+        return { success: false, error: 'Request not found' };
+      }
+
+      if (!request.assigned_lawyer_id) {
+        return { success: false, error: 'No lawyer assigned to rate' };
+      }
+
+      // Insert rating
+      const { error: insertError } = await (await __getSupabaseClient()).from('lawyer_reviews')
+        .insert({
+          request_id: requestId,
+          client_id: user.id,
+          lawyer_id: request.assigned_lawyer_id,
+          rating: rating,
+          review_text: feedback,
+          overall_rating: rating,
+          feedback: feedback,
+        } as any);
+
+      if (insertError) throw insertError;
+
+      revalidatePath('/dashboard/client/track');
+      revalidatePath(`/client/track/${requestId}`);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error submitting rating:', error);
+      return { success: false, error: error.message };
     }
-
-    // Insert rating
-    const { error: insertError } = await supabase
-      .from('lawyer_reviews')
-      .insert({
-        request_id: requestId,
-        client_id: user.id,
-        lawyer_id: request.assigned_lawyer_id,
-        rating: rating,
-        review_text: feedback,
-        overall_rating: rating,
-        feedback: feedback,
-      } as any);
-
-    if (insertError) throw insertError;
-
-    revalidatePath('/dashboard/client/track');
-    revalidatePath(`/client/track/${requestId}`);
-    
-    return { success: true };
   } catch (error: any) {
-    console.error('Error submitting rating:', error);
-    return { success: false, error: error.message };
+    console.error('Error in submitRating:', error);
+    return { success: false, error: 'Unexpected error' };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

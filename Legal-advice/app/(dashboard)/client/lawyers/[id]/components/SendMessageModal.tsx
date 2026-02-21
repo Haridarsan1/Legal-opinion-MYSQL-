@@ -48,7 +48,7 @@ export default function SendMessageModal({ isOpen, onClose, lawyer, clientId }: 
 
     try {
       // Step 1: Get or create conversation using the helper function
-      const { data: conversationData, error: convError } = await supabase.rpc(
+      const { data: conversationData, error: convError } = await (await __getSupabaseClient()).rpc(
         'get_or_create_conversation',
         {
           p_user1_id: clientId,
@@ -62,7 +62,7 @@ export default function SendMessageModal({ isOpen, onClose, lawyer, clientId }: 
       const conversationId = conversationData;
 
       // Step 2: Send the message
-      const { error: messageError } = await supabase.from('messages').insert({
+      const { error: messageError } = await (await __getSupabaseClient()).from('messages').insert({
         conversation_id: conversationId,
         sender_id: clientId,
         content: message.trim(),
@@ -72,7 +72,7 @@ export default function SendMessageModal({ isOpen, onClose, lawyer, clientId }: 
       if (messageError) throw messageError;
 
       // Step 3: Create notification for lawyer
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: lawyer.id,
         type: 'new_message',
         title: 'New Message',
@@ -237,3 +237,15 @@ export default function SendMessageModal({ isOpen, onClose, lawyer, clientId }: 
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

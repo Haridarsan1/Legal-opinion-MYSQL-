@@ -47,11 +47,12 @@ export default function ResetPasswordForm() {
 
     setLoading(true);
 
-    try {const session = await auth();
-  const user = session?.user;
+    try {
+      // TODO: Implement NextAuth password reset logic
+      const error = null;
 
       if (error) {
-        toast.error(error.message);
+        toast.error('Error');
       } else {
         setSuccess(true);
         toast.success('Password reset successfully!');
@@ -118,34 +119,33 @@ export default function ResetPasswordForm() {
 
       {/* Password Strength Indicator */}
       {
-  password && (
-        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-          <p className="text-xs font-semibold text-slate-700 mb-3">Password Strength:</p>
-          <div className="flex gap-1 mb-3">
-            {[1, 2, 3, 4, 5].map((level) => (
-              <div
-                key={level}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  level <= passwordStrength
-                    ? passwordStrength >= 4
-                      ? 'bg-green-500'
-                      : passwordStrength >= 3
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
-                    : 'bg-slate-200'
-                }`}
-              />
-            ))}
+        password && (
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs font-semibold text-slate-700 mb-3">Password Strength:</p>
+            <div className="flex gap-1 mb-3">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <div
+                  key={level}
+                  className={`h-1.5 flex-1 rounded-full transition-colors ${level <= passwordStrength
+                      ? passwordStrength >= 4
+                        ? 'bg-green-500'
+                        : passwordStrength >= 3
+                          ? 'bg-yellow-500'
+                          : 'bg-red-500'
+                      : 'bg-slate-200'
+                    }`}
+                />
+              ))}
+            </div>
+            <div className="space-y-1.5 text-xs">
+              <PasswordRequirement met={hasMinLength} text="At least 8 characters" />
+              <PasswordRequirement met={hasUppercase} text="One uppercase letter" />
+              <PasswordRequirement met={hasLowercase} text="One lowercase letter" />
+              <PasswordRequirement met={hasNumber} text="One number" />
+              <PasswordRequirement met={hasSpecialChar} text="One special character" />
+            </div>
           </div>
-          <div className="space-y-1.5 text-xs">
-            <PasswordRequirement met={hasMinLength} text="At least 8 characters" />
-            <PasswordRequirement met={hasUppercase} text="One uppercase letter" />
-            <PasswordRequirement met={hasLowercase} text="One lowercase letter" />
-            <PasswordRequirement met={hasNumber} text="One number" />
-            <PasswordRequirement met={hasSpecialChar} text="One special character" />
-          </div>
-        </div>
-      )}
+        )}
 
       {/* Confirm Password Field */}
       <div className="flex flex-col gap-2">

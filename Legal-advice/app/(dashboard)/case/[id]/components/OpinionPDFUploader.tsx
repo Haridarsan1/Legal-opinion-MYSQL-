@@ -44,13 +44,13 @@ export default function OpinionPDFUploader({
 
     try {
       const fileName = `${requestId}/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage.from('opinion-pdfs').upload(fileName, file);
+      const { data, error } = await (await __getSupabaseClient()).storage.from('opinion-pdfs').upload(fileName, file);
 
       if (error) throw error;
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from('opinion-pdfs').getPublicUrl(fileName);
+      } = (await __getSupabaseClient()).storage.from('opinion-pdfs').getPublicUrl(fileName);
 
       onUploadComplete(publicUrl);
     } catch (error: any) {
@@ -133,3 +133,15 @@ export default function OpinionPDFUploader({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

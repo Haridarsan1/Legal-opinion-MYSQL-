@@ -30,8 +30,7 @@ export default function LawyerRequestDetailPage() {
     try {
       setLoading(true);
             // Fetch request details
-      const { data: req, error: reqError } = await supabase
-        .from('legal_requests')
+      const { data: req, error: reqError } = await (await __getSupabaseClient()).from('legal_requests')
         .select(
           `
                     *,
@@ -47,8 +46,7 @@ export default function LawyerRequestDetailPage() {
       setShowAcceptButton(!req.accepted_by_lawyer);
 
       // Fetch acceptance status
-      const { data: acc } = await supabase
-        .from('request_acceptance')
+      const { data: acc } = await (await __getSupabaseClient()).from('request_acceptance')
         .select('*')
         .eq('request_id', requestId)
         .single();
@@ -56,8 +54,7 @@ export default function LawyerRequestDetailPage() {
       if (acc) setAcceptance(acc);
 
       // Fetch clarifications
-      const { data: clarifs } = await supabase
-        .from('clarifications')
+      const { data: clarifs } = await (await __getSupabaseClient()).from('clarifications')
         .select(
           `
                     *,
@@ -70,8 +67,7 @@ export default function LawyerRequestDetailPage() {
       if (clarifs) setClarifications(clarifs);
 
       // Fetch documents
-      const { data: docs } = await supabase
-        .from('documents')
+      const { data: docs } = await (await __getSupabaseClient()).from('documents')
         .select('*')
         .eq('request_id', requestId)
         .order('uploaded_at', { ascending: false });
@@ -79,8 +75,7 @@ export default function LawyerRequestDetailPage() {
       if (docs) setDocuments(docs);
 
       // Fetch opinion
-      const { data: opinions } = await supabase
-        .from('opinion_submissions')
+      const { data: opinions } = await (await __getSupabaseClient()).from('opinion_submissions')
         .select(
           `
                     *,
@@ -96,8 +91,7 @@ export default function LawyerRequestDetailPage() {
       if (opinions) setOpinion(opinions);
 
       // Fetch timeline
-      const { data: statusHistory } = await supabase
-        .from('request_status_history')
+      const { data: statusHistory } = await (await __getSupabaseClient()).from('request_status_history')
         .select('*')
         .eq('request_id', requestId)
         .order('created_at', { ascending: true });
@@ -352,3 +346,15 @@ export default function LawyerRequestDetailPage() {
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -23,8 +23,7 @@ export async function acceptRequest(requestId: string) {
 
   try {
     // Verify user is the assigned lawyer
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('assigned_lawyer_id, request_number, client_id, title')
       .eq('id', requestId)
       .single();
@@ -34,8 +33,7 @@ export async function acceptRequest(requestId: string) {
     }
 
     // Create acceptance record
-    const { data: acceptance, error: acceptError } = await supabase
-      .from('request_acceptance')
+    const { data: acceptance, error: acceptError } = await (await __getSupabaseClient()).from('request_acceptance')
       .upsert({
         request_id: requestId,
         lawyer_id: user.id,
@@ -48,8 +46,7 @@ export async function acceptRequest(requestId: string) {
     if (acceptError) throw acceptError;
 
     // Update legal_requests to mark acceptance
-    const { error: updateError } = await supabase
-      .from('legal_requests')
+    const { error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         accepted_by_lawyer: true,
         lawyer_acceptance_status: 'accepted',
@@ -60,7 +57,7 @@ export async function acceptRequest(requestId: string) {
     if (updateError) throw updateError;
 
     // Log status change
-    await supabase.from('request_status_history').insert({
+    await (await __getSupabaseClient()).from('request_status_history').insert({
       request_id: requestId,
       from_status: 'submitted',
       to_status: 'assigned',
@@ -69,7 +66,7 @@ export async function acceptRequest(requestId: string) {
     });
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'request_accepted',
@@ -78,7 +75,7 @@ export async function acceptRequest(requestId: string) {
 
     // Notify client
     if (request?.client_id) {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: request.client_id,
         type: 'request_accepted',
         title: 'Request Accepted',
@@ -113,8 +110,7 @@ export async function rejectRequest(requestId: string, note?: string) {
 
   try {
     // Verify user is the assigned lawyer
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('assigned_lawyer_id, request_number, client_id, title')
       .eq('id', requestId)
       .single();
@@ -124,8 +120,7 @@ export async function rejectRequest(requestId: string, note?: string) {
     }
 
     // Mark rejection
-    const { error: updateError } = await supabase
-      .from('legal_requests')
+    const { error: updateError } = await (await __getSupabaseClient()).from('legal_requests')
       .update({
         accepted_by_lawyer: false,
         lawyer_acceptance_status: 'rejected',
@@ -137,7 +132,7 @@ export async function rejectRequest(requestId: string, note?: string) {
     if (updateError) throw updateError;
 
     // Log status change
-    await supabase.from('request_status_history').insert({
+    await (await __getSupabaseClient()).from('request_status_history').insert({
       request_id: requestId,
       from_status: 'assigned',
       to_status: 'assigned',
@@ -146,7 +141,7 @@ export async function rejectRequest(requestId: string, note?: string) {
     });
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'request_rejected',
@@ -155,7 +150,7 @@ export async function rejectRequest(requestId: string, note?: string) {
 
     // Notify client
     if (request?.client_id) {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: request.client_id,
         type: 'request_rejected',
         title: 'Request Rejected',
@@ -189,8 +184,7 @@ export async function getRequestAcceptance(requestId: string) {
   }
 
   try {
-    const { data: acceptance, error } = await supabase
-      .from('request_acceptance')
+    const { data: acceptance, error } = await (await __getSupabaseClient()).from('request_acceptance')
       .select('*')
       .eq('request_id', requestId)
       .single();
@@ -228,8 +222,7 @@ export async function createClarificationRequest(
 
   try {
     // Verify user is assigned lawyer
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('assigned_lawyer_id, status')
       .eq('id', requestId)
       .single();
@@ -239,8 +232,7 @@ export async function createClarificationRequest(
     }
 
     // Create clarification
-    const { data: clarification, error: clarError } = await supabase
-      .from('clarifications')
+    const { data: clarification, error: clarError } = await (await __getSupabaseClient()).from('clarifications')
       .insert({
         request_id: requestId,
         requester_id: user.id,
@@ -255,7 +247,7 @@ export async function createClarificationRequest(
     if (clarError) throw clarError;
 
     // Create audit log
-    await supabase.from('audit_logs').insert({
+    await (await __getSupabaseClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'clarification_requested',
@@ -263,12 +255,11 @@ export async function createClarificationRequest(
     });
 
     // UPDATE STATUS to 'clarification_required'
-    await supabase
-      .from('legal_requests')
+    await (await __getSupabaseClient()).from('legal_requests')
       .update({ status: 'clarification_required' })
       .eq('id', requestId);
 
-    await supabase.from('request_status_history').insert({
+    await (await __getSupabaseClient()).from('request_status_history').insert({
       request_id: requestId,
       from_status: request.status,
       to_status: 'clarification_required',
@@ -308,8 +299,7 @@ export async function replytoClarification(
 
   try {
     // Get clarification
-    const { data: clarification } = await supabase
-      .from('clarifications')
+    const { data: clarification } = await (await __getSupabaseClient()).from('clarifications')
       .select('request_id, requester_id')
       .eq('id', clarificationId)
       .single();
@@ -319,8 +309,7 @@ export async function replytoClarification(
     }
 
     // Verify user is involved
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
       .select('client_id')
       .eq('id', clarification.request_id)
       .single();
@@ -333,8 +322,7 @@ export async function replytoClarification(
     }
 
     // Create reply
-    const { data: clarReply, error: replyError } = await supabase
-      .from('clarification_replies')
+    const { data: clarReply, error: replyError } = await (await __getSupabaseClient()).from('clarification_replies')
       .insert({
         clarification_id: clarificationId,
         sender_id: user.id,
@@ -349,7 +337,7 @@ export async function replytoClarification(
     // Create notification
     const recipientId = isClient ? clarification.requester_id : request?.client_id;
     if (recipientId) {
-      await supabase.from('notifications').insert({
+      await (await __getSupabaseClient()).from('notifications').insert({
         user_id: recipientId,
         type: 'clarification_reply',
         title: 'Clarification Response',
@@ -383,8 +371,7 @@ export async function markClarificationResolved(clarificationId: string) {
 
   try {
     // Update clarification
-    const { data: clarification, error: updateError } = await supabase
-      .from('clarifications')
+    const { data: clarification, error: updateError } = await (await __getSupabaseClient()).from('clarifications')
       .update({ is_resolved: true })
       .eq('id', clarificationId)
       .select('request_id')
@@ -393,21 +380,19 @@ export async function markClarificationResolved(clarificationId: string) {
     if (updateError) throw updateError;
 
     // Check if ALL clarifications are resolved
-    const { count, error: countError } = await supabase
-      .from('clarifications')
+    const { count, error: countError } = await (await __getSupabaseClient()).from('clarifications')
       .select('*', { count: 'exact', head: true })
       .eq('request_id', clarification.request_id)
       .eq('is_resolved', false);
 
     // If no unresolved clarifications, move to drafting_opinion
     if (count === 0) {
-      await supabase
-        .from('legal_requests')
+      await (await __getSupabaseClient()).from('legal_requests')
         .update({ status: 'drafting_opinion' })
         .eq('id', clarification.request_id);
 
       // Log status change
-      await supabase.from('request_status_history').insert({
+      await (await __getSupabaseClient()).from('request_status_history').insert({
         request_id: clarification.request_id,
         to_status: 'drafting_opinion',
         changed_by: user.id,
@@ -438,8 +423,7 @@ export async function requestPeerReview(opinionId: string, reviewerId: string, r
 
   try {
     // Verify user is author of opinion
-    const { data: opinion } = await supabase
-      .from('opinion_submissions')
+    const { data: opinion } = await (await __getSupabaseClient()).from('opinion_submissions')
       .select('request_id, lawyer_id, is_final')
       .eq('id', opinionId)
       .single();
@@ -453,8 +437,7 @@ export async function requestPeerReview(opinionId: string, reviewerId: string, r
     }
 
     // Verify reviewer exists and is a lawyer
-    const { data: reviewer } = await supabase
-      .from('profiles')
+    const { data: reviewer } = await (await __getSupabaseClient()).from('profiles')
       .select('*')
       .eq('id', reviewerId)
       .single();
@@ -464,8 +447,7 @@ export async function requestPeerReview(opinionId: string, reviewerId: string, r
     }
 
     // Create peer review request
-    const { data: peerReview, error: prError } = await supabase
-      .from('peer_reviews')
+    const { data: peerReview, error: prError } = await (await __getSupabaseClient()).from('peer_reviews')
       .insert({
         opinion_submission_id: opinionId,
         request_id: opinion.request_id,
@@ -479,7 +461,7 @@ export async function requestPeerReview(opinionId: string, reviewerId: string, r
     if (prError) throw prError;
 
     // Notify reviewer (peer review invisible to client)
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: reviewerId,
       type: 'peer_review_requested',
       title: 'Peer Review Requested',
@@ -515,8 +497,7 @@ export async function submitPeerReview(
 
   try {
     // Verify user is the reviewer
-    const { data: review } = await supabase
-      .from('peer_reviews')
+    const { data: review } = await (await __getSupabaseClient()).from('peer_reviews')
       .select('reviewer_id, requested_by, opinion_submission_id')
       .eq('id', peerReviewId)
       .single();
@@ -526,8 +507,7 @@ export async function submitPeerReview(
     }
 
     // Update review
-    const { data: updated, error: updateError } = await supabase
-      .from('peer_reviews')
+    const { data: updated, error: updateError } = await (await __getSupabaseClient()).from('peer_reviews')
       .update({
         status: status,
         feedback: feedback,
@@ -540,7 +520,7 @@ export async function submitPeerReview(
     if (updateError) throw updateError;
 
     // Notify opinion author
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: review.requested_by,
       type: 'peer_review_completed',
       title: 'Peer Review Completed',
@@ -565,12 +545,11 @@ export async function requestRequiredDocuments(requestId: string, message?: stri
   if (authError || !user) return { success: false, error: 'Unauthorized' };
 
   try {
-    await supabase
-      .from('legal_requests')
+    await (await __getSupabaseClient()).from('legal_requests')
       .update({ status: 'documents_pending' })
       .eq('id', requestId);
 
-    await supabase.from('request_status_history').insert({
+    await (await __getSupabaseClient()).from('request_status_history').insert({
       request_id: requestId,
       from_status: 'in_review', // Assumption
       to_status: 'documents_pending',
@@ -594,19 +573,18 @@ export async function requestRequiredDocuments(requestId: string, message?: stri
 export async function notifyDocumentsUploaded(requestId: string) {
   const supabase = await createClient();// Check if we should move to in_review
   // Only if current status is 'documents_pending' or similar
-  const { data: request } = await supabase
-    .from('legal_requests')
+  const { data: request } = await (await __getSupabaseClient()).from('legal_requests')
     .select('status')
     .eq('id', requestId)
     .single();
 
   if (request?.status === 'documents_pending') {
-    await supabase.from('legal_requests').update({ status: 'in_review' }).eq('id', requestId);
+    await (await __getSupabaseClient()).from('legal_requests').update({ status: 'in_review' }).eq('id', requestId);
 
     const session = await auth();
   const user = session?.user;
     if (user) {
-      await supabase.from('request_status_history').insert({
+      await (await __getSupabaseClient()).from('request_status_history').insert({
         request_id: requestId,
         from_status: 'documents_pending',
         to_status: 'in_review',
@@ -637,8 +615,7 @@ export async function getRequestTimeline(requestId: string) {
 
   try {
     // Get status history
-    const { data: statusHistory, error: statusError } = await supabase
-      .from('request_status_history')
+    const { data: statusHistory, error: statusError } = await (await __getSupabaseClient()).from('request_status_history')
       .select(
         `
                 *,
@@ -651,8 +628,7 @@ export async function getRequestTimeline(requestId: string) {
     if (statusError) throw statusError;
 
     // Get key audit events
-    const { data: auditLogs, error: auditError } = await supabase
-      .from('audit_logs')
+    const { data: auditLogs, error: auditError } = await (await __getSupabaseClient()).from('audit_logs')
       .select('*')
       .eq('request_id', requestId)
       .in('action', [
@@ -686,3 +662,15 @@ export async function getRequestTimeline(requestId: string) {
     return { success: false, error: error.message };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

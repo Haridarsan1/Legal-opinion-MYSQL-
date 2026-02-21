@@ -23,15 +23,16 @@ export default function ClientMessagesContent() {
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string>('');
-    useEffect(() => {
+  const { data: session } = useSession();
+
+  useEffect(() => {
     const loadData = async () => {
       setLoading(true);
 
       // Get current user
-      const session = await auth();
-  const user = session?.user;
+      const user = session?.user;
       if (user) {
-        setCurrentUserId(user.id);
+        setCurrentUserId(user.id!);
       }
 
       // Load requests with messages
@@ -93,27 +94,26 @@ export default function ClientMessagesContent() {
             <button
               key={request.id}
               onClick={() => setSelectedRequest(request)}
-              className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                selectedRequest?.id === request.id ? 'bg-blue-50 border-l-4 border-l-[#003366]' : ''
-              }`}
+              className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${selectedRequest?.id === request.id ? 'bg-blue-50 border-l-4 border-l-[#003366]' : ''
+                }`}
             >
               <div className="flex items-start gap-3">
                 {/* Lawyer Avatar */}
                 {
-  request.lawyer.avatar_url ? (
-                  <img
-                    src={request.lawyer.avatar_url}
-                    alt={request.lawyer.full_name}
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                    {request.lawyer.full_name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')}
-                  </div>
-                )}
+                  request.lawyer.avatar_url ? (
+                    <img
+                      src={request.lawyer.avatar_url}
+                      alt={request.lawyer.full_name}
+                      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                      {request.lawyer.full_name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </div>
+                  )}
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">

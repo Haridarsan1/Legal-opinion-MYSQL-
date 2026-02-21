@@ -4,8 +4,8 @@ import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
-  const supabase = await createClient();try {
-    
+  const supabase = await createClient(); try {
+
 
     // Get current user
     const {
@@ -18,14 +18,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch client's public requests with proposal counts
-    const { data, error } = await supabase.rpc('get_client_public_requests_with_proposal_counts', {
+    const { data, error } = await (await __getSupabaseClient()).rpc('get_client_public_requests_with_proposal_counts', {
       p_client_id: user.id,
     });
 
     if (error) {
       // Fallback if function doesn't exist yet - fetch directly
-      const { data: requests, error: requestError } = await supabase
-        .from('legal_requests')
+      const { data: requests, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
         .select(
           `
                     id,
@@ -48,9 +47,8 @@ export async function GET(req: NextRequest) {
 
       // Get proposal counts for each request
       const requestsWithCounts = await Promise.all(
-        (requests || []).map(async (request) => {
-          const { count } = await supabase
-            .from('request_proposals')
+        (requests || []).map(async (request: any) => {
+          const { count } = await (await __getSupabaseClient()).from('request_proposals')
             .select('*', { count: 'exact', head: true })
             .eq('request_id', request.id)
             .not('status', 'eq', 'withdrawn');
@@ -71,3 +69,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

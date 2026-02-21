@@ -1,5 +1,5 @@
 'use client';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -41,7 +41,7 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -93,24 +93,24 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            role: formData.role,
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              role: formData.role,
+            },
           },
-        },
-      })
+        })
       });
       const signUpData = await signUpRes.json();
-      const { error } = signUpData;
+      const { error, user } = signUpData;
 
-      if (signUpError) {
-        throw signUpError;
+      if (error) {
+        throw new Error(error);
       }
 
-      if (!authData.user) {
+      if (!user) {
         throw new Error('Failed to create user account');
       }
 
@@ -118,14 +118,13 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Now update the profile with additional information
-      const { error: updateError } = await supabase
-        .from('profiles')
+      const { error: updateError } = (await __getSupabaseClient()).from('profiles')
         .update({
           phone: formData.phone || null,
           organization: formData.organization || null,
           bar_council_id: formData.barCouncilId || null,
         })
-        .eq('id', authData.user.id);
+        .eq('id', user.id);
 
       if (updateError) {
         console.warn('Profile update warning:', updateError);
@@ -147,12 +146,7 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
     setError(null);
 
     try {
-      const session = await auth();
-  const user = session?.user;
-
-      if (error) {
-        throw error;
-      }
+      await signIn('google', { callbackUrl: `/${formData.role}` });
     } catch (err: any) {
       console.error('Google signup error:', err);
       setError(err.message || 'Failed to sign up with Google');
@@ -215,11 +209,11 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
 
             {/* Error Message */}
             {
-  error && (
-              <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+              error && (
+                <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
 
             {/* Google Sign Up */}
             <button
@@ -345,25 +339,25 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
               )}
 
               {
-  formData.role === 'lawyer' && (
-                <label className="flex flex-col">
-                  <span className="text-text-main dark:text-slate-200 text-sm font-semibold pb-2">
-                    Bar Council ID (Optional)
-                  </span>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted dark:text-slate-500" />
-                    <input
-                      className="form-input w-full rounded-lg border-border-light dark:border-border-dark bg-slate-50 dark:bg-slate-900 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary h-12 pl-10 text-base placeholder:text-text-muted/70"
-                      placeholder="BAR/ST/YYYY/XXXXX"
-                      type="text"
-                      name="barCouncilId"
-                      value={formData.barCouncilId}
-                      onChange={handleInputChange}
-                      disabled={isLoading}
-                    />
-                  </div>
-                </label>
-              )}
+                formData.role === 'lawyer' && (
+                  <label className="flex flex-col">
+                    <span className="text-text-main dark:text-slate-200 text-sm font-semibold pb-2">
+                      Bar Council ID (Optional)
+                    </span>
+                    <div className="relative">
+                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted dark:text-slate-500" />
+                      <input
+                        className="form-input w-full rounded-lg border-border-light dark:border-border-dark bg-slate-50 dark:bg-slate-900 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary h-12 pl-10 text-base placeholder:text-text-muted/70"
+                        placeholder="BAR/ST/YYYY/XXXXX"
+                        type="text"
+                        name="barCouncilId"
+                        value={formData.barCouncilId}
+                        onChange={handleInputChange}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </label>
+                )}
 
               {/* Row 3: Password & Confirmation */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -484,3 +478,14 @@ export default function SignupForm({ role, roleTitle, roleDescription }: SignupF
     </div>
   );
 }
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

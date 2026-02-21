@@ -140,7 +140,7 @@ export default function SeniorLawyerDashboard({
             <div className="flex-1 overflow-y-auto p-0">
               {cases.length > 0 ? (
                 <div className="divide-y divide-slate-100">
-                  {cases.slice(0, 10).map((c) => (
+                  {cases.slice(0, 10).map((c: any) => (
                     <div key={c.id} className="p-5 hover:bg-slate-50 transition-colors group">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">

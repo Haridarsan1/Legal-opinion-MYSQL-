@@ -38,7 +38,7 @@ export default function LawyerOpinions({ cases, userId, lawyerName }: Props) {
 
   // Filter cases by status
   const getFilteredCases = () => {
-    return cases.filter((c) => {
+    return cases.filter((c: any) => {
       if (statusFilter === 'all') return true;
 
       if (statusFilter === 'draft') {
@@ -73,17 +73,17 @@ export default function LawyerOpinions({ cases, userId, lawyerName }: Props) {
   // Calculate metrics
   const metrics = {
     total: cases.length,
-    draft: cases.filter((c) => hasOpinionStatus(c, 'draft')).length,
-    pending: cases.filter((c) => c.status === 'opinion_ready' && !c.rating).length,
+    draft: cases.filter((c: any) => hasOpinionStatus(c, 'draft')).length,
+    pending: cases.filter((c: any) => c.status === 'opinion_ready' && !c.rating).length,
     completed: cases.filter(
       (c) =>
         ['completed', 'case_closed', 'no_further_queries_confirmed'].includes(c.status) || c.rating
     ).length,
     avgRating:
-      cases.filter((c) => c.rating).length > 0
+      cases.filter((c: any) => c.rating).length > 0
         ? (
             cases.reduce((sum, c) => sum + (c.rating?.[0]?.overall_rating || 0), 0) /
-            cases.filter((c) => c.rating).length
+            cases.filter((c: any) => c.rating).length
           ).toFixed(1)
         : 'N/A',
     avgTurnaround: 'N/A', // Calculate from submission - assignment dates
@@ -123,10 +123,10 @@ export default function LawyerOpinions({ cases, userId, lawyerName }: Props) {
           onTabChange={setStatusFilter}
           counts={{
             all: cases.length,
-            draft: cases.filter((c) => hasOpinionStatus(c, 'draft')).length,
-            submitted: cases.filter((c) => c.status === 'opinion_ready' && !c.rating).length,
-            pending: cases.filter((c) => c.status === 'opinion_ready' && !c.rating).length,
-            clarification: cases.filter((c) => hasPendingClarification(c)).length,
+            draft: cases.filter((c: any) => hasOpinionStatus(c, 'draft')).length,
+            submitted: cases.filter((c: any) => c.status === 'opinion_ready' && !c.rating).length,
+            pending: cases.filter((c: any) => c.status === 'opinion_ready' && !c.rating).length,
+            clarification: cases.filter((c: any) => hasPendingClarification(c)).length,
             completed: cases.filter(
               (c) =>
                 ['completed', 'case_closed', 'no_further_queries_confirmed'].includes(c.status) ||

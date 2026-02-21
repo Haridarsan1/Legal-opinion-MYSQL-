@@ -119,10 +119,10 @@ export default function MyPublicClaimsPage() {
     });
   };
 
-  const pendingClaims = claims.filter((c) => c.status === 'pending');
-  const selectedClaims = claims.filter((c) => c.status === 'selected');
-  const rejectedClaims = claims.filter((c) => c.status === 'rejected');
-  const withdrawnClaims = claims.filter((c) => c.status === 'withdrawn');
+  const pendingClaims = claims.filter((c: any) => c.status === 'pending');
+  const selectedClaims = claims.filter((c: any) => c.status === 'selected');
+  const rejectedClaims = claims.filter((c: any) => c.status === 'rejected');
+  const withdrawnClaims = claims.filter((c: any) => c.status === 'withdrawn');
 
   return (
     <div className="flex-1 overflow-y-auto">

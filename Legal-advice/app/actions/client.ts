@@ -5,7 +5,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 
 export async function getClientMarketplaceMetrics() {
-  
+
 
   const {
     data: { user },
@@ -17,8 +17,7 @@ export async function getClientMarketplaceMetrics() {
 
   try {
     // Get client's public requests
-    const { data: requests, error } = await supabase
-      .from('legal_requests')
+    const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 id,
@@ -32,18 +31,18 @@ export async function getClientMarketplaceMetrics() {
     if (error) throw error;
 
     const activePublicRequests =
-      requests?.filter((r) => ['accepting_proposals', 'proposal_review'].includes(r.status))
+      requests?.filter((r: any) => ['accepting_proposals', 'proposal_review'].includes(r.status))
         .length || 0;
 
     const totalProposalsReceived =
-      requests?.reduce((sum, r) => {
+      requests?.reduce((sum: any, r: any) => {
         // Count array length since we fetch IDs now
         const count = Array.isArray(r.proposal_count) ? r.proposal_count.length : 0;
         return sum + count;
       }, 0) || 0;
 
     const pendingDecisions =
-      requests?.filter((r) => {
+      requests?.filter((r: any) => {
         const hasProposals = (Array.isArray(r.proposal_count) ? r.proposal_count.length : 0) > 0;
         return hasProposals && ['accepting_proposals', 'proposal_review'].includes(r.status);
       }).length || 0;
@@ -76,8 +75,7 @@ export async function getClientDashboardSummaries(): Promise<{
 
   try {
     // Fetch full hierarchy for resolver
-    const { data: requests, error } = await supabase
-      .from('legal_requests')
+    const { data: requests, error } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 *,
@@ -101,7 +99,7 @@ export async function getClientDashboardSummaries(): Promise<{
     console.log('Query successful, records fetched:', requests?.length);
 
     try {
-      const summaries = aggregateCaseData(requests || [], user.id);
+      const summaries = aggregateCaseData(requests || [], user.id!);
       return { success: true, data: summaries };
     } catch (aggError: any) {
       console.error('Aggregation Error:', aggError);
@@ -119,3 +117,15 @@ export async function getClientDashboardSummaries(): Promise<{
     return { success: false, error: error.message || 'Unknown error' };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

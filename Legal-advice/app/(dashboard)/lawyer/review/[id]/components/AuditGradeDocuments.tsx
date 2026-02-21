@@ -64,7 +64,7 @@ export default function AuditGradeDocuments({
   });
 
   const totalDocs = documents.length;
-  const reviewedDocs = documents.filter((d) => d.review_status === 'reviewed').length;
+  const reviewedDocs = documents.filter((d: any) => d.review_status === 'reviewed').length;
   const reviewProgress = totalDocs > 0 ? (reviewedDocs / totalDocs) * 100 : 0;
 
   return (

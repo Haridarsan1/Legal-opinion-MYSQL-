@@ -112,7 +112,7 @@ export default function FileUpload({
         const fileName = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
         const filePath = `${folder}/${fileName}`;
 
-        const { data, error } = await supabase.storage.from(bucketName).upload(filePath, file, {
+        const { data, error } = (await __getSupabaseClient()).storage.from(bucketName).upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
         });
@@ -252,3 +252,15 @@ export default function FileUpload({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

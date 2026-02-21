@@ -86,7 +86,7 @@ export default function ProfileContent({ profile }: Props) {const router = useRo
       if (profile.avatar_url) {
         const oldPath = profile.avatar_url.split('/').pop();
         if (oldPath) {
-          await supabase.storage.from('avatars').remove([`${profile.id}/${oldPath}`]);
+          await (await __getSupabaseClient()).storage.from('avatars').remove([`${profile.id}/${oldPath}`]);
         }
       }
 
@@ -94,16 +94,15 @@ export default function ProfileContent({ profile }: Props) {const router = useRo
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${profile.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      const { error: uploadError } = await (await __getSupabaseClient()).storage.from('avatars').upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      } = (await __getSupabaseClient()).storage.from('avatars').getPublicUrl(filePath);
 
-      const { error: updateError } = await supabase
-        .from('profiles')
+      const { error: updateError } = await (await __getSupabaseClient()).from('profiles')
         .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
         .eq('id', profile.id);
 
@@ -138,8 +137,7 @@ export default function ProfileContent({ profile }: Props) {const router = useRo
     setMessage(null);
 
     try {
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (await __getSupabaseClient()).from('profiles')
         .update({
           full_name: formData.full_name,
           organization: formData.organization || null,
@@ -610,7 +608,7 @@ export default function ProfileContent({ profile }: Props) {const router = useRo
                     type="button"
                     className="w-full px-4 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm flex items-center justify-center gap-2"
                     onClick={async () => {
-                      // supabase.auth.signOut migrated to NextAuth signOut()
+                      // (await __getSupabaseClient()).auth.signOut migrated to NextAuth signOut()
                       router.push('/login');
                     }}
                   >
@@ -748,3 +746,15 @@ export default function ProfileContent({ profile }: Props) {const router = useRo
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

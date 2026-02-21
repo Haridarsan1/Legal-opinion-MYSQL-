@@ -26,7 +26,7 @@ export default function FirmOnboardingPage() {const params = useParams();
   const [sendingInvite, setSendingInvite] = useState(false);
 
   useEffect(() => {const fetchFirm = async () => {if (!firmId) return;
-      const { data, error } = await supabase.from('firms').select('*').eq('id', firmId).single();
+      const { data, error } = await (await __getSupabaseClient()).from('firms').select('*').eq('id', firmId).single();
 
       if (error) {
         toast.error('Could not load firm details');
@@ -44,8 +44,7 @@ export default function FirmOnboardingPage() {const params = useParams();
     const newDocs = files.map((f) => ({ name: f.name, url: f.url, path: f.path }));
     const updatedDocs = [...currentDocs, ...newDocs];
 
-    const { error } = await supabase
-      .from('firms')
+    const { error } = await (await __getSupabaseClient()).from('firms')
       .update({ verification_documents: updatedDocs })
       .eq('id', firmId);
 
@@ -298,3 +297,15 @@ export default function FirmOnboardingPage() {const params = useParams();
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

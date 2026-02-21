@@ -101,14 +101,15 @@ export default function LawyerDashboardContent({
   unreadMessages: initialUnread,
 }: Props) {
   const router = useRouter();
-    const [cases, setCases] = useState<LegalRequest[]>(initialCases);
+  const [cases, setCases] = useState<LegalRequest[]>(initialCases);
   const [averageRating, setAverageRating] = useState(initialRating);
   const [unreadMessages, setUnreadMessages] = useState(initialUnread);
 
   useEffect(() => {
+    // TODO: Re-implement Realtime subscriptions with MySQL/socket.io
+    /*
     // Real-time subscription for assigned cases
-    const casesChannel = supabase
-      .channel('lawyer_cases_changes')
+    const casesChannel = (await __getSupabaseClient()).channel('lawyer_cases_changes')
       .on(
         'postgres_changes',
         {
@@ -124,8 +125,7 @@ export default function LawyerDashboardContent({
       .subscribe();
 
     // Real-time subscription for messages
-    const messagesChannel = supabase
-      .channel('lawyer_messages_changes')
+    const messagesChannel = (await __getSupabaseClient()).channel('lawyer_messages_changes')
       .on(
         'postgres_changes',
         {
@@ -140,8 +140,7 @@ export default function LawyerDashboardContent({
       .subscribe();
 
     // Real-time subscription for ratings
-    const ratingsChannel = supabase
-      .channel('lawyer_ratings_changes')
+    const ratingsChannel = (await __getSupabaseClient()).channel('lawyer_ratings_changes')
       .on(
         'postgres_changes',
         {
@@ -161,11 +160,11 @@ export default function LawyerDashboardContent({
       messagesChannel.unsubscribe();
       ratingsChannel.unsubscribe();
     };
+    */
   }, [profile?.id]);
 
   const fetchCases = async () => {
-    const { data } = await supabase
-      .from('legal_requests')
+    const { data } = await (await __getSupabaseClient()).from('legal_requests')
       .select(
         `
                 *,
@@ -180,20 +179,18 @@ export default function LawyerDashboardContent({
   };
 
   const fetchUnreadCount = async () => {
-    const { data: conversations } = await supabase
-      .from('conversations')
+    const { data: conversations } = await (await __getSupabaseClient()).from('conversations')
       .select('id')
       .or(`participant_1_id.eq.${profile?.id},participant_2_id.eq.${profile?.id}`);
 
     if (conversations) {
-      const { count } = await supabase
-        .from('messages')
+      const { count } = await (await __getSupabaseClient()).from('messages')
         .select('*', { count: 'exact', head: true })
         .eq('read', false)
         .neq('sender_id', profile?.id)
         .in(
           'conversation_id',
-          conversations.map((c) => c.id)
+          conversations.map((c: any) => c.id)
         );
 
       setUnreadMessages(count || 0);
@@ -201,8 +198,7 @@ export default function LawyerDashboardContent({
   };
 
   const fetchRating = async () => {
-    const { data: profileData } = await supabase
-      .from('profiles')
+    const { data: profileData } = await (await __getSupabaseClient()).from('profiles')
       .select('average_rating')
       .eq('id', profile?.id)
       .single();
@@ -214,13 +210,13 @@ export default function LawyerDashboardContent({
 
   // Calculate workload metrics
   const workloadMetrics = useMemo(() => {
-    const active = cases.filter((c) => !['completed', 'cancelled'].includes(c.status));
-    const pendingReview = cases.filter((c) => c.status === 'assigned');
-    const clarificationRequired = cases.filter((c) => c.status === 'clarification_requested');
-    const completed = cases.filter((c) => c.status === 'completed');
+    const active = cases.filter((c: any) => !['completed', 'cancelled'].includes(c.status));
+    const pendingReview = cases.filter((c: any) => c.status === 'assigned');
+    const clarificationRequired = cases.filter((c: any) => c.status === 'clarification_requested');
+    const completed = cases.filter((c: any) => c.status === 'completed');
 
     // Calculate SLA compliance
-    const completedWithSLA = completed.filter((c) => {
+    const completedWithSLA = completed.filter((c: any) => {
       if (!c.sla_deadline) return true;
       return new Date(c.sla_deadline) >= new Date();
     });
@@ -240,7 +236,7 @@ export default function LawyerDashboardContent({
   // Get attention-required items
   const attentionRequired = useMemo(() => {
     return cases
-      .filter((c) => {
+      .filter((c: any) => {
         if (c.status === 'assigned') return true;
         if (c.status === 'clarification_requested') return true;
         if (c.status === 'opinion_ready') return true;
@@ -261,7 +257,7 @@ export default function LawyerDashboardContent({
 
   // Get active cases for workspace
   const activeCases = useMemo(() => {
-    return cases.filter((c) => !['completed', 'cancelled'].includes(c.status)).slice(0, 5);
+    return cases.filter((c: any) => !['completed', 'cancelled'].includes(c.status)).slice(0, 5);
   }, [cases]);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'there';
@@ -287,7 +283,7 @@ export default function LawyerDashboardContent({
                   You have{' '}
                   <span className="font-semibold text-amber-600">
                     {attentionRequired.length} {
-  attentionRequired.length === 1 ? 'case' : 'cases'}
+                      attentionRequired.length === 1 ? 'case' : 'cases'}
                   </span>{' '}
                   requiring attention
                 </>
@@ -402,86 +398,86 @@ export default function LawyerDashboardContent({
 
       {/* Attention Required */}
       {
-  attentionRequired.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <AlertCircle className="w-5 h-5 text-amber-600" />
-            <h2 className="text-lg font-bold text-slate-900">Attention Required</h2>
-          </div>
-          <div className="grid gap-4">
-            {attentionRequired.map((caseItem) => {
-              const config = STATUS_CONFIG[caseItem.status as keyof typeof STATUS_CONFIG];
-              const hoursLeft = caseItem.sla_deadline
-                ? differenceInHours(new Date(caseItem.sla_deadline), new Date())
-                : null;
+        attentionRequired.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <AlertCircle className="w-5 h-5 text-amber-600" />
+              <h2 className="text-lg font-bold text-slate-900">Attention Required</h2>
+            </div>
+            <div className="grid gap-4">
+              {attentionRequired.map((caseItem) => {
+                const config = STATUS_CONFIG[caseItem.status as keyof typeof STATUS_CONFIG];
+                const hoursLeft = caseItem.sla_deadline
+                  ? differenceInHours(new Date(caseItem.sla_deadline), new Date())
+                  : null;
 
-              return (
-                <div
-                  key={caseItem.id}
-                  className={`bg-white border-2 ${config?.borderColor || 'border-slate-200'} rounded-2xl p-6 hover:shadow-lg transition-all`}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-start gap-3 mb-3">
-                        {config?.urgent && (
-                          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                        )}
-                        <div className="flex-1">
-                          <h3 className="font-bold text-slate-900 mb-1">{caseItem.title}</h3>
-                          <p className="text-sm text-slate-600">
-                            {caseItem.request_number} • {caseItem.department}
-                          </p>
-                        </div>
-                      </div>
-
-                      {caseItem.client && (
-                        <div className="flex items-center gap-2 mb-2">
-                          {caseItem.client.avatar_url ? (
-                            <Image
-                              src={caseItem.client.avatar_url}
-                              alt={caseItem.client.full_name}
-                              width={20}
-                              height={20}
-                              className="w-5 h-5 rounded-full object-cover"
-                            />
-                          ) : (
-                            <User className="w-5 h-5 text-slate-400" />
+                return (
+                  <div
+                    key={caseItem.id}
+                    className={`bg-white border-2 ${config?.borderColor || 'border-slate-200'} rounded-2xl p-6 hover:shadow-lg transition-all`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start gap-3 mb-3">
+                          {config?.urgent && (
+                            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
                           )}
-                          <span className="text-sm text-slate-600">
-                            {caseItem.client.full_name}
-                          </span>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-slate-900 mb-1">{caseItem.title}</h3>
+                            <p className="text-sm text-slate-600">
+                              {caseItem.request_number} • {caseItem.department}
+                            </p>
+                          </div>
                         </div>
-                      )}
 
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 ${config?.bgColor} ${config?.textColor} text-xs font-semibold rounded-lg`}
-                        >
-                          {config?.label}
-                        </span>
-                        {hoursLeft !== null && hoursLeft < 12 && hoursLeft > 0 && (
-                          <span className="inline-flex items-center gap-1 text-xs text-red-600 font-medium">
-                            <Clock className="w-3.5 h-3.5" />
-                            SLA: {hoursLeft}h left
-                          </span>
+                        {caseItem.client && (
+                          <div className="flex items-center gap-2 mb-2">
+                            {caseItem.client.avatar_url ? (
+                              <Image
+                                src={caseItem.client.avatar_url}
+                                alt={caseItem.client.full_name}
+                                width={20}
+                                height={20}
+                                className="w-5 h-5 rounded-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-5 h-5 text-slate-400" />
+                            )}
+                            <span className="text-sm text-slate-600">
+                              {caseItem.client.full_name}
+                            </span>
+                          </div>
                         )}
-                      </div>
-                    </div>
 
-                    <Link
-                      href={`/lawyer/review/${caseItem.id}`}
-                      className="px-6 py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors whitespace-nowrap flex items-center gap-2"
-                    >
-                      {config?.action || 'Review'}
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 ${config?.bgColor} ${config?.textColor} text-xs font-semibold rounded-lg`}
+                          >
+                            {config?.label}
+                          </span>
+                          {hoursLeft !== null && hoursLeft < 12 && hoursLeft > 0 && (
+                            <span className="inline-flex items-center gap-1 text-xs text-red-600 font-medium">
+                              <Clock className="w-3.5 h-3.5" />
+                              SLA: {hoursLeft}h left
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/lawyer/review/${caseItem.id}`}
+                        className="px-6 py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors whitespace-nowrap flex items-center gap-2"
+                      >
+                        {config?.action || 'Review'}
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Active Cases Workspace & Performance */}
       <div className="grid lg:grid-cols-3 gap-6">
@@ -619,3 +615,15 @@ export default function LawyerDashboardContent({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

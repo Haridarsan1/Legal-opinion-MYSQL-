@@ -12,7 +12,7 @@ interface PageProps {
 
 export default async function ClientOpinionPage({ params }: PageProps) {
   const { id } = await params;
-  
+
 
   // Get current user
   const {
@@ -25,8 +25,7 @@ export default async function ClientOpinionPage({ params }: PageProps) {
   }
 
   // Get user profile to verify they're a client
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('role, full_name, avatar_url')
     .eq('id', user.id)
     .single();
@@ -36,8 +35,7 @@ export default async function ClientOpinionPage({ params }: PageProps) {
   }
 
   // Fetch the legal request with all related data
-  const { data: request, error: requestError } = await supabase
-    .from('legal_requests')
+  const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -100,8 +98,7 @@ export default async function ClientOpinionPage({ params }: PageProps) {
   }
 
   // Fetch audit logs
-  const { data: auditLogs } = await supabase
-    .from('audit_logs')
+  const { data: auditLogs } = await (await __getSupabaseClient()).from('audit_logs')
     .select(
       `
             id,
@@ -124,10 +121,22 @@ export default async function ClientOpinionPage({ params }: PageProps) {
       request={request}
       auditLogs={auditLogs || []}
       currentUser={{
-        id: user.id,
+        id: user.id!,
         name: profile.full_name,
         avatar: profile.avatar_url,
       }}
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -10,7 +10,7 @@ import { redirect } from 'next/navigation';
 import { hasPermission } from '@/lib/permissions';
 
 export default async function FirmOwnerDashboard() {
-  
+
 
   // 1. Get User & Profile
   const session = await auth();
@@ -19,8 +19,7 @@ export default async function FirmOwnerDashboard() {
     redirect('/login');
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
@@ -43,23 +42,20 @@ export default async function FirmOwnerDashboard() {
   // 2. Parallel Fetching
   const [{ data: requests }, { count: taskCount }, { data: recentRequests }] = await Promise.all([
     // Requests for Stats
-    supabase
-      .from('legal_requests')
+    (await __getSupabaseClient()).from('legal_requests')
       .select('id, status, client_id, bank_id')
       .eq('firm_id', firmId)
       .neq('status', 'completed')
       .neq('status', 'cancelled'),
 
     // Pending Tasks Count
-    supabase
-      .from('firm_tasks')
+    (await __getSupabaseClient()).from('firm_tasks')
       .select('*', { count: 'exact', head: true })
       .eq('firm_id', firmId)
       .neq('status', 'completed'),
 
     // Recent Activity
-    supabase
-      .from('legal_requests')
+    (await __getSupabaseClient()).from('legal_requests')
       .select('*, client:client_id(full_name)')
       .eq('firm_id', firmId)
       .order('updated_at', { ascending: false })
@@ -68,8 +64,8 @@ export default async function FirmOwnerDashboard() {
 
   // 3. Process Stats
   const activeRequests = requests?.length || 0;
-  const bankRequests = requests?.filter((r) => r.bank_id).length || 0;
-  const clientRequests = requests?.filter((r) => r.client_id && !r.bank_id).length || 0;
+  const bankRequests = requests?.filter((r: any) => r.bank_id).length || 0;
+  const clientRequests = requests?.filter((r: any) => r.client_id && !r.bank_id).length || 0;
 
   const stats = {
     activeRequests,
@@ -164,13 +160,13 @@ export default async function FirmOwnerDashboard() {
                   </tr>
                 ))}
                 {
-  recentActivity.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-slate-500">
-                      No recent activity
-                    </td>
-                  </tr>
-                )}
+                  recentActivity.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-slate-500">
+                        No recent activity
+                      </td>
+                    </tr>
+                  )}
               </tbody>
             </table>
           </Card>
@@ -213,3 +209,15 @@ export default async function FirmOwnerDashboard() {
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

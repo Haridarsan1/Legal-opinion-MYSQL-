@@ -33,8 +33,7 @@ export default function DocumentChecklistWidget({ requestId, caseType, userRole 
   const loadChecklist = async () => {
     try {
       // Fetch checklist items with associated checklist details
-      const { data, error } = await supabase
-        .from('document_checklist_items')
+      const { data, error } = await (await __getSupabaseClient()).from('document_checklist_items')
         .select(
           `
                     id,
@@ -91,8 +90,7 @@ export default function DocumentChecklistWidget({ requestId, caseType, userRole 
     if (userRole !== 'lawyer') return;
 
     try {
-      const { error } = await supabase
-        .from('document_checklist_items')
+      const { error } = await (await __getSupabaseClient()).from('document_checklist_items')
         .update({
           status: 'not_required',
           marked_not_required_at: new Date().toISOString(),
@@ -280,3 +278,15 @@ export default function DocumentChecklistWidget({ requestId, caseType, userRole 
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -12,8 +12,7 @@ export default function FirmsAdminPage() {const [firms, setFirms] = useState<any
   const [loading, setLoading] = useState(true);
 
   const fetchFirms = async () => {
-    const { data, error } = await supabase
-      .from('firms')
+    const { data, error } = await (await __getSupabaseClient()).from('firms')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -27,7 +26,7 @@ export default function FirmsAdminPage() {const [firms, setFirms] = useState<any
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from('firms').update({ status }).eq('id', id);
+    const { error } = await (await __getSupabaseClient()).from('firms').update({ status }).eq('id', id);
     if (error) toast.error('Failed to update status');
     else {
       toast.success(`Firm ${status}`);
@@ -125,3 +124,15 @@ export default function FirmsAdminPage() {const [firms, setFirms] = useState<any
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -62,7 +62,7 @@ export default function RatingsContent({ userId, requests }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
-    // Fetch interaction data for all requests
+  // Fetch interaction data for all requests
   useEffect(() => {
     fetchInteractions();
   }, [requests]);
@@ -73,28 +73,24 @@ export default function RatingsContent({ userId, requests }: Props) {
 
     for (const request of requests) {
       // Count messages
-      const { count: messagesCount } = await supabase
-        .from('messages')
+      const { count: messagesCount } = await (await __getSupabaseClient()).from('messages')
         .select('*', { count: 'exact', head: true })
         .or(`sender_id.eq.${userId},sender_id.eq.${request.assigned_lawyer_id}`)
         .in(
           'conversation_id',
-          await supabase
-            .from('conversations')
+          await (await __getSupabaseClient()).from('conversations')
             .select('id')
             .eq('request_id', request.id)
-            .then((res) => res.data?.map((c) => c.id) || [])
+            .then((res: any) => res.data?.map((c: any) => c.id) || [])
         );
 
       // Count clarifications (simplified - check if any exist)
-      const { count: clarificationsCount } = await supabase
-        .from('clarifications')
+      const { count: clarificationsCount } = await (await __getSupabaseClient()).from('clarifications')
         .select('*', { count: 'exact', head: true })
         .eq('request_id', request.id);
 
       // Check if opinion submitted
-      const { data: opinions } = await supabase
-        .from('opinion_submissions')
+      const { data: opinions } = await (await __getSupabaseClient()).from('opinion_submissions')
         .select('id')
         .eq('request_id', request.id)
         .limit(1);
@@ -116,7 +112,7 @@ export default function RatingsContent({ userId, requests }: Props) {
   };
 
   // Get eligible requests (with interactions and not already rated)
-  const eligibleRequests = requests.filter((req) => {
+  const eligibleRequests = requests.filter((req: any) => {
     const hasNoRating = !req.lawyer_reviews || req.lawyer_reviews.length === 0;
     const hasInteraction = interactions[req.id]?.hasInteraction;
     return hasNoRating && hasInteraction;
@@ -171,11 +167,10 @@ export default function RatingsContent({ userId, requests }: Props) {
             className="transition-transform hover:scale-110"
           >
             <Star
-              className={`${starSize} transition-all ${
-                star <= (hoveredRating || currentRating)
+              className={`${starSize} transition-all ${star <= (hoveredRating || currentRating)
                   ? 'fill-yellow-400 text-yellow-400'
                   : 'text-slate-300'
-              }`}
+                }`}
             />
           </button>
         ))}
@@ -271,24 +266,24 @@ export default function RatingsContent({ userId, requests }: Props) {
                 <div className="flex items-start gap-4">
                   {/* Lawyer Avatar */}
                   {
-  request.lawyer.avatar_url ? (
-                    <Image
-                      src={request.lawyer.avatar_url}
-                      alt={request.lawyer.full_name}
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 rounded-xl object-cover ring-2 ring-slate-200"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold text-xl ring-2 ring-slate-200">
-                      {request.lawyer.full_name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2)}
-                    </div>
-                  )}
+                    request.lawyer.avatar_url ? (
+                      <Image
+                        src={request.lawyer.avatar_url}
+                        alt={request.lawyer.full_name}
+                        width={64}
+                        height={64}
+                        className="w-16 h-16 rounded-xl object-cover ring-2 ring-slate-200"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold text-xl ring-2 ring-slate-200">
+                        {request.lawyer.full_name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)}
+                      </div>
+                    )}
 
                   {/* Content */}
                   <div className="flex-1">
@@ -301,41 +296,41 @@ export default function RatingsContent({ userId, requests }: Props) {
                     <p className="text-sm text-slate-600 mb-3">
                       Case {request.request_number} •{' '}
                       {
-  format(new Date(request.created_at), 'MMM dd, yyyy')}
+                        format(new Date(request.created_at), 'MMM dd, yyyy')}
                     </p>
 
                     {/* Interaction Summary */}
                     {
-  interaction && (
-                      <div className="flex flex-wrap gap-2">
-                        {interaction.messagesCount > 0 && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg border border-amber-200">
-                            <MessageCircle className="w-3.5 h-3.5" />
-                            {interaction.messagesCount} message
-                            {interaction.messagesCount !== 1 ? 's' : ''}
+                      interaction && (
+                        <div className="flex flex-wrap gap-2">
+                          {interaction.messagesCount > 0 && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg border border-amber-200">
+                              <MessageCircle className="w-3.5 h-3.5" />
+                              {interaction.messagesCount} message
+                              {interaction.messagesCount !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {
+                            interaction.clarificationsCount > 0 && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-200">
+                                <FileQuestion className="w-3.5 h-3.5" />
+                                {interaction.clarificationsCount} clarification
+                                {interaction.clarificationsCount !== 1 ? 's' : ''}
+                              </span>
+                            )}
+                          {
+                            interaction.opinionSubmitted && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg border border-purple-200">
+                                <Scale className="w-3.5 h-3.5" />
+                                Opinion submitted
+                              </span>
+                            )}
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-lg border border-green-200">
+                            <Shield className="w-3.5 h-3.5" />
+                            Verified Interaction
                           </span>
-                        )}
-                        {
-  interaction.clarificationsCount > 0 && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-200">
-                            <FileQuestion className="w-3.5 h-3.5" />
-                            {interaction.clarificationsCount} clarification
-                            {interaction.clarificationsCount !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {
-  interaction.opinionSubmitted && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg border border-purple-200">
-                            <Scale className="w-3.5 h-3.5" />
-                            Opinion submitted
-                          </span>
-                        )}
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-lg border border-green-200">
-                          <Shield className="w-3.5 h-3.5" />
-                          Verified Interaction
-                        </span>
-                      </div>
-                    )}
+                        </div>
+                      )}
                   </div>
 
                   <ArrowRight className="w-5 h-5 text-slate-400 flex-shrink-0 mt-1" />
@@ -374,24 +369,24 @@ export default function RatingsContent({ userId, requests }: Props) {
           <div className="flex items-start gap-4 sm:gap-6">
             {/* Lawyer Avatar */}
             {
-  selectedRequest!.lawyer.avatar_url ? (
-              <Image
-                src={selectedRequest!.lawyer.avatar_url}
-                alt={selectedRequest!.lawyer.full_name}
-                width={96}
-                height={96}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-white shadow-md flex-shrink-0"
-              />
-            ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold text-2xl ring-4 ring-white shadow-md flex-shrink-0">
-                {selectedRequest!.lawyer.full_name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </div>
-            )}
+              selectedRequest!.lawyer.avatar_url ? (
+                <Image
+                  src={selectedRequest!.lawyer.avatar_url}
+                  alt={selectedRequest!.lawyer.full_name}
+                  width={96}
+                  height={96}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-white shadow-md flex-shrink-0"
+                />
+              ) : (
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold text-2xl ring-4 ring-white shadow-md flex-shrink-0">
+                  {selectedRequest!.lawyer.full_name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </div>
+              )}
 
             {/* Lawyer Details */}
             <div className="flex-1 min-w-0">
@@ -404,30 +399,30 @@ export default function RatingsContent({ userId, requests }: Props) {
 
               {/* Interaction Indicators */}
               {
-  interaction && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {interaction.messagesCount > 0 && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg border border-amber-200">
-                      <MessageCircle className="w-4 h-4" />
-                      {interaction.messagesCount} exchanged
-                    </span>
-                  )}
-                  {
-  interaction.clarificationsCount > 0 && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-200">
-                      <FileQuestion className="w-4 h-4" />
-                      {interaction.clarificationsCount} resolved
-                    </span>
-                  )}
-                  {
-  interaction.opinionSubmitted && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg border border-purple-200">
-                      <Scale className="w-4 h-4" />
-                      Opinion delivered
-                    </span>
-                  )}
-                </div>
-              )}
+                interaction && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {interaction.messagesCount > 0 && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg border border-amber-200">
+                        <MessageCircle className="w-4 h-4" />
+                        {interaction.messagesCount} exchanged
+                      </span>
+                    )}
+                    {
+                      interaction.clarificationsCount > 0 && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-200">
+                          <FileQuestion className="w-4 h-4" />
+                          {interaction.clarificationsCount} resolved
+                        </span>
+                      )}
+                    {
+                      interaction.opinionSubmitted && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg border border-purple-200">
+                          <Scale className="w-4 h-4" />
+                          Opinion delivered
+                        </span>
+                      )}
+                  </div>
+                )}
 
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-lg border border-green-200">
                 <Shield className="w-4 h-4" />
@@ -516,3 +511,15 @@ export default function RatingsContent({ userId, requests }: Props) {
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

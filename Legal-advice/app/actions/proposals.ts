@@ -64,7 +64,6 @@ interface ActionResult<T = any> {
 export async function createProposal(
   formData: FormData
 ): Promise<ActionResult<{
-  const supabase = await createClient();
 proposalId: string }>> {
   try {
     
@@ -80,8 +79,7 @@ proposalId: string }>> {
     }
 
     // Verify user is a lawyer
-    const { data: profile } = await supabase
-      .from('profiles')
+    const { data: profile } = (await __getSupabaseClient()).from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
@@ -125,8 +123,7 @@ proposalId: string }>> {
     }
 
     // Fetch request details for validation
-    const { data: requestData, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: requestData, error: requestError } = (await __getSupabaseClient()).from('legal_requests')
       .select('budget_min, budget_max')
       .eq('id', requestId)
       .single();
@@ -151,7 +148,7 @@ proposalId: string }>> {
     }
 
     // Call database function to create proposal
-    const { data, error } = await supabase.rpc('create_proposal', {
+    const { data, error } = await (await __getSupabaseClient()).rpc('create_proposal', {
       p_request_id: requestId,
       p_lawyer_id: user.id,
       p_proposed_fee: proposedFee,
@@ -197,7 +194,7 @@ proposalId: string }>> {
 export async function getProposalsForRequest(
   requestId: string
 ): Promise<ActionResult<ProposalWithDetails[]>> {
-  const supabase = await createClient();try {
+  try {
     
 
     // Get current user
@@ -211,8 +208,7 @@ export async function getProposalsForRequest(
     }
 
     // Verify request belongs to client
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = (await __getSupabaseClient()).from('legal_requests')
       .select('client_id')
       .eq('id', requestId)
       .single();
@@ -222,8 +218,7 @@ export async function getProposalsForRequest(
     }
 
     // Get all proposals with lawyer details
-    const { data, error } = await supabase
-      .from('request_proposals')
+    const { data, error } = (await __getSupabaseClient()).from('request_proposals')
       .select(
         `
                 *,
@@ -259,7 +254,7 @@ export async function getProposalsForRequest(
 // =====================================================
 
 export async function getMyProposals(): Promise<ActionResult<ProposalWithDetails[]>> {
-  const supabase = await createClient();try {
+  try {
     
 
     // Get current user
@@ -273,8 +268,7 @@ export async function getMyProposals(): Promise<ActionResult<ProposalWithDetails
     }
 
     // Get lawyer's proposals with request details
-    const { data, error } = await supabase
-      .from('request_proposals')
+    const { data, error } = (await __getSupabaseClient()).from('request_proposals')
       .select(
         `
                 *,
@@ -312,7 +306,6 @@ export async function getMyProposals(): Promise<ActionResult<ProposalWithDetails
 export async function updateProposal(
   proposalId: string,
   updates: {
-  const supabase = await createClient();
     proposedFee?: number;
     timelineDays?: number;
     proposalMessage?: string;
@@ -332,8 +325,7 @@ export async function updateProposal(
     }
 
     // Verify proposal exists and belongs to lawyer
-    const { data: proposal } = await supabase
-      .from('request_proposals')
+    const { data: proposal } = (await __getSupabaseClient()).from('request_proposals')
       .select('lawyer_id, status, request_id')
       .eq('id', proposalId)
       .single();
@@ -348,8 +340,7 @@ export async function updateProposal(
     }
 
     // Fetch request details for validation
-    const { data: requestData, error: requestError } = await supabase
-      .from('legal_requests')
+    const { data: requestData, error: requestError } = (await __getSupabaseClient()).from('legal_requests')
       .select('budget_min, budget_max')
       .eq('id', proposal.request_id)
       .single();
@@ -397,8 +388,7 @@ export async function updateProposal(
     if (updates.attachments !== undefined) updateData.attachments = updates.attachments;
 
     // Update proposal
-    const { error } = await supabase
-      .from('request_proposals')
+    const { error } = (await __getSupabaseClient()).from('request_proposals')
       .update(updateData)
       .eq('id', proposalId);
 
@@ -422,7 +412,7 @@ export async function updateProposal(
 // =====================================================
 
 export async function withdrawProposal(proposalId: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
+  try {
     
 
     // Get current user
@@ -436,7 +426,7 @@ export async function withdrawProposal(proposalId: string): Promise<ActionResult
     }
 
     // Call database function
-    const { data, error } = await supabase.rpc('withdraw_proposal', {
+    const { data, error } = await (await __getSupabaseClient()).rpc('withdraw_proposal', {
       p_proposal_id: proposalId,
       p_lawyer_id: user.id,
     });
@@ -471,7 +461,7 @@ export async function withdrawProposal(proposalId: string): Promise<ActionResult
 // =====================================================
 
 export async function shortlistProposal(proposalId: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
+  try {
     
 
     // Get current user
@@ -485,8 +475,7 @@ export async function shortlistProposal(proposalId: string): Promise<ActionResul
     }
 
     // Get proposal and verify access
-    const { data: proposal } = await supabase
-      .from('request_proposals')
+    const { data: proposal } = (await __getSupabaseClient()).from('request_proposals')
       .select(
         `
                 id,
@@ -517,8 +506,7 @@ export async function shortlistProposal(proposalId: string): Promise<ActionResul
     }
 
     // Update to shortlisted
-    const { error } = await supabase
-      .from('request_proposals')
+    const { error } = (await __getSupabaseClient()).from('request_proposals')
       .update({ status: 'shortlisted' })
       .eq('id', proposalId);
 
@@ -528,7 +516,7 @@ export async function shortlistProposal(proposalId: string): Promise<ActionResul
     }
 
     // Create notification
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: proposal.lawyer_id,
       type: 'proposal_shortlisted',
       title: 'Proposal Shortlisted!',
@@ -550,7 +538,7 @@ export async function shortlistProposal(proposalId: string): Promise<ActionResul
 // =====================================================
 
 export async function acceptProposal(proposalId: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
+  try {
     
 
     // Get current user
@@ -568,8 +556,7 @@ export async function acceptProposal(proposalId: string): Promise<ActionResult> 
     // ---------------------------------------------------------
     
     // 1. Get Proposal Details
-    const { data: proposalData, error: propError } = await supabase
-      .from('request_proposals')
+    const { data: proposalData, error: propError } = (await __getSupabaseClient()).from('request_proposals')
       .select('*, request:legal_requests(*)')
       .eq('id', proposalId)
       .single();
@@ -584,16 +571,14 @@ export async function acceptProposal(proposalId: string): Promise<ActionResult> 
     // We use a simple sequential approach here. In a real prod env, a stored procedure is safer.
     
     // A. Update Proposal Status
-    const { error: updatePropError } = await supabase
-      .from('request_proposals')
+    const { error: updatePropError } = (await __getSupabaseClient()).from('request_proposals')
       .update({ status: 'accepted' })
       .eq('id', proposalId);
 
     if (updatePropError) throw updatePropError;
 
     // B. Mark Original Request as Awarded
-    const { error: updateReqError } = await supabase
-        .from('legal_requests')
+    const { error: updateReqError } = (await __getSupabaseClient()).from('legal_requests')
         .update({ status: 'awarded' })
         .eq('id', originalRequest.id);
 
@@ -601,8 +586,7 @@ export async function acceptProposal(proposalId: string): Promise<ActionResult> 
 
     // C. Create New Private Case
     // The new case inherits details but is "Private" and "Awaiting Payment" (or "Accepted")
-    const { data: newCase, error: newCaseError } = await supabase
-        .from('legal_requests')
+    const { data: newCase, error: newCaseError } = (await __getSupabaseClient()).from('legal_requests')
         .insert({
             client_id: user.id,
             department_id: originalRequest.department_id,
@@ -628,7 +612,7 @@ export async function acceptProposal(proposalId: string): Promise<ActionResult> 
     if (newCaseError) throw newCaseError;
 
     // Create Notification
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
         user_id: proposalData.lawyer_id,
         type: 'proposal_accepted',
         title: 'Proposal Accepted!',
@@ -653,7 +637,7 @@ export async function acceptProposal(proposalId: string): Promise<ActionResult> 
 // =====================================================
 
 export async function rejectProposal(proposalId: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
+  try {
     
 
     // Get current user
@@ -667,8 +651,7 @@ export async function rejectProposal(proposalId: string): Promise<ActionResult> 
     }
 
     // Get proposal and verify access
-    const { data: proposal } = await supabase
-      .from('request_proposals')
+    const { data: proposal } = (await __getSupabaseClient()).from('request_proposals')
       .select(
         `
                 id,
@@ -699,8 +682,7 @@ export async function rejectProposal(proposalId: string): Promise<ActionResult> 
     }
 
     // Update to rejected
-    const { error } = await supabase
-      .from('request_proposals')
+    const { error } = (await __getSupabaseClient()).from('request_proposals')
       .update({ status: 'rejected' })
       .eq('id', proposalId);
 
@@ -710,7 +692,7 @@ export async function rejectProposal(proposalId: string): Promise<ActionResult> 
     }
 
     // Create notification
-    await supabase.from('notifications').insert({
+    await (await __getSupabaseClient()).from('notifications').insert({
       user_id: proposal.lawyer_id,
       type: 'proposal_rejected',
       title: 'Proposal Not Selected',
@@ -734,13 +716,11 @@ export async function rejectProposal(proposalId: string): Promise<ActionResult> 
 export async function getProposalCount(
   requestId: string
 ): Promise<ActionResult<{
-  const supabase = await createClient();
 count: number }>> {
   try {
     
 
-    const { count, error } = await supabase
-      .from('request_proposals')
+    const { count, error } = (await __getSupabaseClient()).from('request_proposals')
       .select('*', { count: 'exact', head: true })
       .eq('request_id', requestId)
       .not('status', 'eq', 'withdrawn');
@@ -756,3 +736,15 @@ count: number }>> {
     return { success: false, error: error.message || 'An unexpected error occurred' };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

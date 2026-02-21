@@ -31,7 +31,7 @@ export default function CaseList({ requests, viewMode }: Props) {
           : 'flex flex-col gap-4 max-w-4xl mx-auto'
       }
     >
-      {requests.map((req) => (
+      {requests.map((req: any) => (
         <CaseCard key={req.id} request={req} />
       ))}
     </div>

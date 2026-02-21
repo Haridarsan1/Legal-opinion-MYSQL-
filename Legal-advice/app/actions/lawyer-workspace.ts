@@ -11,21 +11,6 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { RiskFlag, InternalNote, OpinionSubmission } from '@/lib/types';
 
-// Create Supabase server client
-async function getSupabaseClient() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-}
 
 // =====================================================
 // RISK FLAG MANAGEMENT
@@ -36,20 +21,20 @@ export async function toggleRiskFlag(
   flag: RiskFlag,
   add: boolean
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     // Get current user
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
     // Get current risk flags
-    const { data: request, error: fetchError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: fetchError } = (await createClient()).from('legal_requests')
       .select('risk_flags')
       .eq('id', requestId)
       .single();
@@ -70,8 +55,7 @@ success: boolean; error?: string }> {
     }
 
     // Update risk flags
-    const { error: updateError } = await supabase
-      .from('legal_requests')
+    const { error: updateError } = (await createClient()).from('legal_requests')
       .update({ risk_flags: newFlags })
       .eq('id', requestId);
 
@@ -80,7 +64,7 @@ success: boolean; error?: string }> {
     }
 
     // Log action in audit_logs
-    await supabase.from('audit_logs').insert({
+    (await createClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: add ? 'risk_flag_added' : 'risk_flag_removed',
@@ -103,19 +87,19 @@ export async function markDocumentReviewed(
   documentId: string,
   requestId: string
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
     // Update document review status
-    const { error: updateError } = await supabase
-      .from('documents')
+    const { error: updateError } = (await createClient()).from('documents')
       .update({
         reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
@@ -128,7 +112,7 @@ success: boolean; error?: string }> {
     }
 
     // Log action
-    await supabase.from('audit_logs').insert({
+    (await createClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'document_reviewed',
@@ -147,19 +131,19 @@ export async function unmarkDocumentReviewed(
   documentId: string,
   requestId: string
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
     // Update document review status
-    const { error: updateError } = await supabase
-      .from('documents')
+    const { error: updateError } = (await createClient()).from('documents')
       .update({
         reviewed_by: null,
         reviewed_at: null,
@@ -188,19 +172,19 @@ export async function createInternalNote(
   noteText: string,
   noteType: 'general' | 'risk' | 'research' | 'strategy' = 'general'
 ): Promise<{
-success: boolean; error?: string; note?: InternalNote }> {
+  success: boolean; error?: string; note?: InternalNote
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
     // Insert internal note
-    const { data, error: insertError } = await supabase
-      .from('internal_notes')
+    const { data, error: insertError } = (await createClient()).from('internal_notes')
       .insert({
         request_id: requestId,
         created_by: user.id,
@@ -216,7 +200,7 @@ success: boolean; error?: string; note?: InternalNote }> {
     }
 
     // Log action
-    await supabase.from('audit_logs').insert({
+    (await createClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'internal_note_created',
@@ -234,12 +218,12 @@ success: boolean; error?: string; note?: InternalNote }> {
 export async function getInternalNotes(
   requestId: string
 ): Promise<{
-success: boolean; data?: InternalNote[]; error?: string }> {
+  success: boolean; data?: InternalNote[]; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
-    const { data, error } = await supabase
-      .from('internal_notes')
+    const { data, error } = (await createClient()).from('internal_notes')
       .select(
         `
                 *,
@@ -272,18 +256,18 @@ export async function pauseSLA(
   requestId: string,
   reason: string
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
-    const { error: updateError } = await supabase
-      .from('legal_requests')
+    const { error: updateError } = (await createClient()).from('legal_requests')
       .update({
         sla_paused: true,
         sla_pause_reason: reason,
@@ -296,7 +280,7 @@ success: boolean; error?: string }> {
     }
 
     // Log action
-    await supabase.from('audit_logs').insert({
+    (await createClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'sla_paused',
@@ -312,19 +296,19 @@ success: boolean; error?: string }> {
 }
 
 export async function resumeSLA(requestId: string): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
     // Get current request to calculate new deadline
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = (await createClient()).from('legal_requests')
       .select('sla_paused_at, sla_deadline')
       .eq('id', requestId)
       .single();
@@ -336,8 +320,7 @@ success: boolean; error?: string }> {
       // Extend deadline by paused time
       const newDeadline = new Date(new Date(request.sla_deadline).getTime() + pausedTime);
 
-      const { error: updateError } = await supabase
-        .from('legal_requests')
+      const { error: updateError } = (await createClient()).from('legal_requests')
         .update({
           sla_paused: false,
           sla_pause_reason: null,
@@ -351,8 +334,7 @@ success: boolean; error?: string }> {
       }
     } else {
       // Just resume without extending deadline
-      const { error: updateError } = await supabase
-        .from('legal_requests')
+      const { error: updateError } = (await createClient()).from('legal_requests')
         .update({
           sla_paused: false,
           sla_pause_reason: null,
@@ -366,7 +348,7 @@ success: boolean; error?: string }> {
     }
 
     // Log action
-    await supabase.from('audit_logs').insert({
+    (await createClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'sla_resumed',
@@ -389,19 +371,19 @@ export async function escalateToFirm(
   requestId: string,
   note: string
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
     // Get lawyer's firm
-    const { data: profile } = await supabase
-      .from('profiles')
+    const { data: profile } = (await createClient()).from('profiles')
       .select('organization')
       .eq('id', user.id)
       .single();
@@ -411,8 +393,7 @@ success: boolean; error?: string }> {
     }
 
     // Update escalation owner
-    const { error: updateError } = await supabase
-      .from('legal_requests')
+    const { error: updateError } = (await createClient()).from('legal_requests')
       .update({
         escalation_owner: profile.organization,
       })
@@ -426,7 +407,7 @@ success: boolean; error?: string }> {
     await createInternalNote(requestId, `Escalated to firm admin: ${note}`, 'general');
 
     // Log action
-    await supabase.from('audit_logs').insert({
+    (await createClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: requestId,
       action: 'escalated_to_firm',
@@ -448,12 +429,13 @@ success: boolean; error?: string }> {
 export async function updateCaseHealth(
   requestId: string
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     // Call database function to calculate case health
-    const { data, error } = await supabase.rpc('calculate_case_health', {
+    const { data, error } = (await createClient()).rpc('calculate_case_health', {
       p_request_id: requestId,
     });
 
@@ -462,8 +444,7 @@ success: boolean; error?: string }> {
     }
 
     // Update the case health
-    const { error: updateError } = await supabase
-      .from('legal_requests')
+    const { error: updateError } = (await createClient()).from('legal_requests')
       .update({ case_health: data })
       .eq('id', requestId);
 
@@ -484,7 +465,6 @@ success: boolean; error?: string }> {
 // =====================================================
 
 export async function submitProfessionalOpinion(data: {
-  const supabase = await createClient();
   requestId: string;
   opinionType: 'preliminary' | 'final';
   assumptions: string;
@@ -500,12 +480,13 @@ export async function submitProfessionalOpinion(data: {
   };
   fileData: { name: string; type: string; size: number }; // File metadata, actual upload handled separately
 }): Promise<{
-success: boolean; error?: string; version?: number }> {
+  success: boolean; error?: string; version?: number
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
@@ -517,8 +498,7 @@ success: boolean; error?: string; version?: number }> {
     }
 
     // Get current version number
-    const { data: existingOpinions } = await supabase
-      .from('opinion_submissions')
+    const { data: existingOpinions } = (await createClient()).from('opinion_submissions')
       .select('version')
       .eq('request_id', data.requestId)
       .order('version', { ascending: false })
@@ -529,8 +509,7 @@ success: boolean; error?: string; version?: number }> {
 
     // Check if final opinion already exists
     if (data.isFinal) {
-      const { data: finalOpinions } = await supabase
-        .from('opinion_submissions')
+      const { data: finalOpinions } = (await createClient()).from('opinion_submissions')
         .select('id')
         .eq('request_id', data.requestId)
         .eq('is_final', true);
@@ -541,8 +520,7 @@ success: boolean; error?: string; version?: number }> {
     }
 
     // Insert opinion submission
-    const { data: opinion, error: insertError } = await supabase
-      .from('opinion_submissions')
+    const { data: opinion, error: insertError } = (await createClient()).from('opinion_submissions')
       .insert({
         request_id: data.requestId,
         lawyer_id: user.id,
@@ -564,14 +542,13 @@ success: boolean; error?: string; version?: number }> {
 
     // Update request status to opinion_ready if final
     if (data.isFinal) {
-      await supabase
-        .from('legal_requests')
+      (await createClient()).from('legal_requests')
         .update({ status: 'opinion_ready' })
         .eq('id', data.requestId);
     }
 
     // Log action
-    await supabase.from('audit_logs').insert({
+    (await createClient()).from('audit_logs').insert({
       user_id: user.id,
       request_id: data.requestId,
       action: 'opinion_submitted',
@@ -597,16 +574,16 @@ success: boolean; error?: string; version?: number }> {
 export async function getLawyersForSecondOpinion(
   search: string = ''
 ): Promise<{
-success: boolean; data?: any[]; error?: string }> {
+  success: boolean; data?: any[]; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
 
     if (!user) return { success: false, error: 'Not authenticated' };
 
-    let query = supabase
-      .from('profiles')
+    let query = (await createClient()).from('profiles')
       .select('id, full_name, specialization, avatar_url, organization, years_of_experience')
       .eq('role', 'lawyer')
       .neq('id', user.id); // Exclude self
@@ -633,16 +610,17 @@ export async function createSecondOpinionRequest(
   targetLawyerId: string,
   note: string
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
 
     if (!user) return { success: false, error: 'Not authenticated' };
 
     // Create request
-    const { error: insertError } = await supabase.from('second_opinion_requests').insert({
+    const { error: insertError } = (await createClient()).from('second_opinion_requests').insert({
       original_request_id: originalRequestId,
       shared_by: user.id, // The current lawyer
       shared_with_lawyer_id: targetLawyerId,
@@ -669,14 +647,13 @@ export async function getIncomingReviewRequests(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
 
     if (!user) return { success: false, error: 'Not authenticated' };
 
-    const { data, error } = await supabase
-      .from('second_opinion_requests')
+    const { data, error } = (await createClient()).from('second_opinion_requests')
       .select(
         `
                 *,
@@ -710,17 +687,17 @@ export async function updateSecondOpinionStatus(
   status: 'accepted' | 'rejected' | 'completed' | 'changes_requested',
   notes?: string
 ): Promise<{
-success: boolean; error?: string }> {
+  success: boolean; error?: string
+}> {
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = (await createClient());
 
     const updates: any = { status };
     if (notes) {
       updates.reviewer_notes = notes; // Append or overwrite? Simple overwrite for now or we need a chat system later.
     }
 
-    const { error } = await supabase
-      .from('second_opinion_requests')
+    const { error } = (await createClient()).from('second_opinion_requests')
       .update(updates)
       .eq('id', requestId);
 
@@ -747,7 +724,7 @@ export async function getLawyerDashboardSummaries(): Promise<{
   data?: LifecycleSummary[];
   error?: string;
 }> {
-  const supabase = await getSupabaseClient();
+  const supabase = (await createClient());
   const session = await auth();
   const user = session?.user;
 
@@ -755,8 +732,7 @@ export async function getLawyerDashboardSummaries(): Promise<{
 
   try {
     // Fetch full hierarchy for resolver
-    const { data: requests, error } = await supabase
-      .from('legal_requests')
+    const { data: requests, error } = (await createClient()).from('legal_requests')
       .select(
         `
                 *,
@@ -773,10 +749,22 @@ export async function getLawyerDashboardSummaries(): Promise<{
 
     if (error) throw error;
 
-    const summaries = aggregateCaseData(requests || [], user.id);
+    const summaries = aggregateCaseData(requests || [], user.id!);
     return { success: true, data: summaries };
   } catch (error: any) {
     console.error('Error fetching dashboard summaries:', error);
     return { success: false, error: error.message };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

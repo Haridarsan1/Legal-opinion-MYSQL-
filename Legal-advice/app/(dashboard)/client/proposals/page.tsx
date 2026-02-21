@@ -24,7 +24,7 @@ export default function ProposalsListingPage() {
 
       if (result.success && result.data) {
         // Filter only public public requests
-        const publicRequests = result.data.filter((r) => r.visibility === 'public');
+        const publicRequests = result.data.filter((r: any) => r.visibility === 'public');
         setRequests(publicRequests);
       }
     } catch (error) {
@@ -61,7 +61,7 @@ export default function ProposalsListingPage() {
     return { text: `${daysLeft} days left`, color: 'text-slate-600' };
   };
 
-  const filteredRequests = requests.filter((req) => {
+  const filteredRequests = requests.filter((req: any) => {
     if (filter === 'all') return true;
 
     // Accepting: Posted and 0 proposals (or just posted?)

@@ -13,10 +13,21 @@ export default async function DepartmentsPage() {
   
 
   // Fetch all departments
-  const { data: departments } = await supabase
-    .from('departments')
+  const { data: departments } = await (await __getSupabaseClient()).from('departments')
     .select('*')
     .order('name', { ascending: true });
 
   return <DepartmentsListContent departments={departments || []} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

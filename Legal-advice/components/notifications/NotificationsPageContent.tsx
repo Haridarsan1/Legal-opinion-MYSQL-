@@ -60,8 +60,7 @@ export default function NotificationsPageContent({
     const from = notifications.length;
     const to = from + PAGE_SIZE - 1;
 
-    const { data, error } = await supabase
-      .from('notifications')
+    const { data, error } = (await __getSupabaseClient()).from('notifications')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -163,3 +162,15 @@ export default function NotificationsPageContent({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

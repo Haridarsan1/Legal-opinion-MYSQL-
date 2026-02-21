@@ -27,8 +27,7 @@ export default async function ClientRequestDetailPage({
   }
 
   // Fetch request details with all related data
-  const { data: request, error: requestError } = await supabase
-    .from('legal_requests')
+  const { data: request, error: requestError } = await (await __getSupabaseClient()).from('legal_requests')
     .select(
       `
             *,
@@ -47,15 +46,13 @@ export default async function ClientRequestDetailPage({
   }
 
   // Fetch clarifications
-  const { data: clarifications } = await supabase
-    .from('clarifications')
+  const { data: clarifications } = await (await __getSupabaseClient()).from('clarifications')
     .select('*')
     .eq('request_id', id)
     .order('created_at', { ascending: true });
 
   // Fetch legal opinion with versions
-  const { data: legalOpinion, error: opinionError } = await supabase
-    .from('legal_opinions')
+  const { data: legalOpinion, error: opinionError } = await (await __getSupabaseClient()).from('legal_opinions')
     .select(
       `
             id, 
@@ -86,22 +83,19 @@ export default async function ClientRequestDetailPage({
   });
 
   // Fetch existing rating if any
-  const { data: reviewData } = await supabase
-    .from('lawyer_reviews')
+  const { data: reviewData } = await (await __getSupabaseClient()).from('lawyer_reviews')
     .select('rating, review_text, created_at')
     .eq('request_id', id)
     .maybeSingle();
 
   // Fetch audit logs for timeline
-  const { data: auditLogs } = await supabase
-    .from('request_audit_logs')
+  const { data: auditLogs } = await (await __getSupabaseClient()).from('request_audit_logs')
     .select('*')
     .eq('request_id', id)
     .order('created_at', { ascending: true });
 
   // Fetch proposals (if any)
-  const { data: proposals } = await supabase
-    .from('proposals')
+  const { data: proposals } = await (await __getSupabaseClient()).from('proposals')
     .select(
       `
             *,
@@ -126,9 +120,21 @@ export default async function ClientRequestDetailPage({
       clarifications={clarifications || []}
       legalOpinion={legalOpinion || undefined}
       rating={rating || undefined}
-      userId={user.id}
+      userId={user.id!}
       auditLogs={auditLogs || []}
       proposals={proposals || []}
     />
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

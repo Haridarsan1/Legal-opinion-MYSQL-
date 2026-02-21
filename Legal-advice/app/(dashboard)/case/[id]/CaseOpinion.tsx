@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 
 import { formatDistanceToNow } from 'date-fns';
-import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import LegalOpinionEditor from './components/LegalOpinionEditor';
 import OpinionPDFUploader from './components/OpinionPDFUploader';
@@ -24,8 +23,6 @@ import Modal from '@/components/shared/Modal';
 import { toast } from 'sonner';
 import PostOpinionQueries from './components/PostOpinionQueries';
 import {
-
-const supabase = createClient();
   acknowledgeOpinion,
   closeCase,
   confirmNoFurtherQuestions,
@@ -70,8 +67,9 @@ export default function CaseOpinion({
   requestStatus,
   pendingClarifications,
   review,
-}: Props) {const router = useRouter();
-    // State
+}: Props) {
+  const router = useRouter();
+  // State
   const [isLoading, setIsLoading] = useState(true);
   const [opinion, setOpinion] = useState<LegalOpinion | null>(null);
   const [activeVersion, setActiveVersion] = useState<OpinionVersion | null>(null);
@@ -87,8 +85,7 @@ export default function CaseOpinion({
 
   const fetchOpinion = async () => {
     try {
-      const { data, error } = await supabase
-        .from('legal_opinions')
+      const { data, error } = (await __getSupabaseClient()).from('legal_opinions')
         .select(
           `
                     *,
@@ -130,8 +127,7 @@ export default function CaseOpinion({
 
       if (!opinionId) {
         // Create new legal_opinion
-        const { data: newOpinion, error: opError } = await supabase
-          .from('legal_opinions')
+        const { data: newOpinion, error: opError } = (await __getSupabaseClient()).from('legal_opinions')
           .insert({
             request_id: requestId,
             lawyer_id: userId,
@@ -147,8 +143,7 @@ export default function CaseOpinion({
         newVersionNum = 1;
       } else {
         // Increment version on opinion
-        const { error: updateError } = await supabase
-          .from('legal_opinions')
+        const { error: updateError } = (await __getSupabaseClient()).from('legal_opinions')
           .update({
             updated_at: new Date().toISOString(),
             current_version: newVersionNum,
@@ -158,8 +153,7 @@ export default function CaseOpinion({
       }
 
       // Insert new version
-      const { data: versionData, error: vError } = await supabase
-        .from('opinion_versions')
+      const { data: versionData, error: vError } = (await __getSupabaseClient()).from('opinion_versions')
         .insert({
           opinion_id: opinionId,
           version_number: newVersionNum,
@@ -202,10 +196,10 @@ export default function CaseOpinion({
       setOpinion((prev) =>
         prev
           ? {
-              ...prev,
-              current_version: newVersionNum,
-              versions: [versionData, ...(prev.versions || [])],
-            }
+            ...prev,
+            current_version: newVersionNum,
+            versions: [versionData, ...(prev.versions || [])],
+          }
           : null
       );
     } catch (error) {
@@ -221,7 +215,8 @@ export default function CaseOpinion({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   // Triggered by "Send to Client" button
-  const handlePublish = () => {setIsPublishModalOpen(true);
+  const handlePublish = () => {
+    setIsPublishModalOpen(true);
   };
 
   const isClientAcknowledged = requestStatus === 'client_acknowledged';
@@ -234,7 +229,8 @@ export default function CaseOpinion({
     setIsSending(true);
     const result = await acknowledgeOpinion(requestId);
     setIsSending(false);
-    if (result.success) {toast.success('Opinion acknowledged');
+    if (result.success) {
+      toast.success('Opinion acknowledged');
       router.refresh();
     } else {
       toast.error(result.error);
@@ -271,7 +267,8 @@ export default function CaseOpinion({
       console.log('[CaseOpinion] confirmNoFurtherQuestions result:', result);
 
       setIsSending(false);
-      if (result.success) {toast.success('Confirmed no further questions');
+      if (result.success) {
+        toast.success('Confirmed no further questions');
         setIsConfirmModalOpen(false);
         router.refresh();
       } else {
@@ -292,8 +289,7 @@ export default function CaseOpinion({
       if (!opinion?.id) throw new Error('No draft to publish');
 
       // Update opinion status
-      const { error: opError } = await supabase
-        .from('legal_opinions')
+      const { error: opError } = (await __getSupabaseClient()).from('legal_opinions')
         .update({ status: 'published' })
         .eq('id', opinion.id);
 
@@ -303,8 +299,7 @@ export default function CaseOpinion({
       const finalContent = activeVersion?.text_content || 'Legal Opinion';
 
       // Also update parent request status for compatibility
-      await supabase
-        .from('legal_requests')
+      (await __getSupabaseClient()).from('legal_requests')
         .update({
           status: 'opinion_ready',
           opinion_submitted_at: new Date().toISOString(),
@@ -313,7 +308,7 @@ export default function CaseOpinion({
         .eq('id', requestId);
 
       // Create Audit Log
-      await supabase.from('audit_logs').insert({
+      await (await __getSupabaseClient()).from('audit_logs').insert({
         user_id: userId,
         action: 'opinion_submitted',
         entity_type: 'legal_request',
@@ -367,9 +362,8 @@ export default function CaseOpinion({
     return (
       <div className="space-y-6">
         <div
-          className={`p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-center gap-4 ${
-            isCaseClosed ? 'bg-slate-100 border-slate-200' : 'bg-green-50 border-green-200'
-          }`}
+          className={`p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-center gap-4 ${isCaseClosed ? 'bg-slate-100 border-slate-200' : 'bg-green-50 border-green-200'
+            }`}
         >
           <div className="flex items-center gap-2">
             {isCaseClosed ? (
@@ -379,9 +373,8 @@ export default function CaseOpinion({
             )}
             <div>
               <p
-                className={`font-semibold text-sm ${
-                  isCaseClosed ? 'text-slate-900' : 'text-green-900'
-                }`}
+                className={`font-semibold text-sm ${isCaseClosed ? 'text-slate-900' : 'text-green-900'
+                  }`}
               >
                 {isCaseClosed ? 'Case Closed' : 'Opinion Delivered'}
               </p>
@@ -433,8 +426,8 @@ export default function CaseOpinion({
               <LegalOpinionEditor
                 initialContent={activeVersion?.content}
                 readOnly={true}
-                onSave={() => {}}
-                onSend={() => {}}
+                onSave={() => { }}
+                onSend={() => { }}
               />
             </div>
           </div>
@@ -453,35 +446,35 @@ export default function CaseOpinion({
 
             {/* No Further Questions Confirmation */}
             {
-  canClientConfirm && (
-              <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 text-center">
-                <h4 className="text-lg font-bold text-blue-900 mb-2">
-                  Satisfied with the opinion?
-                </h4>
-                <p className="text-sm text-blue-700 mb-4 max-w-lg mx-auto">
-                  If you have reviewed the opinion and any follow-up answers, and have no further
-                  questions, please confirm below. This will allow the lawyer to formally close the
-                  case.
-                </p>
-                <button
-                  onClick={handleConfirmNoQuestionsClick}
-                  disabled={isSending}
-                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm transition-colors"
-                >
-                  No Further Questions
-                </button>
-              </div>
-            )}
+              canClientConfirm && (
+                <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 text-center">
+                  <h4 className="text-lg font-bold text-blue-900 mb-2">
+                    Satisfied with the opinion?
+                  </h4>
+                  <p className="text-sm text-blue-700 mb-4 max-w-lg mx-auto">
+                    If you have reviewed the opinion and any follow-up answers, and have no further
+                    questions, please confirm below. This will allow the lawyer to formally close the
+                    case.
+                  </p>
+                  <button
+                    onClick={handleConfirmNoQuestionsClick}
+                    disabled={isSending}
+                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm transition-colors"
+                  >
+                    No Further Questions
+                  </button>
+                </div>
+              )}
 
             {
-  isClientConfirmed && !isCaseClosed && (
-              <div className="mt-8 p-4 bg-green-50 rounded-xl border border-green-200 flex items-center justify-center gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <span className="font-medium text-green-900">
-                  You have confirmed no further questions. Waiting for lawyer to close the case.
-                </span>
-              </div>
-            )}
+              isClientConfirmed && !isCaseClosed && (
+                <div className="mt-8 p-4 bg-green-50 rounded-xl border border-green-200 flex items-center justify-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="font-medium text-green-900">
+                    You have confirmed no further questions. Waiting for lawyer to close the case.
+                  </span>
+                </div>
+              )}
           </div>
         )}
         {/* Confirm No Further Questions Modal (Client) */}
@@ -554,12 +547,12 @@ export default function CaseOpinion({
             </div>
           )}
           {
-  isCaseClosed && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium border border-slate-200">
-              <CheckCircle className="w-4 h-4" />
-              Case Closed
-            </div>
-          )}
+            isCaseClosed && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium border border-slate-200">
+                <CheckCircle className="w-4 h-4" />
+                Case Closed
+              </div>
+            )}
 
           <div className="flex bg-slate-100 p-1 rounded-lg">
             <button
@@ -618,49 +611,49 @@ export default function CaseOpinion({
 
       {/* Post Opinion Workflow Section for Lawyer */}
       {
-  isWorkflowActive && (
-        <div className="pt-6 border-t border-slate-200 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-slate-900">Post-Opinion Actions</h3>
-            {/* Close Case Button */}
-            {!isCaseClosed && (
-              <div className="flex items-center gap-2">
-                {/* Client Status Indicator */}
-                {
-  isClientConfirmed ? (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium border border-green-200">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Client Confirmed No Questions
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium border border-amber-200">
-                    <Clock className="w-3.5 h-3.5" />
-                    Waiting for Client Confirmation
-                  </div>
-                )}
+        isWorkflowActive && (
+          <div className="pt-6 border-t border-slate-200 space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900">Post-Opinion Actions</h3>
+              {/* Close Case Button */}
+              {!isCaseClosed && (
+                <div className="flex items-center gap-2">
+                  {/* Client Status Indicator */}
+                  {
+                    isClientConfirmed ? (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium border border-green-200">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Client Confirmed No Questions
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium border border-amber-200">
+                        <Clock className="w-3.5 h-3.5" />
+                        Waiting for Client Confirmation
+                      </div>
+                    )}
 
-                <button
-                  onClick={handleCloseCaseClick}
-                  disabled={isSending || !isClientConfirmed} // Strict rule: must confirm
-                  title={
-                    !isClientConfirmed ? "Client must confirm 'No Further Questions' first" : ''
-                  }
-                  className="px-4 py-2 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isSending ? 'Closing...' : 'Close Case'}
-                </button>
-              </div>
-            )}
+                  <button
+                    onClick={handleCloseCaseClick}
+                    disabled={isSending || !isClientConfirmed} // Strict rule: must confirm
+                    title={
+                      !isClientConfirmed ? "Client must confirm 'No Further Questions' first" : ''
+                    }
+                    className="px-4 py-2 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isSending ? 'Closing...' : 'Close Case'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <PostOpinionQueries
+              requestId={requestId}
+              userRole="lawyer"
+              isCaseClosed={isCaseClosed}
+              isClientConfirmed={isClientConfirmed}
+            />
           </div>
-
-          <PostOpinionQueries
-            requestId={requestId}
-            userRole="lawyer"
-            isCaseClosed={isCaseClosed}
-            isClientConfirmed={isClientConfirmed}
-          />
-        </div>
-      )}
+        )}
 
       <Modal
         isOpen={isPublishModalOpen}
@@ -755,3 +748,15 @@ export default function CaseOpinion({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

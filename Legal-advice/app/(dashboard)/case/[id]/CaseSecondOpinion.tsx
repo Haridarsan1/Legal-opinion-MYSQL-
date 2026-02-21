@@ -15,12 +15,11 @@ export default function CaseSecondOpinion({ requestId, userId, userRole }: CaseS
   const [opinionVersionId, setOpinionVersionId] = useState<string | null>(null);
   const [availableLawyers, setAvailableLawyers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-    useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch the latest opinion version
-        const { data: opinion } = await supabase
-          .from('legal_opinions')
+        const { data: opinion } = await (await __getSupabaseClient()).from('legal_opinions')
           .select(
             `
                         id,
@@ -39,8 +38,7 @@ export default function CaseSecondOpinion({ requestId, userId, userRole }: CaseS
         }
 
         // Fetch available lawyers (excluding current user)
-        const { data: lawyers } = await supabase
-          .from('profiles')
+        const { data: lawyers } = await (await __getSupabaseClient()).from('profiles')
           .select('id, full_name, bar_council_id, specialization')
           .eq('role', 'lawyer')
           .neq('id', userId)
@@ -55,7 +53,7 @@ export default function CaseSecondOpinion({ requestId, userId, userRole }: CaseS
     };
 
     fetchData();
-  }, [requestId, userId, supabase]);
+  }, [requestId, userId]);
 
   if (isLoading) {
     return (
@@ -103,3 +101,15 @@ export default function CaseSecondOpinion({ requestId, userId, userRole }: CaseS
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

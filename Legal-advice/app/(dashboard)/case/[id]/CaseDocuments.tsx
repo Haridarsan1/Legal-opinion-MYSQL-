@@ -81,7 +81,7 @@ export default function CaseDocuments({
 
   // Generate signed URL for document preview
   const getSignedUrl = async (filePath: string) => {try {
-      const { data, error } = await supabase.storage
+      const { data, error } = await (await __getSupabaseClient()).storage
         .from('legal-documents')
         .createSignedUrl(filePath, 3600); // URL valid for 1 hour
 
@@ -96,8 +96,7 @@ export default function CaseDocuments({
   const handleCreateRequest = async () => {if (!newRequestTitle.trim()) return;
 
     try {
-      const { data, error } = await supabase
-        .from('document_requests')
+      const { data, error } = (await __getSupabaseClient()).from('document_requests')
         .insert({
           request_id: requestId,
           title: newRequestTitle,
@@ -144,7 +143,7 @@ export default function CaseDocuments({
         setUploadProgress((prev) => ({ ...prev, [file.name]: 0 }));
 
         // 1. Upload to Storage
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await (await __getSupabaseClient()).storage
           .from('legal-documents')
           .upload(fileName, file);
 
@@ -158,10 +157,10 @@ export default function CaseDocuments({
 
         const {
           data: { publicUrl },
-        } = supabase.storage.from('legal-documents').getPublicUrl(fileName);
+        } = (await __getSupabaseClient()).storage.from('legal-documents').getPublicUrl(fileName);
 
         // 2. Insert into DB
-        const { error: dbError } = await supabase.from('documents').insert({
+        const { error: dbError } = await (await __getSupabaseClient()).from('documents').insert({
           request_id: requestId,
           file_name: file.name,
           file_path: fileName,
@@ -181,8 +180,7 @@ export default function CaseDocuments({
 
         // 3. Update Request Status (if applicable)
         if (requestTargetId) {
-          const { error: updateError } = await supabase
-            .from('document_requests')
+          const { error: updateError } = (await __getSupabaseClient()).from('document_requests')
             .update({ status: 'fulfilled' })
             .eq('id', requestTargetId);
 
@@ -218,8 +216,7 @@ export default function CaseDocuments({
   const handleVerifyDocument = async (documentId: string, status: 'verified' | 'rejected') => {if (userRole !== 'lawyer') return;
 
     try {
-      const { data, error } = await supabase
-        .from('documents')
+      const { data, error } = (await __getSupabaseClient()).from('documents')
         .update({
           verification_status: status,
           verified_by: userId,
@@ -251,7 +248,7 @@ export default function CaseDocuments({
   const supportingDocs = documents.filter(
     (d) => d.document_type !== 'opinion' && !d.document_request_id
   );
-  const opinionDocs = documents.filter((d) => d.document_type === 'opinion');
+  const opinionDocs = documents.filter((d: any) => d.document_type === 'opinion');
   const requestedDocs = documentRequests;
 
   return (
@@ -322,8 +319,8 @@ export default function CaseDocuments({
 
         {requestedDocs.length > 0 ? (
           <div className="space-y-3">
-            {requestedDocs.map((req) => {
-              const relatedDocs = documents.filter((d) => d.document_request_id === req.id);
+            {requestedDocs.map((req: any) => {
+              const relatedDocs = documents.filter((d: any) => d.document_request_id === req.id);
               const isFulfilled = req.status === 'fulfilled' || relatedDocs.length > 0;
 
               return (
@@ -925,3 +922,15 @@ export default function CaseDocuments({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

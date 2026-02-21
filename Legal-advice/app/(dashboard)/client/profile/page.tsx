@@ -17,7 +17,19 @@ export default async function ProfilePage() {
   }
 
   // Fetch user profile
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles').select('*').eq('id', user.id).single();
 
   return <ProfileContent profile={profile} />;
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

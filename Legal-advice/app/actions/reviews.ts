@@ -1,5 +1,4 @@
 'use server';
-import { createClient } from '@/lib/supabase/server';
 
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
@@ -39,17 +38,16 @@ interface ActionResult<T = any> {
 export async function getReviewEligibility(
   requestId: string
 ): Promise<ActionResult<{
-  const supabase = await createClient();
-eligible: boolean; reason?: string }>> {
+  eligible: boolean; reason?: string
+}>> {
   try {
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
     // 1. Fetch Request Details
-    const { data: request, error: reqError } = await supabase
-      .from('legal_requests')
+    const { data: request, error: reqError } = (await __getSupabaseClient()).from('legal_requests')
       .select('id, client_id, assigned_lawyer_id, status')
       .eq('id', requestId)
       .single();
@@ -73,8 +71,7 @@ eligible: boolean; reason?: string }>> {
     }
 
     // 4. Check if already reviewed
-    const { data: existingReview } = await supabase
-      .from('lawyer_reviews')
+    const { data: existingReview } = (await __getSupabaseClient()).from('lawyer_reviews')
       .select('id')
       .eq('request_id', requestId)
       .eq('client_id', user.id)
@@ -96,11 +93,9 @@ eligible: boolean; reason?: string }>> {
 // =====================================================
 
 async function updateLawyerStats(lawyerId: string) {
-  
 
   // Calculate new average and count
-  const { data: reviews, error } = await supabase
-    .from('lawyer_reviews')
+  const { data: reviews, error } = (await __getSupabaseClient()).from('lawyer_reviews')
     .select('rating')
     .eq('lawyer_id', lawyerId)
     .eq('is_visible', true)
@@ -113,11 +108,10 @@ async function updateLawyerStats(lawyerId: string) {
 
   const totalReviews = reviews.length;
   const averageRating =
-    totalReviews > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews : 0;
+    totalReviews > 0 ? reviews.reduce((sum: any, r: any) => sum + r.rating, 0) / totalReviews : 0;
 
   // Update profiles table
-  const { error: updateError } = await supabase
-    .from('profiles')
+  const { error: updateError } = (await __getSupabaseClient()).from('profiles')
     .update({
       average_rating: Number(averageRating.toFixed(1)), // Keep 1 decimal place
       total_reviews: totalReviews,
@@ -139,7 +133,7 @@ export async function submitReview(
   reviewText: string,
   interactionType: string
 ): Promise<ActionResult> {
-  const supabase = await createClient();try {
+  try {
     // 1. Validate Input
     if (rating < 1 || rating > 5) return { success: false, error: 'Invalid rating (1-5)' };
 
@@ -153,11 +147,10 @@ export async function submitReview(
     }
 
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
 
     // Fetch lawyer ID again to be safe
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = (await __getSupabaseClient()).from('legal_requests')
       .select('assigned_lawyer_id')
       .eq('id', requestId)
       .single();
@@ -166,7 +159,7 @@ export async function submitReview(
       return { success: false, error: 'No lawyer assigned to this request' };
 
     // 3. Insert Review
-    const { error } = await supabase.from('lawyer_reviews').insert({
+    const { error } = await (await __getSupabaseClient()).from('lawyer_reviews').insert({
       request_id: requestId,
       lawyer_id: request.assigned_lawyer_id,
       client_id: user!.id,
@@ -203,9 +196,9 @@ export async function updateLawyerReview(
   rating: number,
   reviewText: string
 ): Promise<ActionResult> {
-  const supabase = await createClient();try {
+  try {
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
@@ -213,8 +206,7 @@ export async function updateLawyerReview(
     if (rating < 1 || rating > 5) return { success: false, error: 'Invalid rating' };
 
     // Update
-    const { data: review, error } = await supabase
-      .from('lawyer_reviews')
+    const { data: review, error } = (await __getSupabaseClient()).from('lawyer_reviews')
       .update({
         rating,
         review_text: reviewText,
@@ -243,13 +235,12 @@ export async function updateLawyerReview(
 // =====================================================
 
 export async function deleteLawyerReview(reviewId: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
+  try {
     const session = await auth();
-  const user = session?.user;
+    const user = session?.user;
 
     // Get review details first to know which lawyer to update stats for
-    const { data: review } = await supabase
-      .from('lawyer_reviews')
+    const { data: review } = (await __getSupabaseClient()).from('lawyer_reviews')
       .select('lawyer_id, request_id')
       .eq('id', reviewId)
       .eq('client_id', user?.id)
@@ -258,7 +249,7 @@ export async function deleteLawyerReview(reviewId: string): Promise<ActionResult
     if (!review) return { success: false, error: 'Review not found or unauthorized' };
 
     // Delete
-    const { error } = await supabase.from('lawyer_reviews').delete().eq('id', reviewId);
+    const { error } = await (await __getSupabaseClient()).from('lawyer_reviews').delete().eq('id', reviewId);
 
     if (error) throw error;
 
@@ -278,11 +269,9 @@ export async function deleteLawyerReview(reviewId: string): Promise<ActionResult
 // =====================================================
 
 export async function getLawyerReviews(lawyerId: string): Promise<ActionResult<LawyerReview[]>> {
-  const supabase = await createClient();try {
-    
+  try {
 
-    const { data, error } = await supabase
-      .from('lawyer_reviews')
+    const { data, error } = (await __getSupabaseClient()).from('lawyer_reviews')
       .select(
         `
                 *,
@@ -310,16 +299,14 @@ export async function getLawyerReviews(lawyerId: string): Promise<ActionResult<L
 // 8. GET LAWYER RATING SUMMARY
 // =====================================================
 export async function getLawyerRatingSummary(lawyerId: string) {
-  const supabase = await createClient();try {
-    
+  try {
 
     // Optimization: Fetch directly from profiles if available, but for distribution we still need raw reviews or a separate stats table.
     // For now, continuing to calculate distribution on fly, but taking average from profiles could be faster if we trust it 100%.
     // Let's stick to calculating from reviews for consistency in this view,
     // OR fetch avg from profile and distribution from reviews.
 
-    const { data, error } = await supabase
-      .from('lawyer_reviews')
+    const { data, error } = (await __getSupabaseClient()).from('lawyer_reviews')
       .select('rating')
       .eq('lawyer_id', lawyerId)
       .eq('is_approved', true);
@@ -334,11 +321,11 @@ export async function getLawyerRatingSummary(lawyerId: string) {
     }
 
     const total = data.length;
-    const sum = data.reduce((acc, curr) => acc + curr.rating, 0);
+    const sum = data.reduce((acc: any, curr: any) => acc + curr.rating, 0);
     const average = Number((sum / total).toFixed(1));
 
     const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<number, number>;
-    data.forEach((r) => {
+    data.forEach((r: any) => {
       if (r.rating >= 1 && r.rating <= 5) distribution[r.rating]++;
     });
 
@@ -347,3 +334,15 @@ export async function getLawyerRatingSummary(lawyerId: string) {
     return { success: false, error: error.message };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

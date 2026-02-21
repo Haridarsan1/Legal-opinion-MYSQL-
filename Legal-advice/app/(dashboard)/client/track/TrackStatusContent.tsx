@@ -25,7 +25,7 @@ export default function TrackStatusContent({ requests }: Props) {
   // Filter and Sort Logic
   const filteredRequests = useMemo(() => {
     return requests
-      .filter((req) => {
+      .filter((req: any) => {
         // Search
         const searchLower = searchQuery.toLowerCase();
         const matchesSearch =

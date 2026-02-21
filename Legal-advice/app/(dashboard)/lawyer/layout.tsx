@@ -13,7 +13,7 @@ export default async function LawyerLayout({ children }: { children: React.React
   if (!user) {redirect('/auth/login');
   }
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data: profile } = await (await __getSupabaseClient()).from('profiles').select('*').eq('id', user.id).single();
 
   if (!profile || profile.role !== 'lawyer') {
     redirect('/auth/login');
@@ -31,3 +31,15 @@ export default async function LawyerLayout({ children }: { children: React.React
     </SidebarProvider>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

@@ -17,5 +17,5 @@ export default async function MessagesPage() {
     redirect('/login');
   }
 
-  return <MessagesContent userId={user.id} />;
+  return <MessagesContent userId={user.id!} />;
 }

@@ -45,7 +45,7 @@ export default function SupportingDocuments({ documents, requestId }: Props) {
   });
 
   // Get unique document types for filter
-  const documentTypes = Array.from(new Set(documents.map((d) => d.document_type || 'other')));
+  const documentTypes = Array.from(new Set(documents.map((d: any) => d.document_type || 'other')));
 
   const handleDownloadAll = async () => {
     // Download all documents (in a real app, you'd create a zip file)

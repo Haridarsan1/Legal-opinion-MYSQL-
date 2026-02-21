@@ -302,7 +302,7 @@ export default function ClientCaseWorkspace({
     try {
       for (const file of uploadedFiles) {
         const fileName = `${request.id}/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await (await __getSupabaseClient()).storage
           .from('legal-documents')
           .upload(fileName, file);
 
@@ -310,9 +310,9 @@ export default function ClientCaseWorkspace({
 
         const {
           data: { publicUrl },
-        } = supabase.storage.from('legal-documents').getPublicUrl(fileName);
+        } = (await __getSupabaseClient()).storage.from('legal-documents').getPublicUrl(fileName);
 
-        await supabase.from('documents').insert({
+        await (await __getSupabaseClient()).from('documents').insert({
           request_id: request.id,
           file_name: file.name,
           file_url: publicUrl,
@@ -336,8 +336,7 @@ export default function ClientCaseWorkspace({
     if (!clarificationResponse.trim()) return;
 
     try {
-      await supabase
-        .from('clarifications')
+      (await __getSupabaseClient()).from('clarifications')
         .update({
           response: clarificationResponse,
           responded_at: new Date().toISOString(),
@@ -363,7 +362,7 @@ export default function ClientCaseWorkspace({
       key: 'clarifications',
       label: 'Clarifications',
       icon: AlertCircle,
-      badge: clarifications?.filter((c) => !c.is_resolved).length || 0,
+      badge: clarifications?.filter((c: any) => !c.is_resolved).length || 0,
     },
     { key: 'messages', label: 'Messages', icon: MessageCircle },
     {
@@ -401,7 +400,7 @@ export default function ClientCaseWorkspace({
         userRole="client"
         backHref="/client/track"
         // Computed / Fallback Props
-        pendingClarifications={clarifications.filter((c) => !c.is_resolved).length}
+        pendingClarifications={clarifications.filter((c: any) => !c.is_resolved).length}
         unreviewedDocuments={0}
         hasAssignedLawyer={!!request.lawyer}
         opinionSubmitted={
@@ -932,12 +931,12 @@ export default function ClientCaseWorkspace({
                 <div className="flex items-center justify-between">
                   <span className="text-slate-600">Pending Clarifications</span>
                   <span
-                    className={`font-semibold ${clarifications.filter((c) => !c.is_resolved).length > 0
+                    className={`font-semibold ${clarifications.filter((c: any) => !c.is_resolved).length > 0
                       ? 'text-amber-600'
                       : 'text-green-600'
                       }`}
                   >
-                    {clarifications.filter((c) => !c.is_resolved).length}
+                    {clarifications.filter((c: any) => !c.is_resolved).length}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -990,3 +989,15 @@ export default function ClientCaseWorkspace({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

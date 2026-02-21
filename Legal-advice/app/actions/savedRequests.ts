@@ -1,5 +1,4 @@
 'use server';
-import { createClient } from '@/lib/supabase/server';
 
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
@@ -56,8 +55,7 @@ interface ActionResult<T = any> {
 // =====================================================
 
 export async function saveRequest(requestId: string, notes?: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
-    
+  try {
 
     // Get current user
     const {
@@ -70,8 +68,7 @@ export async function saveRequest(requestId: string, notes?: string): Promise<Ac
     }
 
     // Verify user is a lawyer
-    const { data: profile } = await supabase
-      .from('profiles')
+    const { data: profile } = (await __getSupabaseClient()).from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
@@ -81,8 +78,7 @@ export async function saveRequest(requestId: string, notes?: string): Promise<Ac
     }
 
     // Verify request exists and is public
-    const { data: request } = await supabase
-      .from('legal_requests')
+    const { data: request } = (await __getSupabaseClient()).from('legal_requests')
       .select('id, visibility, status')
       .eq('id', requestId)
       .single();
@@ -96,7 +92,7 @@ export async function saveRequest(requestId: string, notes?: string): Promise<Ac
     }
 
     // Create bookmark
-    const { error } = await supabase.from('saved_requests').insert({
+    const { error } = await (await __getSupabaseClient()).from('saved_requests').insert({
       lawyer_id: user.id,
       request_id: requestId,
       notes: notes || null,
@@ -127,10 +123,7 @@ export async function saveRequest(requestId: string, notes?: string): Promise<Ac
 // =====================================================
 
 export async function unsaveRequest(requestId: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
-    
-
-    // Get current user
+  try {
     const {
       data: { user },
       error: userError,
@@ -141,8 +134,7 @@ export async function unsaveRequest(requestId: string): Promise<ActionResult> {
     }
 
     // Delete bookmark
-    const { error } = await supabase
-      .from('saved_requests')
+    const { error } = (await __getSupabaseClient()).from('saved_requests')
       .delete()
       .eq('lawyer_id', user.id)
       .eq('request_id', requestId);
@@ -168,10 +160,7 @@ export async function unsaveRequest(requestId: string): Promise<ActionResult> {
 // =====================================================
 
 export async function getSavedRequests(): Promise<ActionResult<SavedRequest[]>> {
-  const supabase = await createClient();try {
-    
-
-    // Get current user
+  try {
     const {
       data: { user },
       error: userError,
@@ -182,8 +171,7 @@ export async function getSavedRequests(): Promise<ActionResult<SavedRequest[]>> 
     }
 
     // Fetch saved requests with request details
-    const { data, error } = await supabase
-      .from('saved_requests')
+    const { data, error } = (await __getSupabaseClient()).from('saved_requests')
       .select(
         `
                 *,
@@ -234,10 +222,10 @@ export async function getSavedRequests(): Promise<ActionResult<SavedRequest[]>> 
 export async function isRequestSaved(
   requestId: string
 ): Promise<ActionResult<{
-  const supabase = await createClient();
-isSaved: boolean }>> {
+  isSaved: boolean
+}>> {
   try {
-    
+
 
     // Get current user
     const {
@@ -250,8 +238,7 @@ isSaved: boolean }>> {
     }
 
     // Check if bookmark exists
-    const { data, error } = await supabase
-      .from('saved_requests')
+    const { data, error } = (await __getSupabaseClient()).from('saved_requests')
       .select('id')
       .eq('lawyer_id', user.id)
       .eq('request_id', requestId)
@@ -275,10 +262,7 @@ isSaved: boolean }>> {
 // =====================================================
 
 export async function updateBookmarkNotes(requestId: string, notes: string): Promise<ActionResult> {
-  const supabase = await createClient();try {
-    
-
-    // Get current user
+  try {
     const {
       data: { user },
       error: userError,
@@ -289,8 +273,7 @@ export async function updateBookmarkNotes(requestId: string, notes: string): Pro
     }
 
     // Update notes
-    const { error } = await supabase
-      .from('saved_requests')
+    const { error } = (await __getSupabaseClient()).from('saved_requests')
       .update({ notes })
       .eq('lawyer_id', user.id)
       .eq('request_id', requestId);
@@ -314,10 +297,10 @@ export async function updateBookmarkNotes(requestId: string, notes: string): Pro
 // =====================================================
 
 export async function getSavedRequestsCount(): Promise<ActionResult<{
-  const supabase = await createClient();
-count: number }>> {
+  count: number
+}>> {
   try {
-    
+
 
     // Get current user
     const {
@@ -329,8 +312,7 @@ count: number }>> {
       return { success: false, error: 'Unauthorized' };
     }
 
-    const { count, error } = await supabase
-      .from('saved_requests')
+    const { count, error } = (await __getSupabaseClient()).from('saved_requests')
       .select('*', { count: 'exact', head: true })
       .eq('lawyer_id', user.id);
 
@@ -345,3 +327,15 @@ count: number }>> {
     return { success: false, error: error.message || 'An unexpected error occurred' };
   }
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

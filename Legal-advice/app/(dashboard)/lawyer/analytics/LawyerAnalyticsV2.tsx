@@ -73,56 +73,19 @@ export default function LawyerAnalyticsContent({
   messagesSent: initialMessagesSent,
   messagesReceived: initialMessagesReceived,
 }: Props) {
-    const [cases, setCases] = useState<LegalRequest[]>(initialCases);
+  const [cases, setCases] = useState<LegalRequest[]>(initialCases);
   const [ratings, setRatings] = useState<Rating[]>(initialRatings);
   const [profileViews, setProfileViews] = useState(initialProfileViews);
   const [messagesSent, setMessagesSent] = useState<Message[]>(initialMessagesSent);
   const [messagesReceived, setMessagesReceived] = useState<Message[]>(initialMessagesReceived);
 
   useEffect(() => {
-    // Real-time subscription for cases
-    const casesChannel = supabase
-      .channel('analytics_cases_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'legal_requests',
-          filter: `assigned_lawyer_id=eq.${profile?.id}`,
-        },
-        () => {
-          fetchCases();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for ratings
-    const ratingsChannel = supabase
-      .channel('analytics_ratings_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'ratings',
-          filter: `lawyer_id=eq.${profile?.id}`,
-        },
-        () => {
-          fetchRatings();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      casesChannel.unsubscribe();
-      ratingsChannel.unsubscribe();
-    };
+    // Real-time subscriptions disabled during MySQL/Prisma migration
+    // TODO: Implement alternative real-time solution
   }, [profile?.id]);
 
   const fetchCases = async () => {
-    const { data } = await supabase
-      .from('legal_requests')
+    const { data } = await (await __getSupabaseClient()).from('legal_requests')
       .select('*')
       .eq('assigned_lawyer_id', profile?.id)
       .order('created_at', { ascending: false });
@@ -131,8 +94,7 @@ export default function LawyerAnalyticsContent({
   };
 
   const fetchRatings = async () => {
-    const { data } = await supabase
-      .from('ratings')
+    const { data } = await (await __getSupabaseClient()).from('ratings')
       .select('*')
       .eq('lawyer_id', profile?.id)
       .order('created_at', { ascending: false });
@@ -142,8 +104,8 @@ export default function LawyerAnalyticsContent({
 
   // Calculate KPIs
   const kpis = useMemo(() => {
-    const activeCases = cases.filter((c) => !['completed', 'cancelled'].includes(c.status));
-    const completedCases = cases.filter((c) => c.status === 'completed');
+    const activeCases = cases.filter((c: any) => !['completed', 'cancelled'].includes(c.status));
+    const completedCases = cases.filter((c: any) => c.status === 'completed');
 
     // Completion rate
     const totalCases = cases.length;
@@ -151,8 +113,8 @@ export default function LawyerAnalyticsContent({
       totalCases > 0 ? Math.round((completedCases.length / totalCases) * 100) : 0;
 
     // SLA compliance
-    const casesWithSLA = completedCases.filter((c) => c.sla_deadline);
-    const onTimeCases = casesWithSLA.filter((c) => {
+    const casesWithSLA = completedCases.filter((c: any) => c.sla_deadline);
+    const onTimeCases = casesWithSLA.filter((c: any) => {
       if (!c.completed_at || !c.sla_deadline) return false;
       return new Date(c.completed_at) <= new Date(c.sla_deadline);
     });
@@ -179,8 +141,8 @@ export default function LawyerAnalyticsContent({
     const completionTrend =
       previousMonthCompleted > 0
         ? Math.round(
-            ((currentMonthCompleted - previousMonthCompleted) / previousMonthCompleted) * 100
-          )
+          ((currentMonthCompleted - previousMonthCompleted) / previousMonthCompleted) * 100
+        )
         : 0;
 
     return {
@@ -205,7 +167,7 @@ export default function LawyerAnalyticsContent({
     }> = [];
 
     // SLA warnings
-    const slaWarnings = cases.filter((c) => {
+    const slaWarnings = cases.filter((c: any) => {
       if (!c.sla_deadline || ['completed', 'cancelled'].includes(c.status)) return false;
       const hoursLeft = differenceInHours(new Date(c.sla_deadline), new Date());
       return hoursLeft < 24 && hoursLeft > 0;
@@ -260,27 +222,27 @@ export default function LawyerAnalyticsContent({
     return [
       {
         status: 'Assigned',
-        count: cases.filter((c) => c.status === 'assigned').length,
+        count: cases.filter((c: any) => c.status === 'assigned').length,
         color: 'bg-blue-500',
       },
       {
         status: 'Under Review',
-        count: cases.filter((c) => c.status === 'in_review').length,
+        count: cases.filter((c: any) => c.status === 'in_review').length,
         color: 'bg-purple-500',
       },
       {
         status: 'Clarification',
-        count: cases.filter((c) => c.status === 'clarification_requested').length,
+        count: cases.filter((c: any) => c.status === 'clarification_requested').length,
         color: 'bg-amber-500',
       },
       {
         status: 'Opinion Ready',
-        count: cases.filter((c) => c.status === 'opinion_ready').length,
+        count: cases.filter((c: any) => c.status === 'opinion_ready').length,
         color: 'bg-green-500',
       },
       {
         status: 'Completed',
-        count: cases.filter((c) => c.status === 'completed').length,
+        count: cases.filter((c: any) => c.status === 'completed').length,
         color: 'bg-slate-400',
       },
     ];
@@ -293,20 +255,20 @@ export default function LawyerAnalyticsContent({
     if (ratings.length === 0) return [];
 
     return [
-      { stars: 5, count: ratings.filter((r) => r.overall_rating === 5).length },
-      { stars: 4, count: ratings.filter((r) => r.overall_rating === 4).length },
-      { stars: 3, count: ratings.filter((r) => r.overall_rating === 3).length },
-      { stars: 2, count: ratings.filter((r) => r.overall_rating === 2).length },
-      { stars: 1, count: ratings.filter((r) => r.overall_rating === 1).length },
+      { stars: 5, count: ratings.filter((r: any) => r.overall_rating === 5).length },
+      { stars: 4, count: ratings.filter((r: any) => r.overall_rating === 4).length },
+      { stars: 3, count: ratings.filter((r: any) => r.overall_rating === 3).length },
+      { stars: 2, count: ratings.filter((r: any) => r.overall_rating === 2).length },
+      { stars: 1, count: ratings.filter((r: any) => r.overall_rating === 1).length },
     ];
   }, [ratings]);
 
-  const maxRatingCount = Math.max(...ratingBreakdown.map((r) => r.count), 1);
+  const maxRatingCount = Math.max(...ratingBreakdown.map((r: any) => r.count), 1);
 
   // Communication metrics
   const communicationMetrics = useMemo(() => {
     const avgReplyTime = '—'; // TODO: Calculate from actual timestamps
-    const uniqueClients = new Set(messagesReceived.map((m) => m.sender_id)).size;
+    const uniqueClients = new Set(messagesReceived.map((m: any) => m.sender_id)).size;
 
     return {
       messagesSent: messagesSent.length,
@@ -321,8 +283,8 @@ export default function LawyerAnalyticsContent({
     const viewTrend =
       initialPreviousProfileViews > 0
         ? Math.round(
-            ((profileViews - initialPreviousProfileViews) / initialPreviousProfileViews) * 100
-          )
+          ((profileViews - initialPreviousProfileViews) / initialPreviousProfileViews) * 100
+        )
         : 0;
 
     // TODO: Calculate from actual profile view tracking and request submissions
@@ -380,7 +342,7 @@ export default function LawyerAnalyticsContent({
     if (ratings.length > 0) {
       const avgResponsiveness =
         ratings.reduce((sum, r) => sum + (r.responsiveness || 0), 0) /
-        ratings.filter((r) => r.responsiveness).length;
+        ratings.filter((r: any) => r.responsiveness).length;
       if (avgResponsiveness < 4) {
         recs.push(
           'Quick clarification responses lead to better ratings and faster case completion'
@@ -482,7 +444,7 @@ export default function LawyerAnalyticsContent({
             </div>
             <p className="text-xs text-slate-500">
               {ratings.length} {
-  ratings.length === 1 ? 'review' : 'reviews'}
+                ratings.length === 1 ? 'review' : 'reviews'}
             </p>
           </div>
         </div>
@@ -490,49 +452,48 @@ export default function LawyerAnalyticsContent({
 
       {/* SLA & Efficiency Insights */}
       {
-  insights.length > 0 && (
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Insights</h2>
-          <div className="grid gap-4">
-            {insights.map((insight, index) => (
-              <div
-                key={index}
-                className={`bg-white rounded-2xl p-6 border-l-4 ${
-                  insight.type === 'warning'
-                    ? 'border-amber-500'
-                    : insight.type === 'success'
-                      ? 'border-green-500'
-                      : 'border-blue-500'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {insight.type === 'warning' && (
-                        <AlertCircle className="w-5 h-5 text-amber-600" />
-                      )}
-                      {
-  insight.type === 'success' && (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      )}
-                      {
-  insight.type === 'info' && <Lightbulb className="w-5 h-5 text-blue-600" />}
-                      <h3 className="font-semibold text-slate-900">{insight.title}</h3>
+        insights.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Insights</h2>
+            <div className="grid gap-4">
+              {insights.map((insight, index) => (
+                <div
+                  key={index}
+                  className={`bg-white rounded-2xl p-6 border-l-4 ${insight.type === 'warning'
+                      ? 'border-amber-500'
+                      : insight.type === 'success'
+                        ? 'border-green-500'
+                        : 'border-blue-500'
+                    }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        {insight.type === 'warning' && (
+                          <AlertCircle className="w-5 h-5 text-amber-600" />
+                        )}
+                        {
+                          insight.type === 'success' && (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          )}
+                        {
+                          insight.type === 'info' && <Lightbulb className="w-5 h-5 text-blue-600" />}
+                        <h3 className="font-semibold text-slate-900">{insight.title}</h3>
+                      </div>
+                      <p className="text-sm text-slate-600">{insight.description}</p>
                     </div>
-                    <p className="text-sm text-slate-600">{insight.description}</p>
+                    {insight.action && (
+                      <button className="px-4 py-2 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap flex items-center gap-2">
+                        {insight.action}
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                  {insight.action && (
-                    <button className="px-4 py-2 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap flex items-center gap-2">
-                      {insight.action}
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Profile Visibility & Engagement */}
       <div>
@@ -765,67 +726,78 @@ export default function LawyerAnalyticsContent({
 
       {/* Recent Feedback */}
       {
-  ratings.length > 0 && ratings.some((r) => r.feedback) && (
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Client Feedback</h2>
-          <div className="grid gap-4">
-            {ratings
-              .filter((r) => r.feedback)
-              .slice(0, 3)
-              .map((rating, index) => (
-                <div key={index} className="bg-white rounded-2xl p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-4 h-4 ${
-                            star <= rating.overall_rating
-                              ? 'fill-amber-400 text-amber-400'
-                              : 'text-slate-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-slate-700 mb-2 line-clamp-2">"{rating.feedback}"</p>
-                      <p className="text-xs text-slate-500">
-                        {format(new Date(rating.created_at), 'MMM d, yyyy')}
-                      </p>
+        ratings.length > 0 && ratings.some((r) => r.feedback) && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Client Feedback</h2>
+            <div className="grid gap-4">
+              {ratings
+                .filter((r: any) => r.feedback)
+                .slice(0, 3)
+                .map((rating, index) => (
+                  <div key={index} className="bg-white rounded-2xl p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-4 h-4 ${star <= rating.overall_rating
+                                ? 'fill-amber-400 text-amber-400'
+                                : 'text-slate-300'
+                              }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-slate-700 mb-2 line-clamp-2">"{rating.feedback}"</p>
+                        <p className="text-xs text-slate-500">
+                          {format(new Date(rating.created_at), 'MMM d, yyyy')}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Action Recommendations */}
       {
-  recommendations.length > 0 && (
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Recommended Actions</h2>
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-            <div className="flex items-start gap-3 mb-4">
-              <Lightbulb className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-1">Performance Tips</h3>
-                <p className="text-sm text-slate-600">
-                  Data-driven suggestions to improve your outcomes
-                </p>
+        recommendations.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Recommended Actions</h2>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+              <div className="flex items-start gap-3 mb-4">
+                <Lightbulb className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1">Performance Tips</h3>
+                  <p className="text-sm text-slate-600">
+                    Data-driven suggestions to improve your outcomes
+                  </p>
+                </div>
               </div>
+              <ul className="space-y-3">
+                {recommendations.map((rec, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
+                    <p className="text-sm text-slate-700">{rec}</p>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="space-y-3">
-              {recommendations.map((rec, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
-                  <p className="text-sm text-slate-700">{rec}</p>
-                </li>
-              ))}
-            </ul>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

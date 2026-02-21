@@ -171,74 +171,10 @@ export default function CaseWorkspace({
     setIsMounted(true);
   }, []);
 
-  // Real-time subscriptions
+  // Real-time subscriptions disabled during MySQL/Prisma migration
   useEffect(() => {
-    const clarificationChannel = supabase
-      .channel('clarifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'clarifications',
-          filter: `request_id=eq.${request.id}`,
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setClarifications((prev) => [...prev, payload.new as Clarification]);
-          } else if (payload.eventType === 'UPDATE') {
-            setClarifications((prev) =>
-              prev.map((c) => (c.id === payload.new.id ? (payload.new as Clarification) : c))
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    const documentChannel = supabase
-      .channel('documents')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'documents',
-          filter: `request_id=eq.${request.id}`,
-        },
-        () => {
-          router.refresh();
-        }
-      )
-      .subscribe();
-
-    const documentRequestChannel = supabase
-      .channel('document_requests')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'document_requests',
-          filter: `request_id=eq.${request.id}`,
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setDocumentRequests((prev) => [payload.new as DocumentRequest, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            setDocumentRequests((prev) =>
-              prev.map((d) => (d.id === payload.new.id ? (payload.new as DocumentRequest) : d))
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      clarificationChannel.unsubscribe();
-      documentChannel.unsubscribe();
-      documentRequestChannel.unsubscribe();
-    };
-  }, [request.id, supabase, router]);
+    // TODO: Implement polling or WebSockets for real-time Prisma updates
+  }, [request.id, router]);
 
   // Real-time subscriptions
 
@@ -270,7 +206,7 @@ export default function CaseWorkspace({
     isDelayed: workflowSummary.sla.status === 'overdue',
   };
 
-  const pendingClarifications = clarifications.filter((c) => !c.is_resolved && !c.parent_id).length;
+  const pendingClarifications = clarifications.filter((c: any) => !c.is_resolved && !c.parent_id).length;
   const unreviewedDocuments = request.documents.filter(
     (d) => !d.review_status || d.review_status === 'pending'
   ).length;
@@ -279,8 +215,8 @@ export default function CaseWorkspace({
   const lastActivityAt = useMemo(() => {
     const timestamps = [
       request.created_at,
-      ...clarifications.map((c) => c.created_at),
-      ...request.documents.map((d) => d.uploaded_at),
+      ...clarifications.map((c: any) => c.created_at),
+      ...request.documents.map((d: any) => d.uploaded_at),
     ].filter(Boolean);
 
     return timestamps.length > 0
@@ -342,27 +278,27 @@ export default function CaseWorkspace({
     // - Lawyer: Always visible, labeled "Draft Opinion"
     // - Client: Visible if there's opinion data (hasDraftOpinion) OR if status indicates opinion is ready
     ...(userRole === 'client' &&
-    !hasDraftOpinion &&
-    !['opinion_ready', 'delivered', 'completed', 'archived'].includes(currentLifecycleState)
+      !hasDraftOpinion &&
+      !['opinion_ready', 'delivered', 'completed', 'archived'].includes(currentLifecycleState)
       ? []
       : [
-          {
-            key: 'opinion',
-            label: userRole === 'client' ? 'Legal Opinion' : 'Draft Opinion',
-            icon: Eye,
-            locked: lockUntilAccepted,
-          },
-        ]),
+        {
+          key: 'opinion',
+          label: userRole === 'client' ? 'Legal Opinion' : 'Draft Opinion',
+          icon: Eye,
+          locked: lockUntilAccepted,
+        },
+      ]),
     ...(isLawyer
       ? [
-          {
-            key: 'internal_review',
-            label: 'Internal Review',
-            icon: Building2,
-            locked: lockUntilAccepted || lockSecondOpinion,
-            badge: secondOpinionRequests?.length || 0,
-          },
-        ]
+        {
+          key: 'internal_review',
+          label: 'Internal Review',
+          icon: Building2,
+          locked: lockUntilAccepted || lockSecondOpinion,
+          badge: secondOpinionRequests?.length || 0,
+        },
+      ]
       : []),
   ];
 
@@ -398,13 +334,13 @@ export default function CaseWorkspace({
         nextActionOverride={
           workflowSummary.nextStep
             ? {
-                title: workflowSummary.nextStep.title,
-                description: workflowSummary.nextStep.description,
-                actionLabel: workflowSummary.nextStep.actionLabel || 'View Details',
-                actionHref: workflowSummary.nextStep.actionUrl || '#',
-                priority: workflowSummary.nextStep.priority,
-                icon: 'AlertCircle',
-              }
+              title: workflowSummary.nextStep.title,
+              description: workflowSummary.nextStep.description,
+              actionLabel: workflowSummary.nextStep.actionLabel || 'View Details',
+              actionHref: workflowSummary.nextStep.actionUrl || '#',
+              priority: workflowSummary.nextStep.priority,
+              icon: 'AlertCircle',
+            }
             : undefined
         }
       />
@@ -424,11 +360,11 @@ export default function CaseWorkspace({
                   <span className="text-sm font-medium text-green-700">
                     Completed{' '}
                     {
-  workflowSummary.completedAt
-                      ? formatDistanceToNow(new Date(workflowSummary.completedAt), {
+                      workflowSummary.completedAt
+                        ? formatDistanceToNow(new Date(workflowSummary.completedAt), {
                           addSuffix: true,
                         })
-                      : format(new Date(request.updated_at), 'MMM d, yyyy')}
+                        : format(new Date(request.updated_at), 'MMM d, yyyy')}
                   </span>
                 </>
               ) : request.sla_deadline ? (
@@ -438,7 +374,7 @@ export default function CaseWorkspace({
                   <span className={`text-sm font-medium ${slaStatus.color}`}>
                     Expected by {format(new Date(request.sla_deadline), 'MMM d, yyyy')} •{' '}
                     {
-  slaStatus.label}
+                      slaStatus.label}
                   </span>
                 </>
               ) : null}
@@ -461,13 +397,12 @@ export default function CaseWorkspace({
                       key={tab.key}
                       onClick={() => !tab.locked && setActiveTab(tab.key)}
                       disabled={tab.locked}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
-                        activeTab === tab.key
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === tab.key
                           ? 'bg-slate-900 text-white'
                           : tab.locked
                             ? 'text-slate-400 cursor-not-allowed'
                             : 'text-slate-600 hover:bg-slate-50'
-                      }`}
+                        }`}
                       title={
                         tab.locked && tab.key === 'internal_review'
                           ? 'Draft opinion must be saved first'
@@ -477,19 +412,18 @@ export default function CaseWorkspace({
                       <tab.icon className="w-4 h-4" />
                       {tab.label}
                       {
-  tab.locked && <Lock className="w-3 h-3" />}
+                        tab.locked && <Lock className="w-3 h-3" />}
                       {
-  tab.badge !== undefined && tab.badge > 0 && !tab.locked && (
-                        <span
-                          className={`px-1.5 py-0.5 rounded text-xs font-bold ${
-                            activeTab === tab.key
-                              ? 'bg-white text-slate-900'
-                              : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          {tab.badge}
-                        </span>
-                      )}
+                        tab.badge !== undefined && tab.badge > 0 && !tab.locked && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-xs font-bold ${activeTab === tab.key
+                                ? 'bg-white text-slate-900'
+                                : 'bg-red-100 text-red-700'
+                              }`}
+                          >
+                            {tab.badge}
+                          </span>
+                        )}
                     </button>
                   ))}
                 </div>
@@ -508,7 +442,7 @@ export default function CaseWorkspace({
 
                     {/* Lawyer Acceptance Card */}
                     {
-  userRole === 'lawyer' &&
+                      userRole === 'lawyer' &&
                       request.lawyer_acceptance_status === 'pending' &&
                       request.assigned_lawyer_id === userId && (
                         <LawyerAcceptanceCard
@@ -521,13 +455,12 @@ export default function CaseWorkspace({
                     <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
                       <div className="flex items-start gap-4">
                         <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            workflowSummary.nextStep.priority === 'high'
+                          className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${workflowSummary.nextStep.priority === 'high'
                               ? 'bg-red-500'
                               : workflowSummary.nextStep.priority === 'medium'
                                 ? 'bg-blue-500'
                                 : 'bg-green-500'
-                          }`}
+                            }`}
                         >
                           <span className="text-white text-xl">ℹ️</span>
                         </div>
@@ -540,28 +473,26 @@ export default function CaseWorkspace({
                           </p>
                           <div className="flex items-center gap-3">
                             <span
-                              className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                                workflowSummary.nextStep.actor === 'client'
+                              className={`text-xs font-semibold px-3 py-1 rounded-full ${workflowSummary.nextStep.actor === 'client'
                                   ? 'bg-purple-100 text-purple-700'
                                   : workflowSummary.nextStep.actor === 'lawyer'
                                     ? 'bg-blue-100 text-blue-700'
                                     : 'bg-slate-100 text-slate-700'
-                              }`}
+                                }`}
                             >
                               {workflowSummary.nextStep.actor === 'client' && 'Client Action'}
                               {
-  workflowSummary.nextStep.actor === 'lawyer' && 'Lawyer Action'}
+                                workflowSummary.nextStep.actor === 'lawyer' && 'Lawyer Action'}
                               {
-  workflowSummary.nextStep.actor === 'system' && 'System Process'}
+                                workflowSummary.nextStep.actor === 'system' && 'System Process'}
                             </span>
                             <span
-                              className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                                workflowSummary.nextStep.priority === 'high'
+                              className={`text-xs font-semibold px-3 py-1 rounded-full ${workflowSummary.nextStep.priority === 'high'
                                   ? 'bg-red-100 text-red-700'
                                   : workflowSummary.nextStep.priority === 'medium'
                                     ? 'bg-amber-100 text-amber-700'
                                     : 'bg-green-100 text-green-700'
-                              }`}
+                                }`}
                             >
                               {workflowSummary.nextStep.priority.toUpperCase()} PRIORITY
                             </span>
@@ -636,7 +567,7 @@ export default function CaseWorkspace({
                     )}
 
                     {
-  request.lawyer &&
+                      request.lawyer &&
                       request.lawyer_acceptance_status === 'pending' &&
                       userRole === 'client' && (
                         <div className="p-4 bg-amber-50 rounded-xl border-2 border-amber-200">
@@ -656,7 +587,7 @@ export default function CaseWorkspace({
                       )}
 
                     {
-  request.lawyer &&
+                      request.lawyer &&
                       request.lawyer_acceptance_status === 'rejected' &&
                       userRole === 'client' && (
                         <div className="p-4 bg-red-50 rounded-xl border-2 border-red-200">
@@ -676,12 +607,12 @@ export default function CaseWorkspace({
                       )}
 
                     {
-  request.firm && (
-                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <p className="text-xs font-semibold text-slate-600 mb-1">Assigned Firm</p>
-                        <p className="font-semibold text-slate-900">{request.firm.organization}</p>
-                      </div>
-                    )}
+                      request.firm && (
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                          <p className="text-xs font-semibold text-slate-600 mb-1">Assigned Firm</p>
+                          <p className="font-semibold text-slate-900">{request.firm.organization}</p>
+                        </div>
+                      )}
 
                     {/* Audit Timeline */}
                     <div className="mt-6">
@@ -694,135 +625,134 @@ export default function CaseWorkspace({
                 )}
 
                 {
-  activeTab === 'documents' && (
-                  <CaseDocuments
-                    requestId={request.id}
-                    documents={request.documents}
-                    documentRequests={documentRequests}
-                    userRole={userRole}
-                    userId={userId}
-                    requestStatus={currentLifecycleState}
-                  />
-                )}
+                  activeTab === 'documents' && (
+                    <CaseDocuments
+                      requestId={request.id}
+                      documents={request.documents}
+                      documentRequests={documentRequests}
+                      userRole={userRole}
+                      userId={userId}
+                      requestStatus={currentLifecycleState}
+                    />
+                  )}
 
                 {
-  activeTab === 'clarifications' && (
-                  <CaseClarifications
-                    requestId={request.id}
-                    clarifications={clarifications}
-                    userRole={userRole}
-                    userId={userId}
-                    clientId={request.client_id}
-                    documents={
-                      request.documents?.map((d) => ({
-                        id: d.id,
-                        file_name: d.file_name,
-                        file_path: d.file_path,
-                        uploader_id: d.uploaded_by,
-                      })) || []
-                    }
-                  />
-                )}
+                  activeTab === 'clarifications' && (
+                    <CaseClarifications
+                      requestId={request.id}
+                      clarifications={clarifications}
+                      userRole={userRole}
+                      userId={userId}
+                      clientId={request.client_id}
+                      documents={
+                        request.documents?.map((d: any) => ({
+                          id: d.id,
+                          file_name: d.file_name,
+                          file_path: d.file_path,
+                          uploader_id: d.uploaded_by,
+                        })) || []
+                      }
+                    />
+                  )}
 
                 {
-  activeTab === 'opinion' && (
-                  <CaseOpinion
-                    requestId={request.id}
-                    opinionText={request.opinion_text}
-                    opinionSubmittedAt={request.opinion_submitted_at}
-                    userRole={userRole}
-                    userId={userId}
-                    requestStatus={currentLifecycleState}
-                    pendingClarifications={pendingClarifications}
-                    hasDocuments={request.documents.length > 0}
-                    review={review}
-                  />
-                )}
+                  activeTab === 'opinion' && (
+                    <CaseOpinion
+                      requestId={request.id}
+                      opinionText={request.opinion_text}
+                      opinionSubmittedAt={request.opinion_submitted_at}
+                      userRole={userRole}
+                      userId={userId}
+                      requestStatus={currentLifecycleState}
+                      pendingClarifications={pendingClarifications}
+                      hasDocuments={request.documents.length > 0}
+                      review={review}
+                    />
+                  )}
 
                 {
-  activeTab === 'internal_review' && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-bold text-slate-900">Internal Review Requests</h2>
-                      <Link
-                        href={`/case/${request.id}/request-second-opinion`}
-                        className="inline-flex items-center bg-slate-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors"
-                      >
-                        <Building2 className="w-4 h-4 mr-2" />
-                        New Request
-                      </Link>
-                    </div>
-
-                    {secondOpinionRequests && secondOpinionRequests.length > 0 ? (
-                      <div className="space-y-4">
-                        {secondOpinionRequests.map((req: any) => (
-                          <div
-                            key={req.id}
-                            className="p-4 border border-slate-200 rounded-xl hover:shadow-sm transition-all bg-white"
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-4">
-                                {req.reviewer?.avatar_url ? (
-                                  <Image
-                                    src={req.reviewer.avatar_url}
-                                    alt={req.reviewer.full_name}
-                                    width={48}
-                                    height={48}
-                                    className="w-12 h-12 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                                    <User className="w-6 h-6 text-slate-500" />
-                                  </div>
-                                )}
-                                <div>
-                                  <p className="font-semibold text-slate-900">
-                                    {req.reviewer?.full_name || 'Unknown Lawyer'}
-                                  </p>
-                                  <p className="text-sm text-slate-500">
-                                    Sent on {new Date(req.created_at).toLocaleDateString()}
-                                  </p>
-                                </div>
-                              </div>
-                              <span
-                                className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                                  req.status === 'completed'
-                                    ? 'bg-green-100 text-green-700'
-                                    : req.status === 'rejected'
-                                      ? 'bg-red-100 text-red-700'
-                                      : 'bg-amber-100 text-amber-700'
-                                }`}
-                              >
-                                {req.status?.replace('_', ' ')}
-                              </span>
-                            </div>
-                            {req.reviewer_notes && (
-                              <div className="mt-4 p-3 bg-slate-50 rounded-lg text-sm text-slate-700">
-                                <p className="font-medium text-slate-900 mb-1">Notes:</p>
-                                {req.reviewer_notes}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                        <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                        <h3 className="text-lg font-medium text-slate-900">No requests sent</h3>
-                        <p className="text-slate-500 mb-6 max-w-md mx-auto">
-                          You haven't requested an internal review for this case yet. You can ask a
-                          colleague to review your draft.
-                        </p>
+                  activeTab === 'internal_review' && (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-bold text-slate-900">Internal Review Requests</h2>
                         <Link
                           href={`/case/${request.id}/request-second-opinion`}
-                          className="inline-flex items-center text-blue-600 font-medium hover:underline"
+                          className="inline-flex items-center bg-slate-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors"
                         >
-                          Request a review
+                          <Building2 className="w-4 h-4 mr-2" />
+                          New Request
                         </Link>
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      {secondOpinionRequests && secondOpinionRequests.length > 0 ? (
+                        <div className="space-y-4">
+                          {secondOpinionRequests.map((req: any) => (
+                            <div
+                              key={req.id}
+                              className="p-4 border border-slate-200 rounded-xl hover:shadow-sm transition-all bg-white"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-4">
+                                  {req.reviewer?.avatar_url ? (
+                                    <Image
+                                      src={req.reviewer.avatar_url}
+                                      alt={req.reviewer.full_name}
+                                      width={48}
+                                      height={48}
+                                      className="w-12 h-12 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                                      <User className="w-6 h-6 text-slate-500" />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="font-semibold text-slate-900">
+                                      {req.reviewer?.full_name || 'Unknown Lawyer'}
+                                    </p>
+                                    <p className="text-sm text-slate-500">
+                                      Sent on {new Date(req.created_at).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${req.status === 'completed'
+                                      ? 'bg-green-100 text-green-700'
+                                      : req.status === 'rejected'
+                                        ? 'bg-red-100 text-red-700'
+                                        : 'bg-amber-100 text-amber-700'
+                                    }`}
+                                >
+                                  {req.status?.replace('_', ' ')}
+                                </span>
+                              </div>
+                              {req.reviewer_notes && (
+                                <div className="mt-4 p-3 bg-slate-50 rounded-lg text-sm text-slate-700">
+                                  <p className="font-medium text-slate-900 mb-1">Notes:</p>
+                                  {req.reviewer_notes}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                          <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                          <h3 className="text-lg font-medium text-slate-900">No requests sent</h3>
+                          <p className="text-slate-500 mb-6 max-w-md mx-auto">
+                            You haven't requested an internal review for this case yet. You can ask a
+                            colleague to review your draft.
+                          </p>
+                          <Link
+                            href={`/case/${request.id}/request-second-opinion`}
+                            className="inline-flex items-center text-blue-600 font-medium hover:underline"
+                          >
+                            Request a review
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -884,3 +814,15 @@ export default function CaseWorkspace({
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

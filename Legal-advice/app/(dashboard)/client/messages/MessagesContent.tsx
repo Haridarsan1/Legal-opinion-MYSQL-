@@ -11,11 +11,8 @@ import {
   CheckCheck,
   Loader2,
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
-
-const supabase = createClient();
 
 interface Conversation {
   id: string;
@@ -64,7 +61,8 @@ interface Props {
   userId: string;
 }
 
-export default function MessagesContent({ userId }: Props) {const [conversations, setConversations] = useState<Conversation[]>([]);
+export default function MessagesContent({ userId }: Props) {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -73,13 +71,13 @@ export default function MessagesContent({ userId }: Props) {const [conversations
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-    // Fetch conversations on mount
-  useEffect(() => {fetchConversations();
+  // Fetch conversations on mount
+  useEffect(() => {
+    fetchConversations();
 
-    // Set up real-time subscription for new messages
-    const 
+    // Set up subscription placeholder (Supabase realtime removed)
 
-    return () => {};
+    return () => { };
   }, [selectedConversation]);
 
   // Fetch messages when conversation selected
@@ -98,8 +96,7 @@ export default function MessagesContent({ userId }: Props) {const [conversations
   const fetchConversations = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('conversations')
+      const { data, error } = (await __getSupabaseClient()).from('conversations')
         .select(
           `
                     *,
@@ -124,8 +121,7 @@ export default function MessagesContent({ userId }: Props) {const [conversations
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('messages')
+      const { data, error } = (await __getSupabaseClient()).from('messages')
         .select(
           `
                     *,
@@ -145,8 +141,7 @@ export default function MessagesContent({ userId }: Props) {const [conversations
 
   const markMessagesAsRead = async (conversationId: string) => {
     try {
-      await supabase
-        .from('messages')
+      (await __getSupabaseClient()).from('messages')
         .update({ read: true })
         .eq('conversation_id', conversationId)
         .neq('sender_id', userId)
@@ -164,7 +159,7 @@ export default function MessagesContent({ userId }: Props) {const [conversations
 
     setIsSending(true);
     try {
-      const { error } = await supabase.from('messages').insert({
+      const { error } = await (await __getSupabaseClient()).from('messages').insert({
         conversation_id: selectedConversation,
         sender_id: userId,
         content: newMessage.trim(),
@@ -174,8 +169,7 @@ export default function MessagesContent({ userId }: Props) {const [conversations
       if (error) throw error;
 
       // Update conversation's last_message_at
-      await supabase
-        .from('conversations')
+      (await __getSupabaseClient()).from('conversations')
         .update({
           updated_at: new Date().toISOString(),
           last_message_at: new Date().toISOString(),
@@ -197,7 +191,7 @@ export default function MessagesContent({ userId }: Props) {const [conversations
   };
 
   const getUnreadCount = (conv: Conversation) => {
-    return conv.messages?.filter((m) => m.sender_id !== userId && !m.read).length || 0;
+    return conv.messages?.filter((m: any) => m.sender_id !== userId && !m.read).length || 0;
   };
 
   const getLastMessage = (conv: Conversation) => {
@@ -278,33 +272,32 @@ export default function MessagesContent({ userId }: Props) {const [conversations
                   <button
                     key={conv.id}
                     onClick={() => setSelectedConversation(conv.id)}
-                    className={`w-full p-3 rounded-xl text-left transition-all mb-2 ${
-                      selectedConversation === conv.id
+                    className={`w-full p-3 rounded-xl text-left transition-all mb-2 ${selectedConversation === conv.id
                         ? 'bg-gradient-to-r from-primary/10 to-blue-50 border-l-4 border-primary shadow-sm'
                         : 'hover:bg-slate-50 border-l-4 border-transparent'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       {/* Avatar */}
                       {
-  participant.avatar_url ? (
-                        <Image
-                          src={participant.avatar_url}
-                          alt={participant.full_name}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-full object-cover flex-shrink-0 ring-2 ring-white"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0 ring-2 ring-white shadow-md">
-                          {participant.full_name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()
-                            .slice(0, 2)}
-                        </div>
-                      )}
+                        participant.avatar_url ? (
+                          <Image
+                            src={participant.avatar_url}
+                            alt={participant.full_name}
+                            width={48}
+                            height={48}
+                            className="w-12 h-12 rounded-full object-cover flex-shrink-0 ring-2 ring-white"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0 ring-2 ring-white shadow-md">
+                            {participant.full_name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .slice(0, 2)}
+                          </div>
+                        )}
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
@@ -326,18 +319,18 @@ export default function MessagesContent({ userId }: Props) {const [conversations
                           </div>
                         )}
                         {
-  lastMsg && (
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm text-slate-600 truncate flex-1">
-                              {lastMsg.content}
-                            </p>
-                            {unreadCount > 0 && (
-                              <div className="flex items-center justify-center px-2 py-0.5 bg-primary text-white text-xs font-bold rounded-full flex-shrink-0">
-                                {unreadCount}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          lastMsg && (
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm text-slate-600 truncate flex-1">
+                                {lastMsg.content}
+                              </p>
+                              {unreadCount > 0 && (
+                                <div className="flex items-center justify-center px-2 py-0.5 bg-primary text-white text-xs font-bold rounded-full flex-shrink-0">
+                                  {unreadCount}
+                                </div>
+                              )}
+                            </div>
+                          )}
                       </div>
                     </div>
                   </button>
@@ -413,11 +406,10 @@ export default function MessagesContent({ userId }: Props) {const [conversations
                     >
                       <div className={`max-w-[70%] ${isOwnMessage ? 'order-2' : 'order-1'}`}>
                         <div
-                          className={`rounded-2xl px-4 py-3 shadow-sm ${
-                            isOwnMessage
+                          className={`rounded-2xl px-4 py-3 shadow-sm ${isOwnMessage
                               ? 'bg-gradient-to-br from-primary to-blue-600 text-white'
                               : 'bg-white border border-slate-200 text-slate-900'
-                          }`}
+                            }`}
                         >
                           <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                             {message.content}
@@ -500,3 +492,15 @@ export default function MessagesContent({ userId }: Props) {const [conversations
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};

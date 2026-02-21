@@ -78,17 +78,16 @@ export default function BankSignupPage() {
       })
       });
       const signUpData = await signUpRes.json();
-      const { error } = signUpData;
+      const { error, user } = signUpData;
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error('Failed to create user account');
+      if (error) throw new Error(error);
+      if (!user) throw new Error('Failed to create user account');
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const { data: profileCheck } = await supabase
-        .from('profiles')
+      const { data: profileCheck } = await (await __getSupabaseClient()).from('profiles')
         .select('role, full_name, email')
-        .eq('id', authData.user.id)
+        .eq('id', user.id)
         .single();
 
       console.log('✅ Profile created:', profileCheck);
@@ -468,3 +467,15 @@ export default function BankSignupPage() {
     </div>
   );
 }
+
+
+// Auto-injected to fix missing supabase client declarations
+const __getSupabaseClient = async () => {
+  if (typeof window === 'undefined') {
+    const m = await import('@/lib/supabase/server');
+    return await m.createClient();
+  } else {
+    const m = await import('@/lib/supabase/client');
+    return m.createClient();
+  }
+};
